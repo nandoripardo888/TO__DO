@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/home/home_screen.dart';
+import '../screens/event/create_event_screen.dart';
+import '../screens/event/join_event_screen.dart';
 
 /// Classe responsável por definir todas as rotas da aplicação
 class AppRoutes {
@@ -26,6 +28,8 @@ class AppRoutes {
       login: (context) => const LoginScreen(),
       register: (context) => const RegisterScreen(),
       home: (context) => const HomeScreen(),
+      createEvent: (context) => const CreateEventScreen(),
+      joinEvent: (context) => const JoinEventScreen(),
       // Outras rotas serão adicionadas conforme implementadas
     };
   }
@@ -39,6 +43,10 @@ class AppRoutes {
         return _createRoute(const RegisterScreen());
       case home:
         return _createRoute(const HomeScreen());
+      case createEvent:
+        return _createRoute(const CreateEventScreen());
+      case joinEvent:
+        return _createRoute(const JoinEventScreen());
 
       // Rotas com parâmetros serão implementadas aqui
       // case eventDetails:

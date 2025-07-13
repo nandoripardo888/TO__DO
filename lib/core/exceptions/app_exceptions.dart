@@ -40,17 +40,14 @@ class FirestoreException extends AppException {
 
 /// Exceções relacionadas à validação de dados
 class ValidationException extends AppException {
-  final String field;
-
   const ValidationException(
-    super.message,
-    this.field, {
+    super.message, {
     super.code,
     super.originalException,
   });
 
   @override
-  String toString() => 'ValidationException [$field]: $message';
+  String toString() => 'ValidationException: $message';
 }
 
 /// Exceções relacionadas a eventos
@@ -101,37 +98,44 @@ class StorageException extends AppException {
   String toString() => 'StorageException: $message';
 }
 
-/// Exceções relacionadas a operações não encontradas
-class NotFoundException extends AppException {
-  final String resourceType;
-  final String resourceId;
-
-  const NotFoundException(
-    this.resourceType,
-    this.resourceId, {
-    String? customMessage,
-    super.code,
-    super.originalException,
-  }) : super(customMessage ?? '$resourceType with ID $resourceId not found');
+/// Exceções relacionadas ao banco de dados
+class DatabaseException extends AppException {
+  const DatabaseException(super.message, {super.code, super.originalException});
 
   @override
-  String toString() =>
-      'NotFoundException: $resourceType [$resourceId] not found';
+  String toString() => 'DatabaseException: $message';
+}
+
+/// Exceções relacionadas ao repositório
+class RepositoryException extends AppException {
+  const RepositoryException(
+    super.message, {
+    super.code,
+    super.originalException,
+  });
+
+  @override
+  String toString() => 'RepositoryException: $message';
+}
+
+/// Exceções relacionadas a operações não encontradas
+class NotFoundException extends AppException {
+  const NotFoundException(super.message, {super.code, super.originalException});
+
+  @override
+  String toString() => 'NotFoundException: $message';
 }
 
 /// Exceções relacionadas a operações não autorizadas
 class UnauthorizedException extends AppException {
-  final String action;
-
   const UnauthorizedException(
-    this.action, {
-    String? customMessage,
+    super.message, {
     super.code,
     super.originalException,
-  }) : super(customMessage ?? 'Unauthorized to perform action: $action');
+  });
 
   @override
-  String toString() => 'UnauthorizedException: $action';
+  String toString() => 'UnauthorizedException: $message';
 }
 
 /// Exceções relacionadas a conflitos de dados

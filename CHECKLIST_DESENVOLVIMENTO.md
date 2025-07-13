@@ -66,41 +66,41 @@
 ## 🏠 FASE 2: Tela Home e Gerenciamento de Eventos
 
 ### Tela Home
-- [ ] **Layout Principal**
-  - [ ] AppBar com nome e foto do usuário
-  - [ ] Lista de cards dos eventos
-  - [ ] FAB com opções "Criar Evento" e "Participar"
-- [ ] **Event Card**
-  - [ ] Nome do evento
-  - [ ] Papel do usuário (Gerenciador/Voluntário)
-  - [ ] Número de tarefas pendentes
-  - [ ] Status do evento
+- [x] **Layout Principal**
+  - [x] AppBar com nome e foto do usuário
+  - [x] Lista de cards dos eventos
+  - [x] FAB com opções "Criar Evento" e "Participar"
+- [x] **Event Card**
+  - [x] Nome do evento
+  - [x] Papel do usuário (Gerenciador/Voluntário)
+  - [x] Número de tarefas pendentes
+  - [x] Status do evento
 
 ### Modelos de Eventos
-- [ ] `event_model.dart` - Modelo completo do evento
-- [ ] `volunteer_profile_model.dart` - Perfil do voluntário
+- [x] `event_model.dart` - Modelo completo do evento
+- [x] `volunteer_profile_model.dart` - Perfil do voluntário
 
 ### Serviços de Eventos
-- [ ] `event_service.dart` - CRUD de eventos
-- [ ] `event_repository.dart` - Camada de dados
-- [ ] `event_controller.dart` - Gerenciamento de estado
+- [x] `event_service.dart` - CRUD de eventos
+- [x] `event_repository.dart` - Camada de dados
+- [x] `event_controller.dart` - Gerenciamento de estado
 
 ### Criação de Eventos
-- [ ] **Tela Criar Evento**
-  - [ ] Formulário completo (nome, descrição, localização)
-  - [ ] Seleção de habilidades necessárias (chips + adicionar nova)
-  - [ ] Seleção de recursos necessários (chips + adicionar novo)
-  - [ ] Geração automática de código/tag único
-- [ ] Sistema de códigos únicos (validação)
-- [ ] Validações de formulário
+- [x] **Tela Criar Evento**
+  - [x] Formulário completo (nome, descrição, localização)
+  - [x] Seleção de habilidades necessárias (chips + adicionar nova)
+  - [x] Seleção de recursos necessários (chips + adicionar novo)
+  - [x] Geração automática de código/tag único
+- [x] Sistema de códigos únicos (validação)
+- [x] Validações de formulário
 
 ### Participação em Eventos
-- [ ] **Tela Participar de Evento**
-  - [ ] Campo para inserir código/tag
-  - [ ] Busca e exibição do evento
-  - [ ] Formulário de perfil do voluntário
-  - [ ] Seleção de disponibilidade (dias/horários)
-  - [ ] Seleção de habilidades e recursos
+- [x] **Tela Participar de Evento**
+  - [x] Campo para inserir código/tag
+  - [x] Busca e exibição do evento
+  - [x] Formulário de perfil do voluntário
+  - [x] Seleção de disponibilidade (dias/horários)
+  - [x] Seleção de habilidades e recursos
 
 ---
 
