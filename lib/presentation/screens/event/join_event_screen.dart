@@ -36,44 +36,6 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
   TimeOfDay _startTime = const TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 18, minute: 0);
 
-  // Lista de habilidades pré-definidas
-  final List<String> _predefinedSkills = [
-    'Organização',
-    'Comunicação',
-    'Liderança',
-    'Tecnologia',
-    'Design',
-    'Marketing',
-    'Vendas',
-    'Atendimento',
-    'Logística',
-    'Culinária',
-    'Fotografia',
-    'Música',
-    'Arte',
-    'Esportes',
-    'Educação',
-  ];
-
-  // Lista de recursos pré-definidos
-  final List<String> _predefinedResources = [
-    'Carro',
-    'Caminhão',
-    'Equipamento de Som',
-    'Projetor',
-    'Notebook',
-    'Câmera',
-    'Microfone',
-    'Mesa',
-    'Cadeira',
-    'Tenda',
-    'Gerador',
-    'Ferramentas',
-    'Material de Limpeza',
-    'Cozinha',
-    'Refrigerador',
-  ];
-
   // Dias da semana
   final List<Map<String, String>> _weekDays = [
     {'key': 'monday', 'label': 'Segunda-feira'},
@@ -115,25 +77,40 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
                 // Exibe detalhes do evento encontrado
                 if (_hasSearched && eventController.searchedEvent != null) ...[
                   const SizedBox(height: AppDimensions.spacingLg),
-                  _buildEventDetailsSection(eventController.searchedEvent!),
-
-                  const SizedBox(height: AppDimensions.spacingLg),
-
-                  // Formulário do perfil do voluntário
-                  _buildVolunteerProfileForm(),
-
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Botão de participar
-                  SizedBox(
-                    width: double.infinity,
-                    child: CustomButton(
-                      text: 'Confirmar Participação',
-                      onPressed: () =>
-                          _handleJoinEvent(authController, eventController),
-                      isLoading: eventController.isJoiningEvent,
-                    ),
+                  _buildEventDetailsSection(
+                    eventController.searchedEvent!,
+                    authController.currentUser?.id,
                   ),
+
+                  // Só mostra formulário e botão se usuário não for participante
+                  if (!_isUserParticipant(
+                    eventController.searchedEvent!,
+                    authController.currentUser?.id,
+                  )) ...[
+                    const SizedBox(height: AppDimensions.spacingLg),
+
+                    // Formulário do perfil do voluntário
+                    _buildVolunteerProfileForm(),
+
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Botão de participar
+                    SizedBox(
+                      width: double.infinity,
+                      child: CustomButton(
+                        text: 'Confirmar Participação',
+                        onPressed: () =>
+                            _handleJoinEvent(authController, eventController),
+                        isLoading: eventController.isJoiningEvent,
+                      ),
+                    ),
+                  ] else ...[
+                    const SizedBox(height: AppDimensions.spacingLg),
+                    _buildAlreadyParticipantMessage(
+                      eventController.searchedEvent!,
+                      authController.currentUser?.id,
+                    ),
+                  ],
                 ],
 
                 // Mensagem de erro
@@ -203,6 +180,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
         const SizedBox(height: AppDimensions.spacingMd),
 
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: CustomTextField(
@@ -221,11 +199,14 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
               ),
             ),
             const SizedBox(width: AppDimensions.spacingSm),
-            CustomButton(
-              text: 'Buscar',
-              onPressed: () => _handleSearchEvent(eventController),
-              isLoading: eventController.isLoading,
-              isFullWidth: false,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2.0),
+              child: CustomButton(
+                text: 'Buscar',
+                onPressed: () => _handleSearchEvent(eventController),
+                isLoading: eventController.isLoading,
+                isFullWidth: false,
+              ),
             ),
           ],
         ),
@@ -233,7 +214,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
     );
   }
 
-  Widget _buildEventDetailsSection(EventModel event) {
+  Widget _buildEventDetailsSection(EventModel event, String? currentUserId) {
     return Card(
       elevation: AppDimensions.elevationSm,
       shape: RoundedRectangleBorder(
@@ -544,6 +525,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
 
         // Campo para adicionar nova habilidade
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: CustomTextField(
@@ -553,37 +535,62 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
               ),
             ),
             const SizedBox(width: AppDimensions.spacingSm),
-            CustomButton(
-              text: 'Adicionar',
-              onPressed: _addSkill,
-              isFullWidth: false,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2.0),
+              child: CustomButton(
+                text: 'Adicionar',
+                onPressed: _addSkill,
+                isFullWidth: false,
+              ),
             ),
           ],
         ),
 
         const SizedBox(height: AppDimensions.spacingMd),
 
-        // Habilidades pré-definidas
-        const Text(
-          'Ou selecione das opções abaixo:',
-          style: TextStyle(
-            fontSize: AppDimensions.fontSizeMd,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        // Habilidades necessárias do evento
+        Consumer<EventController>(
+          builder: (context, eventController, child) {
+            final event = eventController.searchedEvent;
+            if (event != null && event.requiredSkills.isNotEmpty) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Habilidades necessárias para este evento:',
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeMd,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingSm),
 
-        Wrap(
-          spacing: AppDimensions.spacingSm,
-          runSpacing: AppDimensions.spacingSm,
-          children: _predefinedSkills.map((skill) {
-            final isSelected = _selectedSkills.contains(skill);
-            return SkillChip(
-              label: skill,
-              isSelected: isSelected,
-              onTap: () => _toggleSkill(skill),
-            );
-          }).toList(),
+                  Wrap(
+                    spacing: AppDimensions.spacingSm,
+                    runSpacing: AppDimensions.spacingSm,
+                    children: event.requiredSkills.map((skill) {
+                      final isSelected = _selectedSkills.contains(skill);
+                      return SkillChip(
+                        label: skill,
+                        isSelected: isSelected,
+                        onTap: () => _toggleSkill(skill),
+                        backgroundColor: isSelected
+                            ? AppColors.primary.withValues(alpha: 0.1)
+                            : AppColors.warning.withValues(alpha: 0.1),
+                        textColor: isSelected
+                            ? AppColors.primary
+                            : AppColors.warning,
+                        borderColor: isSelected
+                            ? AppColors.primary.withValues(alpha: 0.3)
+                            : AppColors.warning.withValues(alpha: 0.3),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
         ),
 
         // Habilidades selecionadas
@@ -639,6 +646,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
 
         // Campo para adicionar novo recurso
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: CustomTextField(
@@ -648,37 +656,62 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
               ),
             ),
             const SizedBox(width: AppDimensions.spacingSm),
-            CustomButton(
-              text: 'Adicionar',
-              onPressed: _addResource,
-              isFullWidth: false,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2.0),
+              child: CustomButton(
+                text: 'Adicionar',
+                onPressed: _addResource,
+                isFullWidth: false,
+              ),
             ),
           ],
         ),
 
         const SizedBox(height: AppDimensions.spacingMd),
 
-        // Recursos pré-definidos
-        const Text(
-          'Ou selecione das opções abaixo:',
-          style: TextStyle(
-            fontSize: AppDimensions.fontSizeMd,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        // Recursos necessários do evento
+        Consumer<EventController>(
+          builder: (context, eventController, child) {
+            final event = eventController.searchedEvent;
+            if (event != null && event.requiredResources.isNotEmpty) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Recursos necessários para este evento:',
+                    style: TextStyle(
+                      fontSize: AppDimensions.fontSizeMd,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingSm),
 
-        Wrap(
-          spacing: AppDimensions.spacingSm,
-          runSpacing: AppDimensions.spacingSm,
-          children: _predefinedResources.map((resource) {
-            final isSelected = _selectedResources.contains(resource);
-            return SkillChip(
-              label: resource,
-              isSelected: isSelected,
-              onTap: () => _toggleResource(resource),
-            );
-          }).toList(),
+                  Wrap(
+                    spacing: AppDimensions.spacingSm,
+                    runSpacing: AppDimensions.spacingSm,
+                    children: event.requiredResources.map((resource) {
+                      final isSelected = _selectedResources.contains(resource);
+                      return SkillChip(
+                        label: resource,
+                        isSelected: isSelected,
+                        onTap: () => _toggleResource(resource),
+                        backgroundColor: isSelected
+                            ? AppColors.secondary.withValues(alpha: 0.1)
+                            : AppColors.info.withValues(alpha: 0.1),
+                        textColor: isSelected
+                            ? AppColors.secondary
+                            : AppColors.info,
+                        borderColor: isSelected
+                            ? AppColors.secondary.withValues(alpha: 0.3)
+                            : AppColors.info.withValues(alpha: 0.3),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
         ),
 
         // Recursos selecionados
@@ -927,6 +960,86 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
               Navigator.of(context).pop(); // Fecha o dialog
               Navigator.of(context).pop(); // Volta para a tela anterior
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Verifica se o usuário já é participante do evento
+  bool _isUserParticipant(EventModel event, String? userId) {
+    if (userId == null) return false;
+    return event.isParticipant(userId);
+  }
+
+  // Widget para mostrar que o usuário já é participante
+  Widget _buildAlreadyParticipantMessage(EventModel event, String? userId) {
+    if (userId == null) return const SizedBox.shrink();
+
+    final userRole = event.getUserRole(userId);
+    String roleText;
+    Color roleColor;
+    IconData roleIcon;
+
+    switch (userRole) {
+      case UserRole.creator:
+        roleText = 'Você é o criador deste evento';
+        roleColor = AppColors.primary;
+        roleIcon = Icons.star;
+        break;
+      case UserRole.manager:
+        roleText = 'Você é gerenciador deste evento';
+        roleColor = AppColors.secondary;
+        roleIcon = Icons.admin_panel_settings;
+        break;
+      case UserRole.volunteer:
+        roleText = 'Você já é voluntário neste evento';
+        roleColor = AppColors.success;
+        roleIcon = Icons.volunteer_activism;
+        break;
+      case UserRole.none:
+        return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.paddingLg),
+      decoration: BoxDecoration(
+        color: roleColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        border: Border.all(color: roleColor.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(roleIcon, size: 48, color: roleColor),
+          const SizedBox(height: AppDimensions.spacingMd),
+          Text(
+            roleText,
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeLg,
+              fontWeight: FontWeight.bold,
+              color: roleColor,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Text(
+            'Você pode acompanhar este evento na tela inicial.',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeMd,
+              color: roleColor.withValues(alpha: 0.8),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppDimensions.spacingLg),
+          SizedBox(
+            width: double.infinity,
+            child: CustomButton.outline(
+              text: 'Voltar à Tela Inicial',
+              onPressed: () {
+                Navigator.of(context).pop(); // Volta para a tela anterior
+              },
+            ),
           ),
         ],
       ),

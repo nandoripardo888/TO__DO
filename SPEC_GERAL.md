@@ -97,14 +97,16 @@ Sistema onde usuários podem criar eventos, gerenciar tarefas hierárquicas (Tas
 ### 5. Tela Participar de Evento
 - **Componentes:**
   - Campo para inserir código/tag
-  - Botão "Buscar Evento"
+  - Botão "Buscar Evento" (alinhado à esquerda com o campo)
   - Exibição dos detalhes do evento encontrado
-  - Formulário de perfil do voluntário:
+  - **Verificação de Participação:** Se usuário já é participante, exibe detalhes mas impede nova participação
+  - Formulário de perfil do voluntário (apenas se ainda não for participante):
     - Dias disponíveis (checkboxes)
     - Horário disponível (time picker)
-    - Habilidades (seleção múltipla)
-    - Recursos disponíveis (seleção múltipla)
-  - Botão "Confirmar Participação"
+    - **Habilidades:** Lista prioritária das habilidades necessárias do evento + opção de adicionar nova
+    - **Recursos:** Lista prioritária dos recursos necessários do evento + opção de adicionar novo
+    - Botão "Adicionar" para novas habilidades/recursos (alinhado à esquerda)
+  - Botão "Confirmar Participação" (apenas se ainda não for participante)
 
 ### 6. Tela Detalhes do Evento
 - **Tabs de Navegação:**
@@ -344,15 +346,12 @@ lib/
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^3.0.0
-  firebase_auth: ^5.0.0
-  cloud_firestore: ^5.0.0
-
-  google_sign_in: ^6.1.5
-  # State Management
-  provider: ^6.0.5
-
-  # UI & Utils
+  firebase_core: ^2.15.1
+  firebase_auth: ^4.7.3
+  cloud_firestore: ^4.8.5
+  firebase_storage: ^11.2.6
+  google_sign_in: ^6.1.4
+  provider: ^6.0.5  # ou get: ^4.6.5
   cached_network_image: ^3.2.3
   intl: ^0.18.1
   uuid: ^3.0.7
@@ -378,18 +377,25 @@ dependencies:
 - **Tasks:** pending, in_progress, completed
 - **Microtasks:** pending, assigned, in_progress, completed, cancelled
 
+### Sistema de Participação Inteligente
+- **Verificação de participação existente** antes de permitir nova inscrição
+- **Exibição de status de participação** no resultado da busca
+- **Filtragem de habilidades/recursos** baseada nas necessidades do evento
+- **Alinhamento de interface** para melhor experiência do usuário
+
 ## 🚀 Fases de Desenvolvimento
 
-### Fase 1: Autenticação e Estrutura Base
+### ✅ Fase 1: Autenticação e Estrutura Base
 - Sistema de login/cadastro
 - Configuração Firebase
 - Estrutura de pastas
 - Tema e componentes básicos
 
-### Fase 2: Gerenciamento de Eventos
+### ✅ Fase 2: Gerenciamento de Eventos
 - Criação de eventos
 - Sistema de tags/códigos
 - Ingresso de voluntários
+- **Melhorias de UX:** Alinhamento de botões, verificação de participação, filtros de habilidades
 
 ### Fase 3: Sistema de Tarefas
 - Criação de tasks e microtasks
@@ -428,6 +434,13 @@ dependencies:
 - **Controle de capacidade máxima por microtask**
 - **Prevenção de atribuição dupla do mesmo voluntário à mesma microtask**
 - Validação de conclusão colaborativa (todos os voluntários devem marcar como concluída)
+- **Verificação de participação existente** antes de permitir nova inscrição no evento
+
+### Melhorias de UX Implementadas
+- **Alinhamento de botões:** Botões "Buscar" e "Adicionar" alinhados à esquerda com campos de texto
+- **Verificação de participação:** Sistema impede participação dupla e informa status atual
+- **Filtros inteligentes:** Habilidades/recursos do evento aparecem como opções prioritárias
+- **Feedback visual:** Indicadores claros de status de participação
 
 ---
 

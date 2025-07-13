@@ -1,0 +1,7 @@
+REGRA alteradas
+vamos fazer uns pequenos ajustes:
+1 - para o voluntario na hora de selecionar a habiliidade e os recursos devem listar como opção somente as habilidades necessárias definidas no evento, porém deve permitir ele inserir uma nova tbm digitando, como já está atualmente.
+2 - os botões de "Buscar" e "Adicionar" não estão alinhados com a caixa de texto á esquerda.
+3 - quando o usuario já for participante do evento, e clicar pra buscar o evento, mostre os detalhes do evento como já está acontecendo hoje, porém mostre assim como é mostrado em ativo, mas que ele já está participando, e nem mesmo permita ele se cadastrar por favor.
+
+

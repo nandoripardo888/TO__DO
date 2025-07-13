@@ -259,6 +259,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
         // Campo para adicionar nova habilidade
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: CustomTextField(
@@ -268,10 +269,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               ),
             ),
             const SizedBox(width: AppDimensions.spacingSm),
-            CustomButton(
-              text: 'Adicionar',
-              onPressed: _addSkill,
-              isFullWidth: false,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2.0),
+              child: CustomButton(
+                text: 'Adicionar',
+                onPressed: _addSkill,
+                isFullWidth: false,
+              ),
             ),
           ],
         ),
@@ -354,6 +358,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
         // Campo para adicionar novo recurso
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: CustomTextField(
@@ -363,10 +368,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               ),
             ),
             const SizedBox(width: AppDimensions.spacingSm),
-            CustomButton(
-              text: 'Adicionar',
-              onPressed: _addResource,
-              isFullWidth: false,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2.0),
+              child: CustomButton(
+                text: 'Adicionar',
+                onPressed: _addResource,
+                isFullWidth: false,
+              ),
             ),
           ],
         ),

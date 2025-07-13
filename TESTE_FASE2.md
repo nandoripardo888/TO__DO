@@ -38,6 +38,12 @@
 - [x] **Estados de loading**: Feedback visual para usuário
 - [x] **Mensagens de erro**: Sistema consistente de feedback
 
+### 7. Melhorias de UX Implementadas
+- [x] **Alinhamento de botões**: Botões "Buscar" e "Adicionar" alinhados à esquerda com campos de texto
+- [x] **Verificação de participação**: Sistema impede participação dupla e informa status atual
+- [x] **Filtros inteligentes**: Habilidades/recursos do evento aparecem como opções prioritárias
+- [x] **Feedback visual**: Indicadores claros de status de participação
+
 ## 🧪 Plano de Testes
 
 ### Teste 1: Fluxo de Criação de Evento
