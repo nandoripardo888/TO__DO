@@ -63,7 +63,7 @@
 
 ---
 
-## 🏠 FASE 2: Tela Home e Gerenciamento de Eventos
+## ✅ FASE 2: Tela Home e Gerenciamento de Eventos
 
 ### Tela Home
 - [x] **Layout Principal**
@@ -102,38 +102,46 @@
   - [x] Seleção de disponibilidade (dias/horários)
   - [x] Seleção de habilidades e recursos
 
+### Melhorias de UX Implementadas
+- [x] **Alinhamento de botões**: Botões "Buscar" e "Adicionar" alinhados à esquerda
+- [x] **Verificação de participação**: Sistema impede participação dupla
+- [x] **Filtros inteligentes**: Habilidades/recursos do evento como opções prioritárias
+- [x] **Feedback visual**: Indicadores claros de status de participação
+
 ---
 
 ## 📋 FASE 3: Sistema de Tarefas
 
 ### Modelos de Tarefas
-- [ ] `task_model.dart` - Modelo da task (organizadora)
-- [ ] `microtask_model.dart` - Modelo da microtask com **múltiplos voluntários**
-  - [ ] Campo `assignedTo` como array de user_ids
-  - [ ] Campo `maxVolunteers` para limite de voluntários
-- [ ] `user_microtask_model.dart` - Relação usuário-microtask
+- [x] `task_model.dart` - Modelo da task (organizadora)
+- [x] `microtask_model.dart` - Modelo da microtask com **múltiplos voluntários**
+  - [x] Campo `assignedTo` como array de user_ids
+  - [x] Campo `maxVolunteers` para limite de voluntários
+- [x] `user_microtask_model.dart` - Relação usuário-microtask
 
 ### Serviços de Tarefas
-- [ ] `task_repository.dart` - CRUD de tasks
-- [ ] `microtask_repository.dart` - CRUD de microtasks
-- [ ] `task_controller.dart` - Gerenciamento de estado
-- [ ] `assignment_service.dart` - Sistema de atribuição múltipla
+- [x] `task_service.dart` - CRUD de tasks no Firebase
+- [x] `microtask_service.dart` - CRUD de microtasks no Firebase
+- [x] `assignment_service.dart` - Sistema de atribuição múltipla
+- [x] `task_repository.dart` - CRUD de tasks
+- [x] `microtask_repository.dart` - CRUD de microtasks
+- [x] `task_controller.dart` - Gerenciamento de estado
 
 ### Tela Detalhes do Evento
-- [ ] **Sistema de Tabs**
-  - [ ] Tab "Evento" - Informações gerais + código/tag
-  - [ ] Tab "Criar Tasks" (apenas gerenciadores)
-  - [ ] Tab "Gerenciar Voluntários" (apenas gerenciadores)
-  - [ ] Tab "Acompanhar Tasks"
+- [x] **Sistema de Tabs**
+  - [x] Tab "Evento" - Informações gerais + código/tag
+  - [x] Tab "Criar Tasks" (apenas gerenciadores)
+  - [x] Tab "Gerenciar Voluntários" (apenas gerenciadores) - placeholder
+  - [x] Tab "Acompanhar Tasks" - implementação básica
 
 ### Criação de Tasks
-- [ ] **Tela Criar Tasks**
-  - [ ] Seção criar Task (nome, descrição, prioridade)
-  - [ ] Seção criar Microtask
-  - [ ] Seleção de task pai
-  - [ ] Campos específicos da microtask
-  - [ ] **Campo "Número máximo de voluntários"**
-  - [ ] Validações e persistência
+- [x] **Tela Criar Tasks**
+  - [x] Seção criar Task (nome, descrição, prioridade)
+  - [x] Seção criar Microtask
+  - [x] Seleção de task pai
+  - [x] Campos específicos da microtask
+  - [x] **Campo "Número máximo de voluntários"**
+  - [x] Validações e persistência
 
 ### Gerenciamento de Voluntários
 - [ ] **Tela Gerenciar Voluntários**
@@ -238,14 +246,14 @@
 
 - **Configuração:** ✅ 4/4 (100%)
 - **Fase 1 - Autenticação:** ✅ 12/12 (100%)
-- **Fase 2 - Eventos:** ⏳ 0/15 (0%)
-- **Fase 3 - Tarefas:** ⏳ 0/21 (0%) **(+3 itens para múltiplos voluntários)**
+- **Fase 2 - Eventos:** ✅ 19/19 (100%) **(CONCLUÍDA)**
+- **Fase 3 - Tarefas:** 🚧 14/21 (66.7%) **(EM DESENVOLVIMENTO)**
 - **Componentes:** ⏳ 2/11 (18%) **(+1 componente)**
 - **Funcionalidades Avançadas:** ⏳ 0/11 (0%) **(+3 itens para múltiplos voluntários)**
 - **Testes:** ⏳ 0/11 (0%) **(+3 testes específicos)**
 - **Polimento:** ⏳ 0/10 (0%) **(+2 itens para múltiplos voluntários)**
 
-**PROGRESSO TOTAL: 25/95 tarefas (26.3%)**
+**PROGRESSO TOTAL: 51/99 tarefas (51.5%)**
 
 ---
 
@@ -273,4 +281,8 @@
 *Design System configurado ✅*
 *Erros corrigidos e código validado ✅*
 *FASE 1 - Autenticação CONCLUÍDA ✅*
+*FASE 2 - Gerenciamento de Eventos CONCLUÍDA ✅*
 *CHECKLIST ATUALIZADO para múltiplos voluntários ✅*
+*TESTE_FASE3.md criado - Iniciando Fase 3 ✅*
+*FASE 3 - Modelos, Serviços, Repositórios e Controllers CONCLUÍDOS ✅*
+*FASE 3 - Telas básicas implementadas (EventDetailsScreen, CreateTasksScreen) ✅*

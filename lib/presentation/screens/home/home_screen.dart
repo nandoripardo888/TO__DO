@@ -265,9 +265,47 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildFloatingActionButton() {
     return FloatingActionButton(
-      onPressed: () => _showActionBottomSheet(),
+      onPressed: () => _showActionDialog(),
       backgroundColor: AppColors.primary,
       child: const Icon(Icons.add, color: AppColors.textOnPrimary),
+    );
+  }
+
+  void _showActionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('O que você gostaria de fazer?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add_circle, color: AppColors.primary),
+              title: const Text('Criar Evento'),
+              subtitle: const Text('Organize um novo evento'),
+              onTap: () {
+                Navigator.of(context).pop(); // Fecha o dialog
+                _navigateToCreateEvent();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.group_add, color: AppColors.secondary),
+              title: const Text('Participar de Evento'),
+              subtitle: const Text('Entre em um evento existente'),
+              onTap: () {
+                Navigator.of(context).pop(); // Fecha o dialog
+                _navigateToJoinEvent();
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
     );
   }
 

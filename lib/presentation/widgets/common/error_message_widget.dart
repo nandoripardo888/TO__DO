@@ -37,9 +37,7 @@ class ErrorMessageWidget extends StatelessWidget {
   }
 
   /// Factory para erro de validação
-  factory ErrorMessageWidget.validation({
-    required String message,
-  }) {
+  factory ErrorMessageWidget.validation({required String message}) {
     return ErrorMessageWidget(
       message: message,
       icon: Icons.warning,
@@ -81,11 +79,11 @@ class ErrorMessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBackgroundColor = backgroundColor ?? 
-        AppColors.error.withValues(alpha: 0.1);
+    final effectiveBackgroundColor =
+        backgroundColor ?? AppColors.error.withValues(alpha: 0.1);
     final effectiveTextColor = textColor ?? AppColors.error;
-    final effectiveBorderColor = borderColor ?? 
-        AppColors.error.withValues(alpha: 0.3);
+    final effectiveBorderColor =
+        borderColor ?? AppColors.error.withValues(alpha: 0.3);
 
     return Container(
       width: double.infinity,
@@ -118,7 +116,7 @@ class ErrorMessageWidget extends StatelessWidget {
               ),
             ],
           ),
-          
+
           if (showRetryButton && onRetry != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             SizedBox(
@@ -132,43 +130,6 @@ class ErrorMessageWidget extends StatelessWidget {
                   side: BorderSide(color: effectiveTextColor),
                 ),
               ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// Widget para exibir estado de loading com mensagem
-class LoadingWidget extends StatelessWidget {
-  final String? message;
-  final Color? color;
-
-  const LoadingWidget({
-    super.key,
-    this.message,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(
-            color: color ?? AppColors.primary,
-          ),
-          if (message != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              message!,
-              style: TextStyle(
-                fontSize: AppDimensions.fontSizeMd,
-                color: color ?? AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
             ),
           ],
         ],
@@ -200,11 +161,7 @@ class EmptyStateWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon ?? Icons.inbox,
-              size: 64,
-              color: AppColors.textSecondary,
-            ),
+            Icon(icon ?? Icons.inbox, size: 64, color: AppColors.textSecondary),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               title,
@@ -262,11 +219,7 @@ class SuccessMessageWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.check_circle,
-            color: AppColors.success,
-            size: 20,
-          ),
+          const Icon(Icons.check_circle, color: AppColors.success, size: 20),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
@@ -281,15 +234,8 @@ class SuccessMessageWidget extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingSm),
             IconButton(
               onPressed: onDismiss,
-              icon: const Icon(
-                Icons.close,
-                color: AppColors.success,
-                size: 18,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 32,
-                minHeight: 32,
-              ),
+              icon: const Icon(Icons.close, color: AppColors.success, size: 18),
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               padding: EdgeInsets.zero,
             ),
           ],
@@ -324,11 +270,7 @@ class InfoMessageWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.info,
-            color: AppColors.info,
-            size: 20,
-          ),
+          const Icon(Icons.info, color: AppColors.info, size: 20),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
@@ -343,15 +285,8 @@ class InfoMessageWidget extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingSm),
             IconButton(
               onPressed: onDismiss,
-              icon: const Icon(
-                Icons.close,
-                color: AppColors.info,
-                size: 18,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 32,
-                minHeight: 32,
-              ),
+              icon: const Icon(Icons.close, color: AppColors.info, size: 18),
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               padding: EdgeInsets.zero,
             ),
           ],

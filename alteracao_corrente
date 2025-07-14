@@ -5,3 +5,10 @@ vamos fazer uns pequenos ajustes:
 3 - quando o usuario já for participante do evento, e clicar pra buscar o evento, mostre os detalhes do evento como já está acontecendo hoje, porém mostre assim como é mostrado em ativo, mas que ele já está participando, e nem mesmo permita ele se cadastrar por favor.
 
 
+FASE 3
+faça os seguintes ajustes antes de prosseguirmos os proximos passos da fase 3;
+1- separe os botões estatisticas, pois ficaram colados um no outro.
+2 - ao sair da aplicação e entrar novamente não está encontrando as tasks criadas no evento
+3 - vamos  substituir a aba tasks para telas de tasks e microtaks separadas, crie um botão flutuante onde dá a opção de adicionar uma task ou uma microtask caso já tenha uma task (somente se já existir uma task caso não exista exibe a mensagem que é preciso criar uma task primeiro) e vamos remover a aba de tasks
+4 - na microtask adicione somente as opções de habilidades e recursos pré definidas no evento.
+

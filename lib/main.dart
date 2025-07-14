@@ -5,6 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'presentation/controllers/auth_controller.dart';
 import 'presentation/controllers/event_controller.dart';
+import 'presentation/controllers/task_controller.dart';
 import 'presentation/routes/app_routes.dart';
 
 void main() async {
@@ -27,6 +28,7 @@ class ConTaskApp extends StatelessWidget {
           create: (context) => AuthController()..initialize(),
         ),
         ChangeNotifierProvider(create: (context) => EventController()),
+        ChangeNotifierProvider(create: (context) => TaskController()),
       ],
       child: Consumer<AuthController>(
         builder: (context, authController, child) {

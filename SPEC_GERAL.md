@@ -397,7 +397,7 @@ dependencies:
 - Ingresso de voluntários
 - **Melhorias de UX:** Alinhamento de botões, verificação de participação, filtros de habilidades
 
-### Fase 3: Sistema de Tarefas
+### 🚧 Fase 3: Sistema de Tarefas (EM DESENVOLVIMENTO)
 - Criação de tasks e microtasks
 - Atribuição manual de voluntários
 - Acompanhamento de progresso

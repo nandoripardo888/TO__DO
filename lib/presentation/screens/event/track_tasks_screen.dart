@@ -1,0 +1,370 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_dimensions.dart';
+import '../../../data/models/task_model.dart';
+import '../../controllers/task_controller.dart';
+import '../../widgets/common/loading_widget.dart';
+
+/// Tela para acompanhamento de tasks (implementação básica)
+class TrackTasksScreen extends StatefulWidget {
+  final String eventId;
+
+  const TrackTasksScreen({
+    super.key,
+    required this.eventId,
+  });
+
+  @override
+  State<TrackTasksScreen> createState() => _TrackTasksScreenState();
+}
+
+class _TrackTasksScreenState extends State<TrackTasksScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<TaskController>(
+      builder: (context, taskController, child) {
+        if (taskController.isLoading) {
+          return const LoadingWidget(message: 'Carregando tasks...');
+        }
+
+        final tasks = taskController.tasks;
+
+        if (tasks.isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(AppDimensions.paddingLg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(tasks),
+              const SizedBox(height: AppDimensions.spacingLg),
+              _buildTasksList(tasks, taskController),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.paddingLg),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.task_alt,
+            size: 64,
+            color: AppColors.primary.withOpacity(0.5),
+          ),
+          const SizedBox(height: AppDimensions.spacingLg),
+          const Text(
+            'Nenhuma Task Criada',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingMd),
+          const Text(
+            'Ainda não há tasks criadas para este evento.\n\nVá para a aba "Criar Tasks" para começar a organizar o trabalho.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: AppColors.textSecondary,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(List<TaskModel> tasks) {
+    final totalTasks = tasks.length;
+    final completedTasks = tasks.where((task) => task.isCompleted).length;
+    final totalMicrotasks = tasks.fold<int>(0, (sum, task) => sum + task.microtaskCount);
+    final completedMicrotasks = tasks.fold<int>(0, (sum, task) => sum + task.completedMicrotasks);
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.paddingLg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.analytics_outlined, color: AppColors.primary),
+                const SizedBox(width: AppDimensions.spacingSm),
+                const Text(
+                  'Progresso Geral',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppDimensions.spacingMd),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildProgressItem(
+                    'Tasks',
+                    completedTasks,
+                    totalTasks,
+                    Icons.task_alt,
+                    AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.spacingMd),
+                Expanded(
+                  child: _buildProgressItem(
+                    'Microtasks',
+                    completedMicrotasks,
+                    totalMicrotasks,
+                    Icons.checklist,
+                    AppColors.secondary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressItem(String label, int completed, int total, IconData icon, Color color) {
+    final progress = total > 0 ? completed / total : 0.0;
+    
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.paddingMd),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Text(
+            '$completed/$total',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          LinearProgressIndicator(
+            value: progress,
+            backgroundColor: color.withOpacity(0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
+          const SizedBox(height: AppDimensions.spacingXs),
+          Text(
+            '${(progress * 100).toStringAsFixed(0)}%',
+            style: TextStyle(
+              fontSize: 10,
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTasksList(List<TaskModel> tasks, TaskController taskController) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Tasks do Evento',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingMd),
+        ...tasks.map((task) => _buildTaskCard(task, taskController)),
+      ],
+    );
+  }
+
+  Widget _buildTaskCard(TaskModel task, TaskController taskController) {
+    final microtasks = taskController.getMicrotasksByTaskId(task.id);
+    
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+      child: ExpansionTile(
+        leading: _buildTaskStatusIcon(task),
+        title: Text(
+          task.title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              task.description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingXs),
+            Row(
+              children: [
+                _buildPriorityChip(task.priority),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Text(
+                  '${task.completedMicrotasks}/${task.microtaskCount} microtasks',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        children: [
+          if (microtasks.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(AppDimensions.paddingMd),
+              child: Text(
+                'Nenhuma microtask criada ainda',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            )
+          else
+            ...microtasks.map((microtask) => _buildMicrotaskItem(microtask)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTaskStatusIcon(TaskModel task) {
+    IconData icon;
+    Color color;
+
+    switch (task.status) {
+      case TaskStatus.pending:
+        icon = Icons.schedule;
+        color = AppColors.warning;
+        break;
+      case TaskStatus.inProgress:
+        icon = Icons.play_circle;
+        color = AppColors.primary;
+        break;
+      case TaskStatus.completed:
+        icon = Icons.check_circle;
+        color = AppColors.success;
+        break;
+      case TaskStatus.cancelled:
+        icon = Icons.cancel;
+        color = AppColors.error;
+        break;
+    }
+
+    return Icon(icon, color: color);
+  }
+
+  Widget _buildPriorityChip(TaskPriority priority) {
+    Color color;
+    String text;
+
+    switch (priority) {
+      case TaskPriority.high:
+        color = AppColors.error;
+        text = 'Alta';
+        break;
+      case TaskPriority.medium:
+        color = AppColors.warning;
+        text = 'Média';
+        break;
+      case TaskPriority.low:
+        color = AppColors.success;
+        text = 'Baixa';
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingSm,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          color: color,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMicrotaskItem(microtask) {
+    return ListTile(
+      dense: true,
+      leading: Icon(
+        Icons.check_box_outline_blank,
+        size: 16,
+        color: AppColors.textSecondary,
+      ),
+      title: Text(
+        microtask.title,
+        style: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      subtitle: Text(
+        'Voluntários: ${microtask.assignedTo.length}/${microtask.maxVolunteers}',
+        style: const TextStyle(
+          fontSize: 12,
+          color: AppColors.textSecondary,
+        ),
+      ),
+      trailing: Text(
+        microtask.status.toString().split('.').last,
+        style: const TextStyle(
+          fontSize: 12,
+          color: AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+}

@@ -4,6 +4,9 @@ import '../screens/auth/register_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/event/create_event_screen.dart';
 import '../screens/event/join_event_screen.dart';
+import '../screens/event/event_details_screen.dart';
+import '../screens/task/create_task_screen.dart';
+import '../screens/task/create_microtask_screen.dart';
 
 /// Classe responsável por definir todas as rotas da aplicação
 class AppRoutes {
@@ -14,6 +17,8 @@ class AppRoutes {
   static const String createEvent = '/create-event';
   static const String joinEvent = '/join-event';
   static const String eventDetails = '/event-details';
+  static const String createTask = '/create-task';
+  static const String createMicrotask = '/create-microtask';
   static const String createTasks = '/create-tasks';
   static const String manageVolunteers = '/manage-volunteers';
   static const String trackTasks = '/track-tasks';
@@ -48,10 +53,18 @@ class AppRoutes {
       case joinEvent:
         return _createRoute(const JoinEventScreen());
 
-      // Rotas com parâmetros serão implementadas aqui
-      // case eventDetails:
-      //   final eventId = settings.arguments as String;
-      //   return _createRoute(EventDetailsScreen(eventId: eventId));
+      // Rotas com parâmetros
+      case eventDetails:
+        final eventId = settings.arguments as String;
+        return _createRoute(EventDetailsScreen(eventId: eventId));
+
+      case createTask:
+        final eventId = settings.arguments as String;
+        return _createRoute(CreateTaskScreen(eventId: eventId));
+
+      case createMicrotask:
+        final eventId = settings.arguments as String;
+        return _createRoute(CreateMicrotaskScreen(eventId: eventId));
 
       default:
         return _createRoute(const NotFoundScreen());
