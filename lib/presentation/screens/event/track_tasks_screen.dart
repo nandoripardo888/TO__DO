@@ -5,21 +5,28 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../data/models/task_model.dart';
 import '../../controllers/task_controller.dart';
 import '../../widgets/common/loading_widget.dart';
+import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/skill_chip.dart';
+import '../../widgets/task/task_card.dart';
+import '../../widgets/task/microtask_card.dart';
+import '../../widgets/task/task_progress_widget.dart';
 
 /// Tela para acompanhamento de tasks (implementação básica)
 class TrackTasksScreen extends StatefulWidget {
   final String eventId;
 
-  const TrackTasksScreen({
-    super.key,
-    required this.eventId,
-  });
+  const TrackTasksScreen({super.key, required this.eventId});
 
   @override
   State<TrackTasksScreen> createState() => _TrackTasksScreenState();
 }
 
 class _TrackTasksScreenState extends State<TrackTasksScreen> {
+  final Set<String> _expandedTasks = {};
+  String _searchQuery = '';
+  TaskStatus? _statusFilter;
+  TaskPriority? _priorityFilter;
+
   @override
   Widget build(BuildContext context) {
     return Consumer<TaskController>(
@@ -28,22 +35,30 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
           return const LoadingWidget(message: 'Carregando tasks...');
         }
 
-        final tasks = taskController.tasks;
+        final allTasks = taskController.tasks;
+        final filteredTasks = _getFilteredTasks(allTasks);
 
-        if (tasks.isEmpty) {
+        if (filteredTasks.isEmpty) {
           return _buildEmptyState();
         }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(AppDimensions.paddingLg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(tasks),
-              const SizedBox(height: AppDimensions.spacingLg),
-              _buildTasksList(tasks, taskController),
-            ],
-          ),
+        return Column(
+          children: [
+            _buildSearchAndFilters(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppDimensions.paddingLg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(filteredTasks),
+                    const SizedBox(height: AppDimensions.spacingLg),
+                    _buildTasksList(filteredTasks, taskController),
+                  ],
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -87,8 +102,14 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
   Widget _buildHeader(List<TaskModel> tasks) {
     final totalTasks = tasks.length;
     final completedTasks = tasks.where((task) => task.isCompleted).length;
-    final totalMicrotasks = tasks.fold<int>(0, (sum, task) => sum + task.microtaskCount);
-    final completedMicrotasks = tasks.fold<int>(0, (sum, task) => sum + task.completedMicrotasks);
+    final totalMicrotasks = tasks.fold<int>(
+      0,
+      (sum, task) => sum + task.microtaskCount,
+    );
+    final completedMicrotasks = tasks.fold<int>(
+      0,
+      (sum, task) => sum + task.completedMicrotasks,
+    );
 
     return Card(
       elevation: 2,
@@ -141,9 +162,15 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
     );
   }
 
-  Widget _buildProgressItem(String label, int completed, int total, IconData icon, Color color) {
+  Widget _buildProgressItem(
+    String label,
+    int completed,
+    int total,
+    IconData icon,
+    Color color,
+  ) {
     final progress = total > 0 ? completed / total : 0.0;
-    
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingMd),
       decoration: BoxDecoration(
@@ -210,7 +237,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
 
   Widget _buildTaskCard(TaskModel task, TaskController taskController) {
     final microtasks = taskController.getMicrotasksByTaskId(task.id);
-    
+
     return Card(
       elevation: 1,
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
@@ -346,25 +373,233 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
       ),
       title: Text(
         microtask.title,
-        style: const TextStyle(
-          fontSize: 14,
-          color: AppColors.textPrimary,
-        ),
+        style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
       ),
       subtitle: Text(
         'Voluntários: ${microtask.assignedTo.length}/${microtask.maxVolunteers}',
-        style: const TextStyle(
-          fontSize: 12,
-          color: AppColors.textSecondary,
-        ),
+        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
       ),
       trailing: Text(
         microtask.status.toString().split('.').last,
-        style: const TextStyle(
-          fontSize: 12,
-          color: AppColors.textSecondary,
-        ),
+        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
       ),
     );
+  }
+
+  List<TaskModel> _getFilteredTasks(List<TaskModel> tasks) {
+    List<TaskModel> filtered = List.from(tasks);
+
+    // Aplicar filtro de busca
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((task) {
+        final title = task.title.toLowerCase();
+        final description = task.description.toLowerCase();
+        final query = _searchQuery.toLowerCase();
+        return title.contains(query) || description.contains(query);
+      }).toList();
+    }
+
+    // Aplicar filtro de status
+    if (_statusFilter != null) {
+      filtered = filtered
+          .where((task) => task.status == _statusFilter)
+          .toList();
+    }
+
+    // Aplicar filtro de prioridade
+    if (_priorityFilter != null) {
+      filtered = filtered
+          .where((task) => task.priority == _priorityFilter)
+          .toList();
+    }
+
+    return filtered;
+  }
+
+  Widget _buildSearchAndFilters() {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.paddingMd),
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        border: Border(bottom: BorderSide(color: AppColors.border)),
+      ),
+      child: Column(
+        children: [
+          // Barra de busca
+          TextField(
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
+            decoration: InputDecoration(
+              hintText: 'Buscar tasks...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingMd,
+                vertical: AppDimensions.paddingSm,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: AppDimensions.spacingMd),
+
+          // Filtros
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                const Text(
+                  'Filtros:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: AppDimensions.spacingSm),
+
+                // Filtro de status
+                _buildStatusFilter(),
+                const SizedBox(width: AppDimensions.spacingSm),
+
+                // Filtro de prioridade
+                _buildPriorityFilter(),
+
+                // Botão limpar filtros
+                if (_statusFilter != null || _priorityFilter != null) ...[
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _statusFilter = null;
+                        _priorityFilter = null;
+                      });
+                    },
+                    child: const Text('Limpar'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusFilter() {
+    return PopupMenuButton<TaskStatus?>(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: _statusFilter != null
+              ? AppColors.primary.withOpacity(0.1)
+              : null,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.filter_list, size: 16),
+            const SizedBox(width: 4),
+            Text(
+              _statusFilter != null ? _getStatusText(_statusFilter!) : 'Status',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+      itemBuilder: (context) => [
+        const PopupMenuItem(value: null, child: Text('Todos')),
+        ...TaskStatus.values.map(
+          (status) =>
+              PopupMenuItem(value: status, child: Text(_getStatusText(status))),
+        ),
+      ],
+      onSelected: (status) {
+        setState(() {
+          _statusFilter = status;
+        });
+      },
+    );
+  }
+
+  Widget _buildPriorityFilter() {
+    return PopupMenuButton<TaskPriority?>(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: _priorityFilter != null
+              ? AppColors.primary.withOpacity(0.1)
+              : null,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.priority_high, size: 16),
+            const SizedBox(width: 4),
+            Text(
+              _priorityFilter != null
+                  ? _getPriorityText(_priorityFilter!)
+                  : 'Prioridade',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+      itemBuilder: (context) => [
+        const PopupMenuItem(value: null, child: Text('Todas')),
+        ...TaskPriority.values.map(
+          (priority) => PopupMenuItem(
+            value: priority,
+            child: Text(_getPriorityText(priority)),
+          ),
+        ),
+      ],
+      onSelected: (priority) {
+        setState(() {
+          _priorityFilter = priority;
+        });
+      },
+    );
+  }
+
+  String _getStatusText(TaskStatus status) {
+    switch (status) {
+      case TaskStatus.pending:
+        return 'Pendente';
+      case TaskStatus.inProgress:
+        return 'Em Progresso';
+      case TaskStatus.completed:
+        return 'Concluída';
+      case TaskStatus.cancelled:
+        return 'Cancelada';
+    }
+  }
+
+  String _getPriorityText(TaskPriority priority) {
+    switch (priority) {
+      case TaskPriority.high:
+        return 'Alta';
+      case TaskPriority.medium:
+        return 'Média';
+      case TaskPriority.low:
+        return 'Baixa';
+    }
+  }
+
+  void _toggleTaskExpansion(String taskId) {
+    setState(() {
+      if (_expandedTasks.contains(taskId)) {
+        _expandedTasks.remove(taskId);
+      } else {
+        _expandedTasks.add(taskId);
+      }
+    });
   }
 }

@@ -27,12 +27,12 @@ Implementar o sistema completo de tarefas hierárquicas (Tasks → Microtasks) c
 
 ### 4. Widgets Específicos
 - [x] **LoadingWidget**: Widget de carregamento
-- [ ] **TaskCard**: Card para exibir tasks (será implementado conforme necessário)
-- [ ] **MicrotaskCard**: Card para microtasks com múltiplos voluntários
-- [ ] **VolunteerCard**: Card de voluntário com informações
-- [ ] **VolunteerListWidget**: Lista de voluntários por microtask
-- [ ] **TaskProgressWidget**: Indicador de progresso
-- [ ] **AssignmentDialog**: Dialog para atribuição
+- [x] **TaskCard**: Card para exibir tasks com progresso e expansão
+- [x] **MicrotaskCard**: Card para microtasks com múltiplos voluntários
+- [x] **VolunteerCard**: Card de voluntário com informações e disponibilidade
+- [x] **TaskProgressWidget**: Indicador de progresso (linear e circular)
+- [x] **AssignmentDialog**: Dialog para atribuição com filtros de compatibilidade
+- [x] **ManageVolunteersScreen**: Tela completa para gerenciamento (estrutura pronta)
 
 ## 🧪 Plano de Testes Detalhado
 

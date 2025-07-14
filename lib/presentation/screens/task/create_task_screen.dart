@@ -7,16 +7,14 @@ import '../../controllers/auth_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
+import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/common/loading_widget.dart';
 
 /// Tela para criação de tasks
 class CreateTaskScreen extends StatefulWidget {
   final String eventId;
 
-  const CreateTaskScreen({
-    super.key,
-    required this.eventId,
-  });
+  const CreateTaskScreen({super.key, required this.eventId});
 
   @override
   State<CreateTaskScreen> createState() => _CreateTaskScreenState();
@@ -39,11 +37,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Criar Task'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textOnPrimary,
-      ),
+      appBar: const CustomAppBar(title: 'Criar Task'),
       body: Consumer2<AuthController, TaskController>(
         builder: (context, authController, taskController, child) {
           if (taskController.isLoading) {
@@ -66,7 +60,10 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.task_alt, color: AppColors.primary),
+                              const Icon(
+                                Icons.task_alt,
+                                color: AppColors.primary,
+                              ),
                               const SizedBox(width: AppDimensions.spacingSm),
                               const Text(
                                 'Nova Task',
@@ -79,7 +76,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                             ],
                           ),
                           const SizedBox(height: AppDimensions.spacingLg),
-                          
+
                           CustomTextField(
                             controller: _titleController,
                             label: 'Nome da Task',
@@ -97,9 +94,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                               return null;
                             },
                           ),
-                          
+
                           const SizedBox(height: AppDimensions.spacingMd),
-                          
+
                           CustomTextField(
                             controller: _descriptionController,
                             label: 'Descrição',
@@ -115,18 +112,21 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                               return null;
                             },
                           ),
-                          
+
                           const SizedBox(height: AppDimensions.spacingMd),
-                          
+
                           _buildPrioritySelector(),
-                          
+
                           const SizedBox(height: AppDimensions.spacingLg),
-                          
+
                           SizedBox(
                             width: double.infinity,
                             child: CustomButton(
                               text: 'Criar Task',
-                              onPressed: () => _handleCreateTask(authController, taskController),
+                              onPressed: () => _handleCreateTask(
+                                authController,
+                                taskController,
+                              ),
                               isLoading: taskController.isLoading,
                             ),
                           ),
@@ -134,9 +134,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: AppDimensions.spacingLg),
-                  
+
                   Card(
                     elevation: 1,
                     child: Padding(
@@ -146,7 +146,10 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.info_outline, color: AppColors.secondary),
+                              const Icon(
+                                Icons.info_outline,
+                                color: AppColors.secondary,
+                              ),
                               const SizedBox(width: AppDimensions.spacingSm),
                               const Text(
                                 'Sobre Tasks',
@@ -204,20 +207,30 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 child: GestureDetector(
                   onTap: () => setState(() => _priority = priority),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingSm),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.paddingSm,
+                    ),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary : Colors.transparent,
+                      color: isSelected
+                          ? AppColors.primary
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : AppColors.border,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.border,
                       ),
                     ),
                     child: Text(
                       _getPriorityText(priority),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: isSelected ? AppColors.textOnPrimary : AppColors.textPrimary,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected
+                            ? AppColors.textOnPrimary
+                            : AppColors.textPrimary,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
@@ -241,7 +254,10 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     }
   }
 
-  Future<void> _handleCreateTask(AuthController authController, TaskController taskController) async {
+  Future<void> _handleCreateTask(
+    AuthController authController,
+    TaskController taskController,
+  ) async {
     if (!_formKey.currentState!.validate()) return;
 
     final success = await taskController.createTask(

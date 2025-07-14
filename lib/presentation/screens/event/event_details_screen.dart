@@ -9,6 +9,9 @@ import '../../controllers/event_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_message_widget.dart';
+import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/error_widget.dart';
+import '../../widgets/common/skill_chip.dart';
 import 'manage_volunteers_screen.dart';
 import 'track_tasks_screen.dart';
 
@@ -147,15 +150,18 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   }
 
   PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      title: Text(_event!.name),
-      backgroundColor: AppColors.primary,
-      foregroundColor: AppColors.textOnPrimary,
+    return CustomAppBar(
+      title: _event!.name,
       actions: [
         IconButton(
           icon: const Icon(Icons.refresh),
           onPressed: _loadEventDetails,
           tooltip: 'Atualizar',
+        ),
+        IconButton(
+          icon: const Icon(Icons.share),
+          onPressed: () => _shareEvent(),
+          tooltip: 'Compartilhar',
         ),
       ],
     );
@@ -248,6 +254,30 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
             _buildInfoRow('Localização', _event!.location),
             _buildInfoRow('Status', _getStatusText(_event!.status)),
             _buildInfoRow('Criado em', _formatDate(_event!.createdAt)),
+
+            // Habilidades necessárias
+            if (_event!.requiredSkills.isNotEmpty) ...[
+              const SizedBox(height: AppDimensions.spacingMd),
+              SkillChipList(
+                title: 'Habilidades Necessárias',
+                items: _event!.requiredSkills,
+                itemIcon: Icons.star,
+                chipColor: AppColors.primary,
+                isSmall: true,
+              ),
+            ],
+
+            // Recursos necessários
+            if (_event!.requiredResources.isNotEmpty) ...[
+              const SizedBox(height: AppDimensions.spacingMd),
+              SkillChipList(
+                title: 'Recursos Necessários',
+                items: _event!.requiredResources,
+                itemIcon: Icons.build,
+                chipColor: AppColors.secondary,
+                isSmall: true,
+              ),
+            ],
           ],
         ),
       ),
@@ -560,6 +590,20 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       const SnackBar(
         content: Text('Código copiado para a área de transferência'),
         backgroundColor: AppColors.success,
+      ),
+    );
+  }
+
+  void _shareEvent() {
+    // TODO: Implementar compartilhamento do evento
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Compartilhar evento: ${_event!.name} (${_event!.tag})'),
+        backgroundColor: AppColors.warning,
+        action: SnackBarAction(
+          label: 'Copiar Código',
+          onPressed: () => _copyToClipboard(_event!.tag),
+        ),
       ),
     );
   }

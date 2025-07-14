@@ -1,15 +1,21 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/event_model.dart';
+import '../../data/models/user_model.dart';
 import '../../data/models/volunteer_profile_model.dart';
 import '../../data/repositories/event_repository.dart';
+import '../../data/repositories/user_repository.dart';
 import '../../core/exceptions/app_exceptions.dart';
 
 /// Controller responsável por gerenciar o estado dos eventos
 class EventController extends ChangeNotifier {
   final EventRepository _eventRepository;
+  final UserRepository _userRepository;
 
-  EventController({EventRepository? eventRepository})
-      : _eventRepository = eventRepository ?? EventRepository();
+  EventController({
+    EventRepository? eventRepository,
+    UserRepository? userRepository,
+  }) : _eventRepository = eventRepository ?? EventRepository(),
+       _userRepository = userRepository ?? UserRepository();
 
   // Estados de loading
   bool _isLoading = false;
@@ -22,6 +28,7 @@ class EventController extends ChangeNotifier {
   EventModel? _currentEvent;
   EventModel? _searchedEvent;
   List<VolunteerProfileModel> _eventVolunteers = [];
+  final List<UserModel> _eventVolunteerUsers = [];
   String? _errorMessage;
 
   // Getters
@@ -32,7 +39,10 @@ class EventController extends ChangeNotifier {
   List<EventModel> get userEvents => List.unmodifiable(_userEvents);
   EventModel? get currentEvent => _currentEvent;
   EventModel? get searchedEvent => _searchedEvent;
-  List<VolunteerProfileModel> get eventVolunteers => List.unmodifiable(_eventVolunteers);
+  List<VolunteerProfileModel> get eventVolunteers =>
+      List.unmodifiable(_eventVolunteers);
+  List<UserModel> get eventVolunteerUsers =>
+      List.unmodifiable(_eventVolunteerUsers);
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;
 
@@ -109,11 +119,13 @@ class EventController extends ChangeNotifier {
       }
 
       if (!_eventRepository.isValidTag(tag)) {
-        throw ValidationException('Código deve ter exatamente 6 caracteres (letras e números)');
+        throw ValidationException(
+          'Código deve ter exatamente 6 caracteres (letras e números)',
+        );
       }
 
       final event = await _eventRepository.getEventByTag(tag);
-      
+
       if (event == null) {
         throw NotFoundException('Evento não encontrado com o código informado');
       }
@@ -151,7 +163,9 @@ class EventController extends ChangeNotifier {
         throw ValidationException('Usuário é obrigatório');
       }
       if (availableDays.isEmpty) {
-        throw ValidationException('Selecione pelo menos um dia de disponibilidade');
+        throw ValidationException(
+          'Selecione pelo menos um dia de disponibilidade',
+        );
       }
       if (!availableHours.isValid()) {
         throw ValidationException('Horário de disponibilidade inválido');
@@ -228,7 +242,7 @@ class EventController extends ChangeNotifier {
       }
 
       final event = await _eventRepository.getEventById(eventId);
-      
+
       if (event == null) {
         throw NotFoundException('Evento não encontrado');
       }
@@ -255,25 +269,101 @@ class EventController extends ChangeNotifier {
         throw ValidationException('ID do evento é obrigatório');
       }
 
+      // Carrega os perfis dos voluntários
       final volunteers = await _eventRepository.getEventVolunteers(eventId);
       _eventVolunteers = volunteers;
+
+      // Carrega os dados dos usuários
+      final userIds = volunteers.map((v) => v.userId).toList();
+      if (userIds.isNotEmpty) {
+        final users = await _userRepository.getUsersByIds(userIds);
+        _eventVolunteerUsers.clear();
+        _eventVolunteerUsers.addAll(users);
+      } else {
+        _eventVolunteerUsers.clear();
+      }
     } catch (e) {
       _setError(_getErrorMessage(e));
       _eventVolunteers = [];
+      _eventVolunteerUsers.clear();
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
+  /// Busca um voluntário específico com seus dados completos
+  Future<UserModel?> getVolunteerUser(String userId) async {
+    try {
+      if (userId.isEmpty) {
+        return null;
+      }
+
+      return await _userRepository.getUserById(userId);
+    } catch (e) {
+      _setError(_getErrorMessage(e));
+      return null;
+    }
+  }
+
+  /// Busca o perfil de um voluntário específico
+  Future<VolunteerProfileModel?> getVolunteerProfile(
+    String userId,
+    String eventId,
+  ) async {
+    try {
+      if (userId.isEmpty || eventId.isEmpty) {
+        return null;
+      }
+
+      return await _eventRepository.getVolunteerProfile(userId, eventId);
+    } catch (e) {
+      _setError(_getErrorMessage(e));
+      return null;
+    }
+  }
+
+  /// Busca dados completos de voluntários (usuários + perfis) para um evento
+  Future<Map<String, dynamic>> getEventVolunteersWithUsers(
+    String eventId,
+  ) async {
+    try {
+      if (eventId.isEmpty) {
+        throw ValidationException('ID do evento é obrigatório');
+      }
+
+      // Carrega os perfis dos voluntários
+      final profiles = await _eventRepository.getEventVolunteers(eventId);
+
+      // Carrega os dados dos usuários
+      final userIds = profiles.map((p) => p.userId).toList();
+      final users = userIds.isNotEmpty
+          ? await _userRepository.getUsersByIds(userIds)
+          : <UserModel>[];
+
+      return {'profiles': profiles, 'users': users};
+    } catch (e) {
+      _setError(_getErrorMessage(e));
+      return {'profiles': <VolunteerProfileModel>[], 'users': <UserModel>[]};
+    }
+  }
+
   /// Promove um voluntário a gerenciador
-  Future<bool> promoteVolunteer(String eventId, String userId, String managerId) async {
+  Future<bool> promoteVolunteer(
+    String eventId,
+    String userId,
+    String managerId,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final updatedEvent = await _eventRepository.promoteVolunteer(eventId, userId, managerId);
+      final updatedEvent = await _eventRepository.promoteVolunteer(
+        eventId,
+        userId,
+        managerId,
+      );
 
       // Atualiza o evento na lista
       final index = _userEvents.indexWhere((e) => e.id == eventId);
@@ -338,15 +428,15 @@ class EventController extends ChangeNotifier {
   /// Remove um evento da lista
   void removeEventFromList(String eventId) {
     _userEvents.removeWhere((e) => e.id == eventId);
-    
+
     if (_currentEvent?.id == eventId) {
       _currentEvent = null;
     }
-    
+
     if (_searchedEvent?.id == eventId) {
       _searchedEvent = null;
     }
-    
+
     notifyListeners();
   }
 

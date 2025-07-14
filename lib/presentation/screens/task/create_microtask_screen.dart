@@ -9,6 +9,8 @@ import '../../controllers/task_controller.dart';
 import '../../controllers/event_controller.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
+import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/skill_chip.dart';
 import '../../widgets/common/loading_widget.dart';
 
 /// Tela para criação de microtasks
@@ -86,24 +88,16 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
     }
 
     if (_event == null) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: const Text('Criar Microtask'),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textOnPrimary,
-        ),
-        body: const Center(child: Text('Erro ao carregar evento')),
+        appBar: CustomAppBar(title: 'Criar Microtask'),
+        body: Center(child: Text('Erro ao carregar evento')),
       );
     }
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Criar Microtask'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textOnPrimary,
-      ),
+      appBar: const CustomAppBar(title: 'Criar Microtask'),
       body: Consumer2<AuthController, TaskController>(
         builder: (context, authController, taskController, child) {
           if (taskController.isLoading) {

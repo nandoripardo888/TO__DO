@@ -11,14 +11,15 @@ class EventService {
 
   // Referências das coleções
   CollectionReference get _eventsCollection => _firestore.collection('events');
-  CollectionReference get _volunteerProfilesCollection => _firestore.collection('volunteer_profiles');
+  CollectionReference get _volunteerProfilesCollection =>
+      _firestore.collection('volunteer_profiles');
 
   /// Cria um novo evento
   Future<EventModel> createEvent(EventModel event) async {
     try {
       // Gera um ID único para o evento
       final eventId = _uuid.v4();
-      
+
       // Gera uma tag única
       String tag;
       do {
@@ -26,15 +27,14 @@ class EventService {
       } while (await _isTagTaken(tag));
 
       // Cria o evento com ID e tag únicos
-      final eventWithId = event.copyWith(
-        id: eventId,
-        tag: tag,
-      );
+      final eventWithId = event.copyWith(id: eventId, tag: tag);
 
       // Valida os dados antes de salvar
       final validationErrors = eventWithId.validate();
       if (validationErrors.isNotEmpty) {
-        throw ValidationException('Dados inválidos: ${validationErrors.join(', ')}');
+        throw ValidationException(
+          'Dados inválidos: ${validationErrors.join(', ')}',
+        );
       }
 
       // Salva no Firestore
@@ -51,9 +51,9 @@ class EventService {
   Future<EventModel?> getEventById(String eventId) async {
     try {
       final doc = await _eventsCollection.doc(eventId).get();
-      
+
       if (!doc.exists) return null;
-      
+
       return EventModel.fromFirestore(doc);
     } catch (e) {
       throw DatabaseException('Erro ao buscar evento: ${e.toString()}');
@@ -105,7 +105,9 @@ class EventService {
 
       return events;
     } catch (e) {
-      throw DatabaseException('Erro ao buscar eventos do usuário: ${e.toString()}');
+      throw DatabaseException(
+        'Erro ao buscar eventos do usuário: ${e.toString()}',
+      );
     }
   }
 
@@ -115,11 +117,13 @@ class EventService {
       // Valida os dados antes de salvar
       final validationErrors = event.validate();
       if (validationErrors.isNotEmpty) {
-        throw ValidationException('Dados inválidos: ${validationErrors.join(', ')}');
+        throw ValidationException(
+          'Dados inválidos: ${validationErrors.join(', ')}',
+        );
       }
 
       final updatedEvent = event.withUpdatedTimestamp();
-      
+
       await _eventsCollection.doc(event.id).update(updatedEvent.toFirestore());
 
       return updatedEvent;
@@ -151,7 +155,10 @@ class EventService {
   }
 
   /// Remove um voluntário do evento
-  Future<EventModel> removeVolunteerFromEvent(String eventId, String userId) async {
+  Future<EventModel> removeVolunteerFromEvent(
+    String eventId,
+    String userId,
+  ) async {
     try {
       final event = await getEventById(eventId);
       if (event == null) {
@@ -171,7 +178,10 @@ class EventService {
   }
 
   /// Promove um voluntário a gerenciador
-  Future<EventModel> promoteVolunteerToManager(String eventId, String userId) async {
+  Future<EventModel> promoteVolunteerToManager(
+    String eventId,
+    String userId,
+  ) async {
     try {
       final event = await getEventById(eventId);
       if (event == null) {
@@ -191,31 +201,42 @@ class EventService {
   }
 
   /// Cria um perfil de voluntário
-  Future<VolunteerProfileModel> createVolunteerProfile(VolunteerProfileModel profile) async {
+  Future<VolunteerProfileModel> createVolunteerProfile(
+    VolunteerProfileModel profile,
+  ) async {
     try {
       // Gera um ID único para o perfil
       final profileId = _uuid.v4();
-      
+
       final profileWithId = profile.copyWith(id: profileId);
 
       // Valida os dados antes de salvar
       final validationErrors = profileWithId.validate();
       if (validationErrors.isNotEmpty) {
-        throw ValidationException('Dados inválidos: ${validationErrors.join(', ')}');
+        throw ValidationException(
+          'Dados inválidos: ${validationErrors.join(', ')}',
+        );
       }
 
       // Salva no Firestore
-      await _volunteerProfilesCollection.doc(profileId).set(profileWithId.toFirestore());
+      await _volunteerProfilesCollection
+          .doc(profileId)
+          .set(profileWithId.toFirestore());
 
       return profileWithId;
     } catch (e) {
       if (e is ValidationException) rethrow;
-      throw DatabaseException('Erro ao criar perfil de voluntário: ${e.toString()}');
+      throw DatabaseException(
+        'Erro ao criar perfil de voluntário: ${e.toString()}',
+      );
     }
   }
 
   /// Busca o perfil de um voluntário em um evento
-  Future<VolunteerProfileModel?> getVolunteerProfile(String userId, String eventId) async {
+  Future<VolunteerProfileModel?> getVolunteerProfile(
+    String userId,
+    String eventId,
+  ) async {
     try {
       final query = await _volunteerProfilesCollection
           .where('userId', isEqualTo: userId)
@@ -227,12 +248,17 @@ class EventService {
 
       return VolunteerProfileModel.fromFirestore(query.docs.first);
     } catch (e) {
-      throw DatabaseException('Erro ao buscar perfil de voluntário: ${e.toString()}');
+      print('Erro ao buscar perfil de voluntário: ${e.toString()}');
+      throw DatabaseException(
+        'Erro ao buscar perfil de voluntário: ${e.toString()}',
+      );
     }
   }
 
   /// Busca todos os perfis de voluntários de um evento
-  Future<List<VolunteerProfileModel>> getEventVolunteerProfiles(String eventId) async {
+  Future<List<VolunteerProfileModel>> getEventVolunteerProfiles(
+    String eventId,
+  ) async {
     try {
       final query = await _volunteerProfilesCollection
           .where('eventId', isEqualTo: eventId)
@@ -242,25 +268,37 @@ class EventService {
           .map((doc) => VolunteerProfileModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      throw DatabaseException('Erro ao buscar perfis de voluntários: ${e.toString()}');
+      print('Erro ao buscar perfil de voluntário: ${e.toString()}');
+      throw DatabaseException(
+        'Erro ao buscar perfis de voluntários: ${e.toString()}',
+      );
     }
   }
 
   /// Atualiza um perfil de voluntário
-  Future<VolunteerProfileModel> updateVolunteerProfile(VolunteerProfileModel profile) async {
+  Future<VolunteerProfileModel> updateVolunteerProfile(
+    VolunteerProfileModel profile,
+  ) async {
     try {
       // Valida os dados antes de salvar
       final validationErrors = profile.validate();
       if (validationErrors.isNotEmpty) {
-        throw ValidationException('Dados inválidos: ${validationErrors.join(', ')}');
+        throw ValidationException(
+          'Dados inválidos: ${validationErrors.join(', ')}',
+        );
       }
 
-      await _volunteerProfilesCollection.doc(profile.id).update(profile.toFirestore());
+      await _volunteerProfilesCollection
+          .doc(profile.id)
+          .update(profile.toFirestore());
 
       return profile;
     } catch (e) {
+      print('Erro ao buscar perfil de voluntário: ${e.toString()}');
       if (e is ValidationException) rethrow;
-      throw DatabaseException('Erro ao atualizar perfil de voluntário: ${e.toString()}');
+      throw DatabaseException(
+        'Erro ao atualizar perfil de voluntário: ${e.toString()}',
+      );
     }
   }
 
@@ -309,11 +347,11 @@ class EventService {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = DateTime.now().millisecondsSinceEpoch;
     var result = '';
-    
+
     for (int i = 0; i < 6; i++) {
       result += chars[(random + i * 7) % chars.length];
     }
-    
+
     return result;
   }
 
@@ -328,7 +366,8 @@ class EventService {
   /// Stream para escutar mudanças nos eventos do usuário
   Stream<List<EventModel>> watchUserEvents(String userId) {
     // Implementação simplificada - pode ser otimizada
-    return Stream.periodic(const Duration(seconds: 5))
-        .asyncMap((_) => getUserEvents(userId));
+    return Stream.periodic(
+      const Duration(seconds: 5),
+    ).asyncMap((_) => getUserEvents(userId));
   }
 }
