@@ -259,6 +259,36 @@ class EventRepository {
     }
   }
 
+  /// Incrementa o contador de microtasks atribuídas para um voluntário
+  Future<void> incrementVolunteerMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      await _eventService.incrementVolunteerMicrotaskCount(eventId, userId);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw RepositoryException(
+        'Erro ao incrementar contador de microtasks: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Decrementa o contador de microtasks atribuídas para um voluntário
+  Future<void> decrementVolunteerMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      await _eventService.decrementVolunteerMicrotaskCount(eventId, userId);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw RepositoryException(
+        'Erro ao decrementar contador de microtasks: ${e.toString()}',
+      );
+    }
+  }
+
   /// Atualiza o perfil de um voluntário
   Future<VolunteerProfileModel> updateVolunteerProfile(
     VolunteerProfileModel profile,

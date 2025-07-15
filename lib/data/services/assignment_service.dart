@@ -37,8 +37,8 @@ class AssignmentService {
 
       // Busca o perfil do voluntário no evento
       final volunteerProfile = await _eventService.getVolunteerProfile(
-        eventId,
         userId,
+        eventId,
       );
       if (volunteerProfile == null) {
         throw ValidationException('Perfil de voluntário não encontrado');
@@ -46,7 +46,7 @@ class AssignmentService {
 
       // Validações de atribuição
       await _validateAssignment(microtask, userId, volunteerProfile);
-
+      print("ABACAXI5: assinando microtask");
       // Atribui o voluntário
       return await _microtaskService.assignVolunteer(microtaskId, userId);
     } catch (e) {

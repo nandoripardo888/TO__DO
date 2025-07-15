@@ -442,6 +442,98 @@ class EventController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Promove um voluntário a gerente do evento
+  Future<bool> promoteVolunteerToManager({
+    required String eventId,
+    required String volunteerId,
+    required String managerId,
+  }) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      // Promove o voluntário
+      final updatedEvent = await _eventRepository.promoteVolunteer(
+        eventId,
+        volunteerId,
+        managerId,
+      );
+
+      // Atualiza o evento atual se for o mesmo
+      if (_currentEvent?.id == eventId) {
+        _currentEvent = updatedEvent;
+      }
+
+      // Atualiza a lista de eventos do usuário
+      final eventIndex = _userEvents.indexWhere((e) => e.id == eventId);
+      if (eventIndex != -1) {
+        _userEvents[eventIndex] = updatedEvent;
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = _getErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Incrementa o contador de microtasks atribuídas para um voluntário
+  Future<bool> incrementVolunteerMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      await _eventRepository.incrementVolunteerMicrotaskCount(eventId, userId);
+
+      // Atualiza o perfil local se disponível
+      final profileIndex = _eventVolunteers.indexWhere(
+        (p) => p.userId == userId,
+      );
+      if (profileIndex != -1) {
+        _eventVolunteers[profileIndex] = _eventVolunteers[profileIndex]
+            .incrementAssignedMicrotasks();
+        notifyListeners();
+      }
+
+      return true;
+    } catch (e) {
+      _errorMessage = _getErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Decrementa o contador de microtasks atribuídas para um voluntário
+  Future<bool> decrementVolunteerMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      await _eventRepository.decrementVolunteerMicrotaskCount(eventId, userId);
+
+      // Atualiza o perfil local se disponível
+      final profileIndex = _eventVolunteers.indexWhere(
+        (p) => p.userId == userId,
+      );
+      if (profileIndex != -1) {
+        _eventVolunteers[profileIndex] = _eventVolunteers[profileIndex]
+            .decrementAssignedMicrotasks();
+        notifyListeners();
+      }
+
+      return true;
+    } catch (e) {
+      _errorMessage = _getErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Converte exceções em mensagens de erro amigáveis
   String _getErrorMessage(dynamic error) {
     if (error is ValidationException) {

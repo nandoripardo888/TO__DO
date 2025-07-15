@@ -169,12 +169,14 @@ class MicrotaskRepository {
         throw ValidationException('ID do evento é obrigatório');
       }
 
+      print("ABACAXI4: assinando microtask");
       return await _assignmentService.assignVolunteerToMicrotask(
         microtaskId: microtaskId,
         userId: userId,
         eventId: eventId,
       );
     } catch (e) {
+      print("ABACAX_A3: assinando microtask$e");
       if (e is AppException) rethrow;
       throw RepositoryException('Erro ao atribuir voluntário: ${e.toString()}');
     }

@@ -14,6 +14,10 @@ class VolunteerCard extends StatelessWidget {
   final bool showActions;
   final bool isManager;
   final int assignedMicrotasksCount;
+  final bool
+  isCompatible; // Indica se o voluntário é compatível com filtros ativos
+  final bool
+  showDetailedAvailability; // Mostra horário detalhado de disponibilidade
 
   const VolunteerCard({
     super.key,
@@ -24,6 +28,8 @@ class VolunteerCard extends StatelessWidget {
     this.showActions = true,
     this.isManager = false,
     this.assignedMicrotasksCount = 0,
+    this.isCompatible = false,
+    this.showDetailedAvailability = false,
   });
 
   @override
@@ -88,15 +94,27 @@ class VolunteerCard extends StatelessWidget {
                     _buildAvailabilityIndicator(),
                   ],
                 ),
-                // Botão de ações e contador de tarefas
+                // Indicadores visuais e ações
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Indicador de compatibilidade (estrela)
+                    if (isCompatible)
+                      Container(
+                        margin: const EdgeInsets.only(right: 4),
+                        child: Icon(
+                          Icons.star,
+                          size: 16,
+                          color: AppColors.warning,
+                        ),
+                      ),
+                    // Contador de microtasks atribuídas
                     if (assignedMicrotasksCount > 0) _buildMicrotaskBadge(),
+                    // Botão de ações
                     if (showActions && isManager)
                       IconButton(
                         icon: const Icon(Icons.more_vert),
-                        onPressed: onShowActions, // Dispara o menu
+                        onPressed: onShowActions,
                         tooltip: 'Mais opções',
                       ),
                   ],
@@ -131,12 +149,15 @@ class VolunteerCard extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text(
-          _getAvailabilityText(),
-          style: TextStyle(
-            fontSize: 11,
-            color: _getAvailabilityColor(),
-            fontWeight: FontWeight.w500,
+        Expanded(
+          child: Text(
+            _getAvailabilityText(),
+            style: TextStyle(
+              fontSize: 11,
+              color: _getAvailabilityColor(),
+              fontWeight: FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -145,22 +166,41 @@ class VolunteerCard extends StatelessWidget {
 
   // Badge de contagem de microtasks
   Widget _buildMicrotaskBadge() {
+    final count = profile?.assignedMicrotasksCount ?? assignedMicrotasksCount;
+    final color = _getMicrotaskBadgeColor(count);
+
     return Container(
       margin: const EdgeInsets.only(right: 4),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
-      child: Text(
-        '$assignedMicrotasksCount',
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: AppColors.primary,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.assignment, size: 12, color: color),
+          const SizedBox(width: 2),
+          Text(
+            '$count',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  // Cor do badge baseada na carga de trabalho
+  Color _getMicrotaskBadgeColor(int count) {
+    if (count == 0) return AppColors.textSecondary;
+    if (count < 3) return AppColors.success;
+    if (count < 5) return AppColors.warning;
+    return AppColors.error;
   }
 
   // Seção de informações do perfil (Habilidades, Recursos, etc.)
@@ -247,9 +287,13 @@ class VolunteerCard extends StatelessWidget {
     );
   }
 
-  // Funções de lógica (permanecem as mesmas)
+  // Funções de lógica
   Color _getAvailabilityColor() {
     if (profile == null) return AppColors.warning;
+
+    // Se disponibilidade integral está ativa, sempre verde
+    if (profile!.isFullTimeAvailable) return AppColors.success;
+
     final now = DateTime.now();
     final currentDay = _getCurrentDayString(now);
     return profile!.availableDays.contains(currentDay)
@@ -259,11 +303,25 @@ class VolunteerCard extends StatelessWidget {
 
   String _getAvailabilityText() {
     if (profile == null) return 'Sem perfil';
+
+    // Se disponibilidade integral está ativa
+    if (profile!.isFullTimeAvailable) {
+      return showDetailedAvailability
+          ? 'Disponível integral (qualquer horário)'
+          : 'Disponível integral';
+    }
+
     final now = DateTime.now();
     final currentDay = _getCurrentDayString(now);
-    return profile!.availableDays.contains(currentDay)
-        ? 'Disponível hoje'
-        : 'Indisponível hoje';
+    final isAvailableToday = profile!.availableDays.contains(currentDay);
+
+    if (showDetailedAvailability && profile!.availableHours.isValid()) {
+      final hours =
+          '${profile!.availableHours.start}-${profile!.availableHours.end}';
+      return isAvailableToday ? 'Hoje: $hours' : 'Indisponível hoje ($hours)';
+    }
+
+    return isAvailableToday ? 'Disponível hoje' : 'Indisponível hoje';
   }
 
   String _getCurrentDayString(DateTime date) {

@@ -200,6 +200,8 @@ class MicrotaskService {
         microtask.eventId,
       );
 
+      print('Voluntário atribuído com sucesso!');
+
       return savedMicrotask;
     } catch (e) {
       if (e is DatabaseException || e is ValidationException) rethrow;
@@ -367,7 +369,9 @@ class MicrotaskService {
       await _userMicrotasksCollection
           .doc(relationId)
           .set(userMicrotaskWithId.toFirestore());
+      print('Relação usuário-microtask criada com sucesso!');
     } catch (e) {
+      print('Erro ao criar relação usuário-microtask: ${e.toString()}');
       throw DatabaseException(
         'Erro ao criar relação usuário-microtask: ${e.toString()}',
       );

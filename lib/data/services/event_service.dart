@@ -238,6 +238,7 @@ class EventService {
     String eventId,
   ) async {
     try {
+      print('ABACAXI_B1:$userId $eventId');
       final query = await _volunteerProfilesCollection
           .where('userId', isEqualTo: userId)
           .where('eventId', isEqualTo: eventId)
@@ -353,6 +354,64 @@ class EventService {
     }
 
     return result;
+  }
+
+  /// Incrementa o contador de microtasks atribuídas para um voluntário
+  Future<void> incrementVolunteerMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      final profileQuery = await _volunteerProfilesCollection
+          .where('eventId', isEqualTo: eventId)
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (profileQuery.docs.isNotEmpty) {
+        final doc = profileQuery.docs.first;
+        final currentCount = doc.data() as Map<String, dynamic>;
+        final assignedCount =
+            currentCount['assignedMicrotasksCount'] as int? ?? 0;
+
+        await doc.reference.update({
+          'assignedMicrotasksCount': assignedCount + 1,
+        });
+      }
+    } catch (e) {
+      throw DatabaseException(
+        'Erro ao incrementar contador de microtasks: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Decrementa o contador de microtasks atribuídas para um voluntário
+  Future<void> decrementVolunteerMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      final profileQuery = await _volunteerProfilesCollection
+          .where('eventId', isEqualTo: eventId)
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (profileQuery.docs.isNotEmpty) {
+        final doc = profileQuery.docs.first;
+        final currentCount = doc.data() as Map<String, dynamic>;
+        final assignedCount =
+            currentCount['assignedMicrotasksCount'] as int? ?? 0;
+
+        await doc.reference.update({
+          'assignedMicrotasksCount': assignedCount > 0 ? assignedCount - 1 : 0,
+        });
+      }
+    } catch (e) {
+      throw DatabaseException(
+        'Erro ao decrementar contador de microtasks: ${e.toString()}',
+      );
+    }
   }
 
   /// Stream para escutar mudanças em um evento

@@ -216,6 +216,7 @@ class TaskController extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
+      print("ABACAXIA1: assinando microtask");
       final updatedMicrotask = await _microtaskRepository.assignVolunteer(
         microtaskId: microtaskId,
         userId: userId,

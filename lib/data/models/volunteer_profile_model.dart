@@ -12,6 +12,7 @@ class VolunteerProfileModel {
   isFullTimeAvailable; // Disponibilidade integral (sem restrições de data/hora)
   final List<String> skills;
   final List<String> resources;
+  final int assignedMicrotasksCount; // Contador de microtasks atribuídas
   final DateTime joinedAt;
 
   const VolunteerProfileModel({
@@ -23,6 +24,7 @@ class VolunteerProfileModel {
     required this.isFullTimeAvailable,
     required this.skills,
     required this.resources,
+    required this.assignedMicrotasksCount,
     required this.joinedAt,
   });
 
@@ -39,6 +41,7 @@ class VolunteerProfileModel {
       isFullTimeAvailable: map['isFullTimeAvailable'] as bool? ?? false,
       skills: List<String>.from(map['skills'] as List),
       resources: List<String>.from(map['resources'] as List),
+      assignedMicrotasksCount: map['assignedMicrotasksCount'] as int? ?? 0,
       joinedAt: (map['joinedAt'] as Timestamp).toDate(),
     );
   }
@@ -60,6 +63,7 @@ class VolunteerProfileModel {
       'isFullTimeAvailable': isFullTimeAvailable,
       'skills': skills,
       'resources': resources,
+      'assignedMicrotasksCount': assignedMicrotasksCount,
       'joinedAt': Timestamp.fromDate(joinedAt),
     };
   }
@@ -81,6 +85,7 @@ class VolunteerProfileModel {
     bool? isFullTimeAvailable,
     List<String>? skills,
     List<String>? resources,
+    int? assignedMicrotasksCount,
     DateTime? joinedAt,
   }) {
     return VolunteerProfileModel(
@@ -92,6 +97,8 @@ class VolunteerProfileModel {
       isFullTimeAvailable: isFullTimeAvailable ?? this.isFullTimeAvailable,
       skills: skills ?? List<String>.from(this.skills),
       resources: resources ?? List<String>.from(this.resources),
+      assignedMicrotasksCount:
+          assignedMicrotasksCount ?? this.assignedMicrotasksCount,
       joinedAt: joinedAt ?? this.joinedAt,
     );
   }
@@ -257,6 +264,7 @@ class VolunteerProfileModel {
     bool isFullTimeAvailable = false,
     required List<String> skills,
     required List<String> resources,
+    int assignedMicrotasksCount = 0,
   }) {
     return VolunteerProfileModel(
       id: '', // Será definido pelo Firestore
@@ -267,6 +275,7 @@ class VolunteerProfileModel {
       isFullTimeAvailable: isFullTimeAvailable,
       skills: skills,
       resources: resources,
+      assignedMicrotasksCount: assignedMicrotasksCount,
       joinedAt: DateTime.now(),
     );
   }
@@ -347,6 +356,39 @@ class VolunteerProfileModel {
     // Para simplicidade, verifica apenas o horário de início
     // Em uma implementação mais robusta, verificaria todo o período
     return isAvailableAt(startDateTime);
+  }
+
+  /// Incrementa o contador de microtasks atribuídas
+  VolunteerProfileModel incrementAssignedMicrotasks() {
+    return copyWith(assignedMicrotasksCount: assignedMicrotasksCount + 1);
+  }
+
+  /// Decrementa o contador de microtasks atribuídas
+  VolunteerProfileModel decrementAssignedMicrotasks() {
+    return copyWith(
+      assignedMicrotasksCount: assignedMicrotasksCount > 0
+          ? assignedMicrotasksCount - 1
+          : 0,
+    );
+  }
+
+  /// Atualiza o contador de microtasks atribuídas
+  VolunteerProfileModel updateAssignedMicrotasksCount(int count) {
+    return copyWith(assignedMicrotasksCount: count >= 0 ? count : 0);
+  }
+
+  /// Verifica se o voluntário tem carga de trabalho baixa (menos de 3 microtasks)
+  bool get hasLowWorkload => assignedMicrotasksCount < 3;
+
+  /// Verifica se o voluntário tem carga de trabalho alta (5 ou mais microtasks)
+  bool get hasHighWorkload => assignedMicrotasksCount >= 5;
+
+  /// Retorna o nível de carga de trabalho como string
+  String get workloadLevel {
+    if (assignedMicrotasksCount == 0) return 'Sem tarefas';
+    if (assignedMicrotasksCount < 3) return 'Carga baixa';
+    if (assignedMicrotasksCount < 5) return 'Carga média';
+    return 'Carga alta';
   }
 
   /// Converte para string para debug
