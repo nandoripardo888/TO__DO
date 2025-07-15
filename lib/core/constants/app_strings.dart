@@ -4,7 +4,7 @@ class AppStrings {
   // App
   static const String appName = 'ConTask';
   static const String appDescription = 'Gerenciador de Tarefas para Eventos';
-  
+
   // Autenticação
   static const String login = 'Entrar';
   static const String loginWithGoogle = 'Entrar com Google';
@@ -12,7 +12,7 @@ class AppStrings {
   static const String alreadyHaveAccount = 'Já tenho conta';
   static const String dontHaveAccount = 'Não tenho conta';
   static const String logout = 'Sair';
-  
+
   // Campos de Formulário
   static const String name = 'Nome';
   static const String fullName = 'Nome completo';
@@ -21,7 +21,7 @@ class AppStrings {
   static const String confirmPassword = 'Confirmar senha';
   static const String description = 'Descrição';
   static const String location = 'Localização';
-  
+
   // Eventos
   static const String events = 'Eventos';
   static const String createEvent = 'Criar Evento';
@@ -36,7 +36,7 @@ class AppStrings {
   static const String eventDetails = 'Detalhes do Evento';
   static const String eventCreated = 'Evento criado com sucesso!';
   static const String joinedEvent = 'Você ingressou no evento!';
-  
+
   // Tarefas
   static const String tasks = 'Tarefas';
   static const String createTask = 'Criar Tarefa';
@@ -47,10 +47,13 @@ class AppStrings {
   static const String createMicrotask = 'Criar Microtarefa';
   static const String microtaskName = 'Nome da microtarefa';
   static const String microtaskDescription = 'Descrição da microtarefa';
-  static const String estimatedHours = 'Horas estimadas';
+  static const String startDateTime = 'Data e hora inicial';
+  static const String endDateTime = 'Data e hora final';
+  static const String estimatedHours =
+      'Duração estimada'; // Mantido para compatibilidade
   static const String actualHours = 'Horas realizadas';
   static const String trackTasks = 'Acompanhar Tasks';
-  
+
   // Voluntários
   static const String volunteers = 'Voluntários';
   static const String manageVolunteers = 'Gerenciar Voluntários';
@@ -62,7 +65,7 @@ class AppStrings {
   static const String skills = 'Habilidades';
   static const String resources = 'Recursos';
   static const String availability = 'Disponibilidade';
-  
+
   // Status
   static const String pending = 'Pendente';
   static const String inProgress = 'Em Progresso';
@@ -70,13 +73,13 @@ class AppStrings {
   static const String cancelled = 'Cancelado';
   static const String assigned = 'Atribuído';
   static const String active = 'Ativo';
-  
+
   // Prioridades
   static const String priority = 'Prioridade';
   static const String high = 'Alta';
   static const String medium = 'Média';
   static const String low = 'Baixa';
-  
+
   // Ações
   static const String save = 'Salvar';
   static const String cancel = 'Cancelar';
@@ -90,28 +93,29 @@ class AppStrings {
   static const String start = 'Iniciar';
   static const String finish = 'Finalizar';
   static const String assign = 'Atribuir';
-  
+
   // Navegação
   static const String home = 'Início';
   static const String profile = 'Perfil';
   static const String settings = 'Configurações';
   static const String back = 'Voltar';
-  
+
   // Mensagens de Erro
   static const String errorGeneric = 'Ocorreu um erro inesperado';
   static const String errorNetwork = 'Erro de conexão com a internet';
   static const String errorAuth = 'Erro de autenticação';
   static const String errorInvalidEmail = 'E-mail inválido';
-  static const String errorPasswordTooShort = 'Senha deve ter pelo menos 6 caracteres';
+  static const String errorPasswordTooShort =
+      'Senha deve ter pelo menos 6 caracteres';
   static const String errorPasswordsDontMatch = 'Senhas não coincidem';
   static const String errorEventNotFound = 'Evento não encontrado';
   static const String errorInvalidEventCode = 'Código de evento inválido';
-  
+
   // Mensagens de Sucesso
   static const String successGeneric = 'Operação realizada com sucesso';
   static const String successSaved = 'Salvo com sucesso';
   static const String successDeleted = 'Excluído com sucesso';
-  
+
   // Dias da Semana
   static const String monday = 'Segunda-feira';
   static const String tuesday = 'Terça-feira';
@@ -120,11 +124,11 @@ class AppStrings {
   static const String friday = 'Sexta-feira';
   static const String saturday = 'Sábado';
   static const String sunday = 'Domingo';
-  
+
   // Roles
   static const String manager = 'Gerenciador';
   static const String volunteer = 'Voluntário';
-  
+
   // Placeholders
   static const String noEventsFound = 'Nenhum evento encontrado';
   static const String noTasksFound = 'Nenhuma tarefa encontrada';

@@ -19,7 +19,7 @@ class TaskController extends ChangeNotifier {
     TaskRepository? taskRepository,
     MicrotaskRepository? microtaskRepository,
   }) : _taskRepository = taskRepository ?? TaskRepository(),
-        _microtaskRepository = microtaskRepository ?? MicrotaskRepository();
+       _microtaskRepository = microtaskRepository ?? MicrotaskRepository();
 
   // Estado atual
   TaskControllerState _state = TaskControllerState.initial;
@@ -28,8 +28,8 @@ class TaskController extends ChangeNotifier {
 
   // Dados das tasks
   List<TaskModel> _tasks = [];
-  Map<String, List<MicrotaskModel>> _microtasksByTask = {};
-  Map<String, List<UserMicrotaskModel>> _userMicrotasksByMicrotask = {};
+  final Map<String, List<MicrotaskModel>> _microtasksByTask = {};
+  final Map<String, List<UserMicrotaskModel>> _userMicrotasksByMicrotask = {};
 
   // Filtros
   TaskStatus? _statusFilter;
@@ -42,8 +42,10 @@ class TaskController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
   List<TaskModel> get tasks => List.unmodifiable(_tasks);
-  Map<String, List<MicrotaskModel>> get microtasksByTask => Map.unmodifiable(_microtasksByTask);
-  Map<String, List<UserMicrotaskModel>> get userMicrotasksByMicrotask => Map.unmodifiable(_userMicrotasksByMicrotask);
+  Map<String, List<MicrotaskModel>> get microtasksByTask =>
+      Map.unmodifiable(_microtasksByTask);
+  Map<String, List<UserMicrotaskModel>> get userMicrotasksByMicrotask =>
+      Map.unmodifiable(_userMicrotasksByMicrotask);
 
   // Getters de filtros
   TaskStatus? get statusFilter => _statusFilter;
@@ -154,7 +156,8 @@ class TaskController extends ChangeNotifier {
     required String description,
     required List<String> requiredSkills,
     required List<String> requiredResources,
-    required double estimatedHours,
+    DateTime? startDateTime,
+    DateTime? endDateTime,
     required String priority,
     required int maxVolunteers,
     required String createdBy,
@@ -171,7 +174,8 @@ class TaskController extends ChangeNotifier {
         description: description,
         requiredSkills: requiredSkills,
         requiredResources: requiredResources,
-        estimatedHours: estimatedHours,
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
         priority: priority,
         maxVolunteers: maxVolunteers,
         createdBy: createdBy,
@@ -301,25 +305,30 @@ class TaskController extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      final updatedUserMicrotask = await _microtaskRepository.updateUserMicrotaskStatus(
-        userId: userId,
-        microtaskId: microtaskId,
-        status: status,
-        actualHours: actualHours,
-        notes: notes,
-      );
+      final updatedUserMicrotask = await _microtaskRepository
+          .updateUserMicrotaskStatus(
+            userId: userId,
+            microtaskId: microtaskId,
+            status: status,
+            actualHours: actualHours,
+            notes: notes,
+          );
 
       // Atualiza na lista local
       if (_userMicrotasksByMicrotask.containsKey(microtaskId)) {
-        final index = _userMicrotasksByMicrotask[microtaskId]!
-            .indexWhere((um) => um.userId == userId);
+        final index = _userMicrotasksByMicrotask[microtaskId]!.indexWhere(
+          (um) => um.userId == userId,
+        );
         if (index != -1) {
-          _userMicrotasksByMicrotask[microtaskId]![index] = updatedUserMicrotask;
+          _userMicrotasksByMicrotask[microtaskId]![index] =
+              updatedUserMicrotask;
         }
       }
 
       // Recarrega a microtask para pegar status atualizado
-      final microtask = await _microtaskRepository.getMicrotaskById(microtaskId);
+      final microtask = await _microtaskRepository.getMicrotaskById(
+        microtaskId,
+      );
       if (microtask != null) {
         _updateMicrotaskInList(microtask);
       }
@@ -378,9 +387,11 @@ class TaskController extends ChangeNotifier {
   /// Carrega microtasks para todas as tasks
   Future<void> _loadMicrotasksForTasks() async {
     _microtasksByTask.clear();
-    
+
     for (final task in _tasks) {
-      final microtasks = await _microtaskRepository.getMicrotasksByTaskId(task.id);
+      final microtasks = await _microtaskRepository.getMicrotasksByTaskId(
+        task.id,
+      );
       _microtasksByTask[task.id] = microtasks;
 
       // Carrega relações usuário-microtask para cada microtask
@@ -392,7 +403,8 @@ class TaskController extends ChangeNotifier {
 
   /// Carrega relações usuário-microtask para uma microtask específica
   Future<void> _loadUserMicrotasksForMicrotask(String microtaskId) async {
-    final userMicrotasks = await _microtaskRepository.getUserMicrotasksByMicrotaskId(microtaskId);
+    final userMicrotasks = await _microtaskRepository
+        .getUserMicrotasksByMicrotaskId(microtaskId);
     _userMicrotasksByMicrotask[microtaskId] = userMicrotasks;
   }
 

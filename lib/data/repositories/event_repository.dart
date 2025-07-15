@@ -9,7 +9,7 @@ class EventRepository {
   final EventService _eventService;
 
   EventRepository({EventService? eventService})
-      : _eventService = eventService ?? EventService();
+    : _eventService = eventService ?? EventService();
 
   /// Cria um novo evento
   Future<EventModel> createEvent({
@@ -60,7 +60,7 @@ class EventRepository {
 
       // Normaliza a tag (maiúscula, sem espaços)
       final normalizedTag = tag.trim().toUpperCase();
-      
+
       if (normalizedTag.length != 6) {
         throw ValidationException('Tag deve ter exatamente 6 caracteres');
       }
@@ -68,7 +68,9 @@ class EventRepository {
       return await _eventService.getEventByTag(normalizedTag);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar evento por tag: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar evento por tag: ${e.toString()}',
+      );
     }
   }
 
@@ -82,7 +84,9 @@ class EventRepository {
       return await _eventService.getUserEvents(userId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar eventos do usuário: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar eventos do usuário: ${e.toString()}',
+      );
     }
   }
 
@@ -102,6 +106,7 @@ class EventRepository {
     required String userId,
     required List<String> availableDays,
     required TimeRange availableHours,
+    bool isFullTimeAvailable = false,
     required List<String> skills,
     required List<String> resources,
   }) async {
@@ -113,15 +118,20 @@ class EventRepository {
       if (userId.isEmpty) {
         throw ValidationException('ID do usuário é obrigatório');
       }
-      if (availableDays.isEmpty) {
-        throw ValidationException('Pelo menos um dia de disponibilidade é obrigatório');
+      if (!isFullTimeAvailable && availableDays.isEmpty) {
+        throw ValidationException(
+          'Pelo menos um dia de disponibilidade é obrigatório',
+        );
       }
       if (!availableHours.isValid()) {
         throw ValidationException('Horário de disponibilidade inválido');
       }
 
       // Adiciona o voluntário ao evento
-      final updatedEvent = await _eventService.addVolunteerToEvent(eventId, userId);
+      final updatedEvent = await _eventService.addVolunteerToEvent(
+        eventId,
+        userId,
+      );
 
       // Cria o perfil do voluntário
       final profile = VolunteerProfileModel.create(
@@ -129,6 +139,7 @@ class EventRepository {
         eventId: eventId,
         availableDays: availableDays,
         availableHours: availableHours,
+        isFullTimeAvailable: isFullTimeAvailable,
         skills: skills,
         resources: resources,
       );
@@ -138,7 +149,9 @@ class EventRepository {
       return updatedEvent;
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao participar do evento: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao participar do evento: ${e.toString()}',
+      );
     }
   }
 
@@ -153,7 +166,10 @@ class EventRepository {
       }
 
       // Remove o voluntário do evento
-      final updatedEvent = await _eventService.removeVolunteerFromEvent(eventId, userId);
+      final updatedEvent = await _eventService.removeVolunteerFromEvent(
+        eventId,
+        userId,
+      );
 
       // Remove o perfil do voluntário (se existir)
       final profile = await _eventService.getVolunteerProfile(userId, eventId);
@@ -170,7 +186,11 @@ class EventRepository {
   }
 
   /// Promove um voluntário a gerenciador
-  Future<EventModel> promoteVolunteer(String eventId, String userId, String managerId) async {
+  Future<EventModel> promoteVolunteer(
+    String eventId,
+    String userId,
+    String managerId,
+  ) async {
     try {
       if (eventId.isEmpty) {
         throw ValidationException('ID do evento é obrigatório');
@@ -189,7 +209,9 @@ class EventRepository {
       }
 
       if (!event.isManager(managerId)) {
-        throw UnauthorizedException('Apenas gerenciadores podem promover voluntários');
+        throw UnauthorizedException(
+          'Apenas gerenciadores podem promover voluntários',
+        );
       }
 
       return await _eventService.promoteVolunteerToManager(eventId, userId);
@@ -200,7 +222,10 @@ class EventRepository {
   }
 
   /// Busca o perfil de um voluntário em um evento
-  Future<VolunteerProfileModel?> getVolunteerProfile(String userId, String eventId) async {
+  Future<VolunteerProfileModel?> getVolunteerProfile(
+    String userId,
+    String eventId,
+  ) async {
     try {
       if (userId.isEmpty) {
         throw ValidationException('ID do usuário é obrigatório');
@@ -212,7 +237,9 @@ class EventRepository {
       return await _eventService.getVolunteerProfile(userId, eventId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar perfil de voluntário: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar perfil de voluntário: ${e.toString()}',
+      );
     }
   }
 
@@ -226,17 +253,23 @@ class EventRepository {
       return await _eventService.getEventVolunteerProfiles(eventId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar voluntários do evento: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar voluntários do evento: ${e.toString()}',
+      );
     }
   }
 
   /// Atualiza o perfil de um voluntário
-  Future<VolunteerProfileModel> updateVolunteerProfile(VolunteerProfileModel profile) async {
+  Future<VolunteerProfileModel> updateVolunteerProfile(
+    VolunteerProfileModel profile,
+  ) async {
     try {
       return await _eventService.updateVolunteerProfile(profile);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao atualizar perfil de voluntário: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao atualizar perfil de voluntário: ${e.toString()}',
+      );
     }
   }
 
@@ -299,7 +332,9 @@ class EventRepository {
       return await getUserEvents(userId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar eventos compatíveis: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar eventos compatíveis: ${e.toString()}',
+      );
     }
   }
 
@@ -307,7 +342,7 @@ class EventRepository {
   bool isValidTag(String tag) {
     if (tag.isEmpty) return false;
     if (tag.length != 6) return false;
-    
+
     // Verifica se contém apenas letras e números
     final regex = RegExp(r'^[A-Z0-9]+$');
     return regex.hasMatch(tag.toUpperCase());

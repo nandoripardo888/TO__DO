@@ -147,6 +147,7 @@ class EventController extends ChangeNotifier {
     required String userId,
     required List<String> availableDays,
     required TimeRange availableHours,
+    bool isFullTimeAvailable = false,
     required List<String> skills,
     required List<String> resources,
   }) async {
@@ -162,7 +163,7 @@ class EventController extends ChangeNotifier {
       if (userId.isEmpty) {
         throw ValidationException('Usuário é obrigatório');
       }
-      if (availableDays.isEmpty) {
+      if (!isFullTimeAvailable && availableDays.isEmpty) {
         throw ValidationException(
           'Selecione pelo menos um dia de disponibilidade',
         );
@@ -176,6 +177,7 @@ class EventController extends ChangeNotifier {
         userId: userId,
         availableDays: availableDays,
         availableHours: availableHours,
+        isFullTimeAvailable: isFullTimeAvailable,
         skills: skills,
         resources: resources,
       );

@@ -8,6 +8,8 @@ class VolunteerProfileModel {
   final String eventId;
   final List<String> availableDays;
   final TimeRange availableHours;
+  final bool
+  isFullTimeAvailable; // Disponibilidade integral (sem restrições de data/hora)
   final List<String> skills;
   final List<String> resources;
   final DateTime joinedAt;
@@ -18,6 +20,7 @@ class VolunteerProfileModel {
     required this.eventId,
     required this.availableDays,
     required this.availableHours,
+    required this.isFullTimeAvailable,
     required this.skills,
     required this.resources,
     required this.joinedAt,
@@ -30,7 +33,10 @@ class VolunteerProfileModel {
       userId: map['userId'] as String,
       eventId: map['eventId'] as String,
       availableDays: List<String>.from(map['availableDays'] as List),
-      availableHours: TimeRange.fromMap(map['availableHours'] as Map<String, dynamic>),
+      availableHours: TimeRange.fromMap(
+        map['availableHours'] as Map<String, dynamic>,
+      ),
+      isFullTimeAvailable: map['isFullTimeAvailable'] as bool? ?? false,
       skills: List<String>.from(map['skills'] as List),
       resources: List<String>.from(map['resources'] as List),
       joinedAt: (map['joinedAt'] as Timestamp).toDate(),
@@ -51,6 +57,7 @@ class VolunteerProfileModel {
       'eventId': eventId,
       'availableDays': availableDays,
       'availableHours': availableHours.toMap(),
+      'isFullTimeAvailable': isFullTimeAvailable,
       'skills': skills,
       'resources': resources,
       'joinedAt': Timestamp.fromDate(joinedAt),
@@ -71,6 +78,7 @@ class VolunteerProfileModel {
     String? eventId,
     List<String>? availableDays,
     TimeRange? availableHours,
+    bool? isFullTimeAvailable,
     List<String>? skills,
     List<String>? resources,
     DateTime? joinedAt,
@@ -81,6 +89,7 @@ class VolunteerProfileModel {
       eventId: eventId ?? this.eventId,
       availableDays: availableDays ?? List<String>.from(this.availableDays),
       availableHours: availableHours ?? this.availableHours,
+      isFullTimeAvailable: isFullTimeAvailable ?? this.isFullTimeAvailable,
       skills: skills ?? List<String>.from(this.skills),
       resources: resources ?? List<String>.from(this.resources),
       joinedAt: joinedAt ?? this.joinedAt,
@@ -110,7 +119,7 @@ class VolunteerProfileModel {
   /// Adiciona uma habilidade ao perfil
   VolunteerProfileModel addSkill(String skill) {
     if (skills.contains(skill)) return this;
-    
+
     final newSkills = List<String>.from(skills)..add(skill);
     return copyWith(skills: newSkills);
   }
@@ -118,7 +127,7 @@ class VolunteerProfileModel {
   /// Remove uma habilidade do perfil
   VolunteerProfileModel removeSkill(String skill) {
     if (!skills.contains(skill)) return this;
-    
+
     final newSkills = List<String>.from(skills)..remove(skill);
     return copyWith(skills: newSkills);
   }
@@ -126,7 +135,7 @@ class VolunteerProfileModel {
   /// Adiciona um recurso ao perfil
   VolunteerProfileModel addResource(String resource) {
     if (resources.contains(resource)) return this;
-    
+
     final newResources = List<String>.from(resources)..add(resource);
     return copyWith(resources: newResources);
   }
@@ -134,7 +143,7 @@ class VolunteerProfileModel {
   /// Remove um recurso do perfil
   VolunteerProfileModel removeResource(String resource) {
     if (!resources.contains(resource)) return this;
-    
+
     final newResources = List<String>.from(resources)..remove(resource);
     return copyWith(resources: newResources);
   }
@@ -142,7 +151,7 @@ class VolunteerProfileModel {
   /// Adiciona um dia de disponibilidade
   VolunteerProfileModel addAvailableDay(String day) {
     if (availableDays.contains(day)) return this;
-    
+
     final newDays = List<String>.from(availableDays)..add(day);
     return copyWith(availableDays: newDays);
   }
@@ -150,7 +159,7 @@ class VolunteerProfileModel {
   /// Remove um dia de disponibilidade
   VolunteerProfileModel removeAvailableDay(String day) {
     if (!availableDays.contains(day)) return this;
-    
+
     final newDays = List<String>.from(availableDays)..remove(day);
     return copyWith(availableDays: newDays);
   }
@@ -177,14 +186,16 @@ class VolunteerProfileModel {
     List<String>? requiredSkills,
     List<String>? requiredResources,
   }) {
-    final skillsMatch = requiredSkills == null || 
-        requiredSkills.isEmpty || 
+    final skillsMatch =
+        requiredSkills == null ||
+        requiredSkills.isEmpty ||
         isCompatibleWithSkills(requiredSkills);
-    
-    final resourcesMatch = requiredResources == null || 
-        requiredResources.isEmpty || 
+
+    final resourcesMatch =
+        requiredResources == null ||
+        requiredResources.isEmpty ||
         isCompatibleWithResources(requiredResources);
-    
+
     return skillsMatch && resourcesMatch;
   }
 
@@ -203,7 +214,7 @@ class VolunteerProfileModel {
   /// Retorna os dias disponíveis como string formatada
   String get availableDaysText {
     if (availableDays.isEmpty) return 'Nenhum dia informado';
-    
+
     final dayNames = {
       'monday': 'Segunda',
       'tuesday': 'Terça',
@@ -213,11 +224,11 @@ class VolunteerProfileModel {
       'saturday': 'Sábado',
       'sunday': 'Domingo',
     };
-    
+
     final translatedDays = availableDays
         .map((day) => dayNames[day] ?? day)
         .toList();
-    
+
     return translatedDays.join(', ');
   }
 
@@ -243,6 +254,7 @@ class VolunteerProfileModel {
     required String eventId,
     required List<String> availableDays,
     required TimeRange availableHours,
+    bool isFullTimeAvailable = false,
     required List<String> skills,
     required List<String> resources,
   }) {
@@ -252,6 +264,7 @@ class VolunteerProfileModel {
       eventId: eventId,
       availableDays: availableDays,
       availableHours: availableHours,
+      isFullTimeAvailable: isFullTimeAvailable,
       skills: skills,
       resources: resources,
       joinedAt: DateTime.now(),
@@ -263,8 +276,8 @@ class VolunteerProfileModel {
     return id.isNotEmpty &&
         userId.isNotEmpty &&
         eventId.isNotEmpty &&
-        availableDays.isNotEmpty &&
-        availableHours.isValid();
+        (isFullTimeAvailable ||
+            (availableDays.isNotEmpty && availableHours.isValid()));
   }
 
   /// Método para validar dados antes de salvar
@@ -279,15 +292,61 @@ class VolunteerProfileModel {
       errors.add('ID do evento é obrigatório');
     }
 
-    if (availableDays.isEmpty) {
-      errors.add('Pelo menos um dia de disponibilidade é obrigatório');
-    }
+    if (!isFullTimeAvailable) {
+      if (availableDays.isEmpty) {
+        errors.add('Pelo menos um dia de disponibilidade é obrigatório');
+      }
 
-    if (!availableHours.isValid()) {
-      errors.add('Horário de disponibilidade inválido');
+      if (!availableHours.isValid()) {
+        errors.add('Horário de disponibilidade inválido');
+      }
     }
 
     return errors;
+  }
+
+  /// Retorna a disponibilidade como string formatada
+  String get availabilityText {
+    if (isFullTimeAvailable) {
+      return 'Disponibilidade integral (qualquer horário)';
+    }
+
+    if (availableDays.isEmpty) return 'Disponibilidade não informada';
+
+    return '$availableDaysText - ${availableHours.formatted}';
+  }
+
+  /// Verifica se o voluntário está disponível em um horário específico
+  bool isAvailableAt(DateTime dateTime) {
+    if (isFullTimeAvailable) return true;
+
+    // Verifica o dia da semana
+    final dayNames = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ];
+    final dayOfWeek = dayNames[dateTime.weekday - 1];
+
+    if (!availableDays.contains(dayOfWeek)) return false;
+
+    // Verifica o horário
+    final timeString =
+        '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    return availableHours.contains(timeString);
+  }
+
+  /// Verifica se o voluntário está disponível em um período
+  bool isAvailableForPeriod(DateTime startDateTime, DateTime endDateTime) {
+    if (isFullTimeAvailable) return true;
+
+    // Para simplicidade, verifica apenas o horário de início
+    // Em uma implementação mais robusta, verificaria todo o período
+    return isAvailableAt(startDateTime);
   }
 
   /// Converte para string para debug
@@ -313,25 +372,16 @@ class TimeRange {
   final String start;
   final String end;
 
-  const TimeRange({
-    required this.start,
-    required this.end,
-  });
+  const TimeRange({required this.start, required this.end});
 
   /// Cria uma instância de TimeRange a partir de um Map
   factory TimeRange.fromMap(Map<String, dynamic> map) {
-    return TimeRange(
-      start: map['start'] as String,
-      end: map['end'] as String,
-    );
+    return TimeRange(start: map['start'] as String, end: map['end'] as String);
   }
 
   /// Converte a instância para um Map
   Map<String, dynamic> toMap() {
-    return {
-      'start': start,
-      'end': end,
-    };
+    return {'start': start, 'end': end};
   }
 
   /// Verifica se um horário está dentro do intervalo
@@ -342,9 +392,7 @@ class TimeRange {
 
   /// Verifica se o intervalo é válido
   bool isValid() {
-    return start.isNotEmpty && 
-           end.isNotEmpty && 
-           start.compareTo(end) < 0;
+    return start.isNotEmpty && end.isNotEmpty && start.compareTo(end) < 0;
   }
 
   /// Retorna o intervalo formatado

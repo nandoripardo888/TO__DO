@@ -292,7 +292,9 @@ class _AssignmentDialogState extends State<AssignmentDialog> {
                     children: [
                       _buildInfoChip(
                         icon: Icons.schedule,
-                        label: '${microtask.estimatedHours}h',
+                        label: microtask.hasSchedule
+                            ? '${microtask.estimatedHours.toStringAsFixed(1)}h'
+                            : 'Não definido',
                         color: AppColors.secondary,
                       ),
                       const SizedBox(width: AppDimensions.spacingSm),

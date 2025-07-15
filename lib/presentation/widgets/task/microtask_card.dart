@@ -98,7 +98,9 @@ class MicrotaskCard extends StatelessWidget {
                 children: [
                   _buildInfoChip(
                     icon: Icons.schedule,
-                    label: '${microtask.estimatedHours}h',
+                    label: microtask.hasSchedule
+                        ? microtask.periodFormatted
+                        : 'Horário não definido',
                     color: AppColors.secondary,
                   ),
                   _buildInfoChip(

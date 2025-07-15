@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../exceptions/app_exceptions.dart';
 
 /// Classe utilitária para tratamento de erros
@@ -146,13 +145,13 @@ class ErrorHandler {
   /// Verifica se o erro é temporário (pode ser resolvido tentando novamente)
   static bool isTemporaryError(dynamic error) {
     if (error is FirebaseAuthException) {
-      return error.code == 'too-many-requests' || 
-             error.code == 'network-request-failed';
+      return error.code == 'too-many-requests' ||
+          error.code == 'network-request-failed';
     } else if (error is FirebaseException) {
-      return error.code == 'unavailable' || 
-             error.code == 'deadline-exceeded' ||
-             error.code == 'resource-exhausted' ||
-             error.code == 'aborted';
+      return error.code == 'unavailable' ||
+          error.code == 'deadline-exceeded' ||
+          error.code == 'resource-exhausted' ||
+          error.code == 'aborted';
     } else if (error is NetworkException) {
       return true;
     }
@@ -199,7 +198,11 @@ class ErrorHandler {
   }
 
   /// Registra o erro para análise (pode ser expandido para usar serviços como Crashlytics)
-  static void logError(dynamic error, {StackTrace? stackTrace, Map<String, dynamic>? context}) {
+  static void logError(
+    dynamic error, {
+    StackTrace? stackTrace,
+    Map<String, dynamic>? context,
+  }) {
     // Por enquanto, apenas imprime no console
     // Em produção, isso deveria enviar para um serviço de monitoramento
     print('ERROR: $error');
@@ -214,11 +217,11 @@ class ErrorHandler {
   /// Cria uma mensagem de erro formatada para exibição
   static String formatErrorMessage(dynamic error, {String? context}) {
     final message = handleError(error);
-    
+
     if (context != null) {
       return '$context: $message';
     }
-    
+
     return message;
   }
 
@@ -230,13 +233,16 @@ class ErrorHandler {
   }
 
   /// Cria uma mensagem de erro com detalhes técnicos (se apropriado)
-  static String createDetailedErrorMessage(dynamic error, {String? userMessage}) {
+  static String createDetailedErrorMessage(
+    dynamic error, {
+    String? userMessage,
+  }) {
     final baseMessage = userMessage ?? handleError(error);
-    
+
     if (shouldShowTechnicalDetails()) {
       return '$baseMessage\n\nDetalhes técnicos: ${error.toString()}';
     }
-    
+
     return baseMessage;
   }
 }

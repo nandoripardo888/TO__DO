@@ -279,13 +279,64 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
         return VolunteerCard(
           user: volunteer,
           profile: profile,
-          isManager: true,
+          isManager: true, // Supondo que esta tela seja para gerentes
           showActions: true,
           assignedMicrotasksCount: _getAssignedMicrotasksCount(volunteer.id),
-          onAssignMicrotask: () => _showAssignmentDialog(volunteer, profile),
-          onPromoteToManager: () => _promoteToManager(volunteer),
+          // Ação unificada que chama o novo diálogo de opções
+          onShowActions: () => _showVolunteerActionsDialog(volunteer, profile),
         );
       },
+    );
+  }
+
+  /// Exibe um diálogo com as ações disponíveis para um voluntário.
+  void _showVolunteerActionsDialog(
+    UserModel volunteer,
+    VolunteerProfileModel? profile,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(volunteer.name),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.assignment_ind_outlined,
+                color: AppColors.primary,
+              ),
+              title: const Text('Atribuir Microtask'),
+              subtitle: const Text('Designar uma nova tarefa'),
+              onTap: () {
+                Navigator.of(context).pop(); // Fecha o diálogo de ações
+                _showAssignmentDialog(
+                  volunteer,
+                  profile,
+                ); // Abre o diálogo de atribuição
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.admin_panel_settings_outlined,
+                color: AppColors.secondary,
+              ),
+              title: const Text('Promover a Gerente'),
+              subtitle: const Text('Conceder permissões de gerenciamento'),
+              onTap: () {
+                Navigator.of(context).pop(); // Fecha o diálogo
+                _promoteToManager(volunteer);
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
     );
   }
 

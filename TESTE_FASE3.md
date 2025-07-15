@@ -73,7 +73,8 @@ Implementar o sistema completo de tarefas hierárquicas (Tasks → Microtasks) c
    - Descrição: "Montar estrutura do palco principal"
    - Habilidades necessárias: ["Montagem", "Trabalho em Altura"]
    - Recursos necessários: ["Ferramentas", "EPI"]
-   - Tempo estimado: 4 horas
+   - **Data e hora inicial: 15/07/2025 08:00**
+   - **Data e hora final: 15/07/2025 12:00**
    - Prioridade: Alta
    - **Número máximo de voluntários: 3**
 4. Salvar microtask
@@ -82,6 +83,8 @@ Implementar o sistema completo de tarefas hierárquicas (Tasks → Microtasks) c
 **Resultado Esperado**:
 - Microtasks criadas com sucesso
 - Campo maxVolunteers configurado corretamente
+- **Data/hora inicial e final definidas corretamente**
+- **Duração calculada automaticamente (4 horas)**
 - Microtasks vinculadas à task pai
 - Status inicial: "pending"
 
@@ -207,26 +210,71 @@ Implementar o sistema completo de tarefas hierárquicas (Tasks → Microtasks) c
 - Combinação de filtros funciona
 - Limpeza de filtros restaura visualização completa
 
-### Teste 8: Validações de Negócio
+### Teste 8: Sistema de Data/Hora Específica
+**Objetivo**: Validar novo sistema de data/hora para microtasks
+
+**Cenários**:
+
+#### 8.1 Criação com Data/Hora Válida
+1. Criar microtask com data/hora inicial: 15/07/2025 09:00
+2. Definir data/hora final: 15/07/2025 13:00
+3. Verificar se microtask é criada com sucesso
+4. Verificar se duração é calculada corretamente (4 horas)
+
+#### 8.2 Validação de Períodos Inválidos
+1. Tentar criar microtask com data/hora inicial posterior à final
+2. Verificar se sistema impede criação
+3. Verificar mensagem de erro apropriada
+
+#### 8.3 Compatibilidade com Disponibilidade
+1. Criar microtask para período específico
+2. Tentar atribuir voluntário disponível no período
+3. Tentar atribuir voluntário indisponível no período
+4. Verificar se sistema considera disponibilidade corretamente
+
+### Teste 9: Sistema de Disponibilidade Integral
+**Objetivo**: Validar opção de disponibilidade integral para voluntários
+
+**Cenários**:
+
+#### 9.1 Cadastro com Disponibilidade Integral
+1. Na tela de participação em evento
+2. Marcar opção "Disponibilidade integral"
+3. Verificar se campos específicos são ocultados
+4. Confirmar participação
+5. Verificar se perfil é criado corretamente
+
+#### 9.2 Atribuição de Voluntário Integral
+1. Atribuir voluntário com disponibilidade integral a qualquer microtask
+2. Verificar se atribuição é sempre aceita
+3. Verificar se não há restrições de horário
+
+#### 9.3 Alternância entre Tipos de Disponibilidade
+1. Marcar disponibilidade integral
+2. Desmarcar e definir disponibilidade específica
+3. Verificar se campos aparecem/desaparecem corretamente
+4. Verificar se validações funcionam adequadamente
+
+### Teste 10: Validações de Negócio
 **Objetivo**: Validar regras de negócio específicas
 
 **Cenários**:
 
-#### 8.1 Compatibilidade de Habilidades
+#### 10.1 Compatibilidade de Habilidades
 1. Tentar atribuir voluntário sem habilidades necessárias
 2. Verificar se sistema impede ou alerta
 3. Atribuir voluntário com habilidades compatíveis
 4. Verificar se atribuição é aceita
 
-#### 8.2 Disponibilidade de Horários
-1. Verificar se sistema considera disponibilidade
-2. Tentar atribuir voluntário indisponível
-3. Verificar tratamento adequado
+#### 10.2 Disponibilidade de Horários Específicos
+1. Verificar se sistema considera disponibilidade para períodos específicos
+2. Tentar atribuir voluntário indisponível no período da microtask
+3. Verificar tratamento adequado para disponibilidade integral
 
-#### 8.3 Limites e Restrições
+#### 10.3 Limites e Restrições
 1. Verificar limite máximo de voluntários por microtask
 2. Verificar prevenção de atribuição dupla
-3. Verificar validações de formulário
+3. Verificar validações de formulário para data/hora
 
 ## 🐛 Cenários de Erro a Testar
 
@@ -271,11 +319,13 @@ Implementar o sistema completo de tarefas hierárquicas (Tasks → Microtasks) c
 Para considerar a Fase 3 concluída, todos os seguintes critérios devem ser atendidos:
 
 1. **Funcionalidades Implementadas**: Todas as funcionalidades listadas funcionando
-2. **Testes Passando**: Todos os cenários de teste executados com sucesso
-3. **Validações Funcionando**: Regras de negócio implementadas e validadas
-4. **Interface Completa**: Todas as telas e componentes implementados
-5. **Performance Adequada**: Tempos de resposta dentro do esperado
-6. **Tratamento de Erros**: Cenários de erro tratados adequadamente
+2. **Sistema de Data/Hora**: Microtasks com data/hora específica funcionando corretamente
+3. **Disponibilidade Integral**: Opção de disponibilidade integral para voluntários implementada
+4. **Testes Passando**: Todos os cenários de teste executados com sucesso
+5. **Validações Funcionando**: Regras de negócio implementadas e validadas
+6. **Interface Completa**: Todas as telas e componentes implementados
+7. **Performance Adequada**: Tempos de resposta dentro do esperado
+8. **Tratamento de Erros**: Cenários de erro tratados adequadamente
 
 ## 📝 Próximos Passos (Fase 4)
 

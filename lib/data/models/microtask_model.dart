@@ -35,7 +35,10 @@ class MicrotaskModel {
   final int maxVolunteers;
   final List<String> requiredSkills;
   final List<String> requiredResources;
-  final double estimatedHours;
+  final DateTime?
+  startDateTime; // Data e hora inicial da microtask (dd/mm/yyyy HH:MM)
+  final DateTime?
+  endDateTime; // Data e hora final da microtask (dd/mm/yyyy HH:MM)
   final String priority; // Usa string para compatibilidade com TaskPriority
   final MicrotaskStatus status;
   final String createdBy;
@@ -56,7 +59,8 @@ class MicrotaskModel {
     required this.maxVolunteers,
     required this.requiredSkills,
     required this.requiredResources,
-    required this.estimatedHours,
+    this.startDateTime,
+    this.endDateTime,
     required this.priority,
     required this.status,
     required this.createdBy,
@@ -82,7 +86,12 @@ class MicrotaskModel {
       requiredResources: List<String>.from(
         map['requiredResources'] as List? ?? [],
       ),
-      estimatedHours: (map['estimatedHours'] as num?)?.toDouble() ?? 0.0,
+      startDateTime: map['startDateTime'] != null
+          ? (map['startDateTime'] as Timestamp).toDate()
+          : null,
+      endDateTime: map['endDateTime'] != null
+          ? (map['endDateTime'] as Timestamp).toDate()
+          : null,
       priority: map['priority'] as String? ?? 'medium',
       status: MicrotaskStatus.fromString(map['status'] as String? ?? 'pending'),
       createdBy: map['createdBy'] as String,
@@ -119,7 +128,12 @@ class MicrotaskModel {
       'maxVolunteers': maxVolunteers,
       'requiredSkills': requiredSkills,
       'requiredResources': requiredResources,
-      'estimatedHours': estimatedHours,
+      'startDateTime': startDateTime != null
+          ? Timestamp.fromDate(startDateTime!)
+          : null,
+      'endDateTime': endDateTime != null
+          ? Timestamp.fromDate(endDateTime!)
+          : null,
       'priority': priority,
       'status': status.value,
       'createdBy': createdBy,
@@ -152,7 +166,8 @@ class MicrotaskModel {
     int? maxVolunteers,
     List<String>? requiredSkills,
     List<String>? requiredResources,
-    double? estimatedHours,
+    DateTime? startDateTime,
+    DateTime? endDateTime,
     String? priority,
     MicrotaskStatus? status,
     String? createdBy,
@@ -174,7 +189,8 @@ class MicrotaskModel {
       requiredSkills: requiredSkills ?? List<String>.from(this.requiredSkills),
       requiredResources:
           requiredResources ?? List<String>.from(this.requiredResources),
-      estimatedHours: estimatedHours ?? this.estimatedHours,
+      startDateTime: startDateTime ?? this.startDateTime,
+      endDateTime: endDateTime ?? this.endDateTime,
       priority: priority ?? this.priority,
       status: status ?? this.status,
       createdBy: createdBy ?? this.createdBy,
@@ -200,7 +216,8 @@ class MicrotaskModel {
     required String description,
     required List<String> requiredSkills,
     required List<String> requiredResources,
-    required double estimatedHours,
+    DateTime? startDateTime,
+    DateTime? endDateTime,
     required String priority,
     required int maxVolunteers,
     required String createdBy,
@@ -218,7 +235,8 @@ class MicrotaskModel {
       maxVolunteers: maxVolunteers > 0 ? maxVolunteers : 1,
       requiredSkills: requiredSkills,
       requiredResources: requiredResources,
-      estimatedHours: estimatedHours,
+      startDateTime: startDateTime,
+      endDateTime: endDateTime,
       priority: priority,
       status: MicrotaskStatus.pending,
       createdBy: createdBy,
@@ -262,8 +280,10 @@ class MicrotaskModel {
       errors.add('Número de voluntários atribuídos excede o máximo permitido');
     }
 
-    if (estimatedHours < 0) {
-      errors.add('Horas estimadas não podem ser negativas');
+    if (startDateTime != null &&
+        endDateTime != null &&
+        startDateTime!.isAfter(endDateTime!)) {
+      errors.add('Data/hora inicial deve ser anterior à data/hora final');
     }
 
     if (createdBy.isEmpty) {
@@ -408,7 +428,8 @@ class MicrotaskModel {
         other.title == title &&
         other.description == description &&
         other.maxVolunteers == maxVolunteers &&
-        other.estimatedHours == estimatedHours &&
+        other.startDateTime == startDateTime &&
+        other.endDateTime == endDateTime &&
         other.priority == priority &&
         other.status == status &&
         other.createdBy == createdBy;
@@ -423,12 +444,43 @@ class MicrotaskModel {
       title,
       description,
       maxVolunteers,
-      estimatedHours,
+      startDateTime,
+      endDateTime,
       priority,
       status,
       createdBy,
     );
   }
+
+  /// Retorna a duração estimada em horas (para compatibilidade)
+  double get estimatedHours {
+    if (startDateTime == null || endDateTime == null) return 0.0;
+    final duration = endDateTime!.difference(startDateTime!);
+    return duration.inMinutes / 60.0;
+  }
+
+  /// Retorna a data/hora inicial formatada
+  String get startDateTimeFormatted {
+    if (startDateTime == null) return 'Não definida';
+    return '${startDateTime!.day.toString().padLeft(2, '0')}/${startDateTime!.month.toString().padLeft(2, '0')}/${startDateTime!.year} ${startDateTime!.hour.toString().padLeft(2, '0')}:${startDateTime!.minute.toString().padLeft(2, '0')}';
+  }
+
+  /// Retorna a data/hora final formatada
+  String get endDateTimeFormatted {
+    if (endDateTime == null) return 'Não definida';
+    return '${endDateTime!.day.toString().padLeft(2, '0')}/${endDateTime!.month.toString().padLeft(2, '0')}/${endDateTime!.year} ${endDateTime!.hour.toString().padLeft(2, '0')}:${endDateTime!.minute.toString().padLeft(2, '0')}';
+  }
+
+  /// Retorna o período formatado
+  String get periodFormatted {
+    if (startDateTime == null || endDateTime == null) {
+      return 'Período não definido';
+    }
+    return '$startDateTimeFormatted - $endDateTimeFormatted';
+  }
+
+  /// Verifica se a microtask tem horário definido
+  bool get hasSchedule => startDateTime != null && endDateTime != null;
 
   @override
   String toString() {

@@ -10,7 +10,6 @@ import '../../controllers/event_controller.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_app_bar.dart';
-import '../../widgets/common/skill_chip.dart';
 import '../../widgets/common/loading_widget.dart';
 
 /// Tela para criação de microtasks
@@ -27,9 +26,12 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _estimatedHoursController = TextEditingController();
   final _maxVolunteersController = TextEditingController();
   final _notesController = TextEditingController();
+
+  // Data e hora da microtask
+  DateTime? _startDateTime;
+  DateTime? _endDateTime;
 
   String? _selectedTaskId;
   TaskPriority _priority = TaskPriority.medium;
@@ -49,7 +51,6 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _estimatedHoursController.dispose();
     _maxVolunteersController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -182,26 +183,88 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
 
                           const SizedBox(height: AppDimensions.spacingMd),
 
-                          Row(
-                            children: [
-                              Expanded(
-                                child: CustomTextField(
-                                  controller: _estimatedHoursController,
-                                  label: 'Horas Estimadas',
-                                  hint: '2.5',
-                                  keyboardType: TextInputType.number,
-                                  validator: (value) {
-                                    if (value == null || value.trim().isEmpty) {
-                                      return 'Horas estimadas são obrigatórias';
-                                    }
-                                    final hours = double.tryParse(value.trim());
-                                    if (hours == null || hours < 0) {
-                                      return 'Digite um número válido';
-                                    }
-                                    return null;
-                                  },
+                          // Data e hora inicial
+                          const Text(
+                            'Data e Hora Inicial:',
+                            style: TextStyle(
+                              fontSize: AppDimensions.fontSizeMd,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingSm),
+
+                          GestureDetector(
+                            onTap: () => _selectStartDateTime(context),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(
+                                AppDimensions.paddingMd,
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: AppColors.border),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd,
                                 ),
                               ),
+                              child: Text(
+                                _startDateTime != null
+                                    ? '${_startDateTime!.day.toString().padLeft(2, '0')}/${_startDateTime!.month.toString().padLeft(2, '0')}/${_startDateTime!.year} ${_startDateTime!.hour.toString().padLeft(2, '0')}:${_startDateTime!.minute.toString().padLeft(2, '0')}'
+                                    : 'Selecionar data e hora inicial',
+                                style: TextStyle(
+                                  fontSize: AppDimensions.fontSizeMd,
+                                  color: _startDateTime != null
+                                      ? AppColors.textPrimary
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: AppDimensions.spacingMd),
+
+                          // Data e hora final
+                          const Text(
+                            'Data e Hora Final:',
+                            style: TextStyle(
+                              fontSize: AppDimensions.fontSizeMd,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingSm),
+
+                          GestureDetector(
+                            onTap: () => _selectEndDateTime(context),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(
+                                AppDimensions.paddingMd,
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: AppColors.border),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd,
+                                ),
+                              ),
+                              child: Text(
+                                _endDateTime != null
+                                    ? '${_endDateTime!.day.toString().padLeft(2, '0')}/${_endDateTime!.month.toString().padLeft(2, '0')}/${_endDateTime!.year} ${_endDateTime!.hour.toString().padLeft(2, '0')}:${_endDateTime!.minute.toString().padLeft(2, '0')}'
+                                    : 'Selecionar data e hora final',
+                                style: TextStyle(
+                                  fontSize: AppDimensions.fontSizeMd,
+                                  color: _endDateTime != null
+                                      ? AppColors.textPrimary
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: AppDimensions.spacingMd),
+
+                          Row(
+                            children: [
                               const SizedBox(width: AppDimensions.spacingMd),
                               Expanded(
                                 child: CustomTextField(
@@ -557,11 +620,88 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
     });
   }
 
+  Future<void> _selectStartDateTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _startDateTime ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_startDateTime ?? DateTime.now()),
+      );
+
+      if (pickedTime != null) {
+        setState(() {
+          _startDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
+    }
+  }
+
+  Future<void> _selectEndDateTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _endDateTime ?? _startDateTime ?? DateTime.now(),
+      firstDate: _startDateTime ?? DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_endDateTime ?? DateTime.now()),
+      );
+
+      if (pickedTime != null) {
+        setState(() {
+          _endDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
+    }
+  }
+
   Future<void> _handleCreateMicrotask(
     AuthController authController,
     TaskController taskController,
   ) async {
     if (!_formKey.currentState!.validate()) return;
+
+    // Validação de data/hora
+    if (_startDateTime == null || _endDateTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione a data e hora inicial e final'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (_startDateTime!.isAfter(_endDateTime!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Data/hora inicial deve ser anterior à final'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
 
     final success = await taskController.createMicrotask(
       taskId: _selectedTaskId!,
@@ -570,7 +710,8 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
       description: _descriptionController.text.trim(),
       requiredSkills: _selectedSkills,
       requiredResources: _selectedResources,
-      estimatedHours: double.parse(_estimatedHoursController.text.trim()),
+      startDateTime: _startDateTime,
+      endDateTime: _endDateTime,
       priority: _priority.value,
       maxVolunteers: int.parse(_maxVolunteersController.text.trim()),
       createdBy: authController.currentUser!.id,

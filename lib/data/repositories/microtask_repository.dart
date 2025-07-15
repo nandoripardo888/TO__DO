@@ -15,7 +15,7 @@ class MicrotaskRepository {
     MicrotaskService? microtaskService,
     AssignmentService? assignmentService,
   }) : _microtaskService = microtaskService ?? MicrotaskService(),
-        _assignmentService = assignmentService ?? AssignmentService();
+       _assignmentService = assignmentService ?? AssignmentService();
 
   /// Cria uma nova microtask
   Future<MicrotaskModel> createMicrotask({
@@ -25,7 +25,8 @@ class MicrotaskRepository {
     required String description,
     required List<String> requiredSkills,
     required List<String> requiredResources,
-    required double estimatedHours,
+    DateTime? startDateTime,
+    DateTime? endDateTime,
     required String priority,
     required int maxVolunteers,
     required String createdBy,
@@ -39,7 +40,8 @@ class MicrotaskRepository {
         description: description.trim(),
         requiredSkills: requiredSkills,
         requiredResources: requiredResources,
-        estimatedHours: estimatedHours,
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
         priority: priority,
         maxVolunteers: maxVolunteers,
         createdBy: createdBy,
@@ -77,7 +79,9 @@ class MicrotaskRepository {
       return await _microtaskService.getMicrotasksByTaskId(taskId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar microtasks da task: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar microtasks da task: ${e.toString()}',
+      );
     }
   }
 
@@ -91,7 +95,9 @@ class MicrotaskRepository {
       return await _microtaskService.getMicrotasksByEventId(eventId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar microtasks do evento: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar microtasks do evento: ${e.toString()}',
+      );
     }
   }
 
@@ -105,12 +111,17 @@ class MicrotaskRepository {
       return await _microtaskService.getMicrotasksByUserId(userId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar microtasks do usuário: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar microtasks do usuário: ${e.toString()}',
+      );
     }
   }
 
   /// Busca microtasks por status
-  Future<List<MicrotaskModel>> getMicrotasksByStatus(String eventId, MicrotaskStatus status) async {
+  Future<List<MicrotaskModel>> getMicrotasksByStatus(
+    String eventId,
+    MicrotaskStatus status,
+  ) async {
     try {
       if (eventId.isEmpty) {
         throw ValidationException('ID do evento é obrigatório');
@@ -119,7 +130,9 @@ class MicrotaskRepository {
       return await _microtaskService.getMicrotasksByStatus(eventId, status);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar microtasks por status: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar microtasks por status: ${e.toString()}',
+      );
     }
   }
 
@@ -127,7 +140,9 @@ class MicrotaskRepository {
   Future<MicrotaskModel> updateMicrotask(MicrotaskModel microtask) async {
     try {
       if (microtask.id.isEmpty) {
-        throw ValidationException('ID da microtask é obrigatório para atualização');
+        throw ValidationException(
+          'ID da microtask é obrigatório para atualização',
+        );
       }
 
       return await _microtaskService.updateMicrotask(microtask);
@@ -207,7 +222,9 @@ class MicrotaskRepository {
       );
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar voluntários compatíveis: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar voluntários compatíveis: ${e.toString()}',
+      );
     }
   }
 
@@ -230,12 +247,17 @@ class MicrotaskRepository {
       );
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar microtasks disponíveis: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar microtasks disponíveis: ${e.toString()}',
+      );
     }
   }
 
   /// Atualiza o status de uma microtask
-  Future<MicrotaskModel> updateMicrotaskStatus(String microtaskId, MicrotaskStatus status) async {
+  Future<MicrotaskModel> updateMicrotaskStatus(
+    String microtaskId,
+    MicrotaskStatus status,
+  ) async {
     try {
       if (microtaskId.isEmpty) {
         throw ValidationException('ID da microtask é obrigatório');
@@ -244,7 +266,9 @@ class MicrotaskRepository {
       return await _microtaskService.updateMicrotaskStatus(microtaskId, status);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao atualizar status da microtask: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao atualizar status da microtask: ${e.toString()}',
+      );
     }
   }
 
@@ -267,7 +291,9 @@ class MicrotaskRepository {
       );
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar status do usuário: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar status do usuário: ${e.toString()}',
+      );
     }
   }
 
@@ -296,26 +322,36 @@ class MicrotaskRepository {
       );
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao atualizar status do usuário: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao atualizar status do usuário: ${e.toString()}',
+      );
     }
   }
 
   /// Busca todas as relações usuário-microtask de uma microtask
-  Future<List<UserMicrotaskModel>> getUserMicrotasksByMicrotaskId(String microtaskId) async {
+  Future<List<UserMicrotaskModel>> getUserMicrotasksByMicrotaskId(
+    String microtaskId,
+  ) async {
     try {
       if (microtaskId.isEmpty) {
         throw ValidationException('ID da microtask é obrigatório');
       }
 
-      return await _assignmentService.getUserMicrotasksByMicrotaskId(microtaskId);
+      return await _assignmentService.getUserMicrotasksByMicrotaskId(
+        microtaskId,
+      );
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar relações usuário-microtask: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar relações usuário-microtask: ${e.toString()}',
+      );
     }
   }
 
   /// Busca todas as microtasks de um usuário com seus status
-  Future<List<UserMicrotaskModel>> getUserMicrotasksByUserId(String userId) async {
+  Future<List<UserMicrotaskModel>> getUserMicrotasksByUserId(
+    String userId,
+  ) async {
     try {
       if (userId.isEmpty) {
         throw ValidationException('ID do usuário é obrigatório');
@@ -324,7 +360,9 @@ class MicrotaskRepository {
       return await _assignmentService.getUserMicrotasksByUserId(userId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar microtasks do usuário: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao buscar microtasks do usuário: ${e.toString()}',
+      );
     }
   }
 
@@ -352,7 +390,9 @@ class MicrotaskRepository {
       await _microtaskService.deleteMicrotasksByTaskId(taskId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao deletar microtasks da task: ${e.toString()}');
+      throw RepositoryException(
+        'Erro ao deletar microtasks da task: ${e.toString()}',
+      );
     }
   }
 
@@ -391,7 +431,8 @@ class MicrotaskRepository {
     required String eventId,
     required String createdBy,
     required int maxVolunteers,
-    required double estimatedHours,
+    DateTime? startDateTime,
+    DateTime? endDateTime,
   }) {
     if (title.trim().isEmpty) return false;
     if (title.trim().length < 3) return false;
@@ -402,7 +443,11 @@ class MicrotaskRepository {
     if (eventId.isEmpty) return false;
     if (createdBy.isEmpty) return false;
     if (maxVolunteers <= 0) return false;
-    if (estimatedHours < 0) return false;
+
+    // Validação de data/hora (opcional, mas se fornecida deve ser válida)
+    if (startDateTime != null && endDateTime != null) {
+      if (startDateTime.isAfter(endDateTime)) return false;
+    }
 
     return true;
   }

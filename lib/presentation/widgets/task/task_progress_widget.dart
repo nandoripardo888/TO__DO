@@ -27,7 +27,7 @@ class TaskProgressWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = _calculateProgress();
     final color = _getProgressColor(progress);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -55,10 +55,9 @@ class TaskProgressWidget extends StatelessWidget {
                 ),
             ],
           ),
-        
-        if (showDetails)
-          const SizedBox(height: 4),
-        
+
+        if (showDetails) const SizedBox(height: 4),
+
         // Barra de progresso
         LinearProgressIndicator(
           value: progress,
@@ -66,7 +65,7 @@ class TaskProgressWidget extends StatelessWidget {
           valueColor: AlwaysStoppedAnimation<Color>(color),
           minHeight: 6,
         ),
-        
+
         // Detalhes adicionais
         if (showDetails && (task != null || microtask != null)) ...[
           const SizedBox(height: 4),
@@ -87,16 +86,13 @@ class TaskProgressWidget extends StatelessWidget {
 
   Widget _buildTaskDetails() {
     if (task == null) return const SizedBox.shrink();
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           '${task!.completedMicrotasks} de ${task!.microtaskCount} microtasks',
-          style: const TextStyle(
-            fontSize: 10,
-            color: AppColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
         ),
         _buildStatusChip(task!.status.toString().split('.').last),
       ],
@@ -105,16 +101,15 @@ class TaskProgressWidget extends StatelessWidget {
 
   Widget _buildMicrotaskDetails() {
     if (microtask == null) return const SizedBox.shrink();
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Estimado: ${microtask!.estimatedHours}h',
-          style: const TextStyle(
-            fontSize: 10,
-            color: AppColors.textSecondary,
-          ),
+          microtask!.hasSchedule
+              ? 'Duração: ${microtask!.estimatedHours.toStringAsFixed(1)}h'
+              : 'Horário não definido',
+          style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
         ),
         _buildStatusChip(microtask!.status.toString().split('.').last),
       ],
@@ -124,7 +119,7 @@ class TaskProgressWidget extends StatelessWidget {
   Widget _buildStatusChip(String status) {
     Color color;
     String text;
-    
+
     switch (status.toLowerCase()) {
       case 'pending':
         color = AppColors.warning;
@@ -150,7 +145,7 @@ class TaskProgressWidget extends StatelessWidget {
         color = AppColors.textSecondary;
         text = status;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -173,12 +168,12 @@ class TaskProgressWidget extends StatelessWidget {
     if (customProgress != null) {
       return customProgress!.clamp(0.0, 1.0);
     }
-    
+
     if (task != null) {
       if (task!.microtaskCount == 0) return 0.0;
       return (task!.completedMicrotasks / task!.microtaskCount).clamp(0.0, 1.0);
     }
-    
+
     if (microtask != null) {
       switch (microtask!.status) {
         case MicrotaskStatus.pending:
@@ -193,7 +188,7 @@ class TaskProgressWidget extends StatelessWidget {
           return 0.0;
       }
     }
-    
+
     return 0.0;
   }
 
@@ -238,7 +233,7 @@ class CircularTaskProgressWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progressColor = color ?? _getProgressColor(progress);
-    
+
     return SizedBox(
       width: size,
       height: size,
@@ -252,7 +247,7 @@ class CircularTaskProgressWidget extends StatelessWidget {
             backgroundColor: AppColors.border,
             valueColor: AlwaysStoppedAnimation<Color>(progressColor),
           ),
-          
+
           // Texto central
           if (showPercentage || centerText != null)
             Text(
@@ -304,44 +299,46 @@ class MultiProgressWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingSm),
-        
-        ...items.map((item) => Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    item.label,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
+
+        ...items.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      item.label,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                  ),
-                  Text(
-                    '${(item.progress * 100).toInt()}%',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: item.color ?? _getProgressColor(item.progress),
+                    Text(
+                      '${(item.progress * 100).toInt()}%',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: item.color ?? _getProgressColor(item.progress),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              LinearProgressIndicator(
-                value: item.progress,
-                backgroundColor: AppColors.border,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  item.color ?? _getProgressColor(item.progress),
+                  ],
                 ),
-                minHeight: 4,
-              ),
-            ],
+                const SizedBox(height: 2),
+                LinearProgressIndicator(
+                  value: item.progress,
+                  backgroundColor: AppColors.border,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    item.color ?? _getProgressColor(item.progress),
+                  ),
+                  minHeight: 4,
+                ),
+              ],
+            ),
           ),
-        )),
+        ),
       ],
     );
   }
@@ -363,9 +360,5 @@ class ProgressItem {
   final double progress;
   final Color? color;
 
-  const ProgressItem({
-    required this.label,
-    required this.progress,
-    this.color,
-  });
+  const ProgressItem({required this.label, required this.progress, this.color});
 }

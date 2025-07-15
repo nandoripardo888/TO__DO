@@ -297,7 +297,8 @@ lib/
   "maxVolunteers": 5,
   "requiredSkills": ["skill1"],
   "requiredResources": ["resource1"],
-  "estimatedHours": 2,
+  "startDateTime": "timestamp", // Data e hora inicial específica (dd/mm/yyyy HH:MM)
+  "endDateTime": "timestamp", // Data e hora final específica (dd/mm/yyyy HH:MM)
   "priority": "high|medium|low",
   "status": "pending|assigned|in_progress|completed|cancelled",
   "createdBy": "user_id",
@@ -321,6 +322,7 @@ lib/
     "start": "09:00",
     "end": "18:00"
   },
+  "isFullTimeAvailable": false, // Disponibilidade integral (qualquer horário)
   "skills": ["skill1", "skill2"],
   "resources": ["resource1", "resource2"],
   "joinedAt": "timestamp"
@@ -361,7 +363,8 @@ dependencies:
 
 ### Sistema de Atribuição Inteligente
 - Compatibilidade automática entre habilidades necessárias e disponíveis
-- Verificação de disponibilidade de horários
+- Verificação de disponibilidade de horários específicos (dd/mm/yyyy HH:MM)
+- Suporte a disponibilidade integral (voluntários disponíveis a qualquer momento)
 - Sugestão de voluntários mais adequados **para microtasks específicas**
 - Tasks servem apenas como agrupadores organizacionais
 - **Controle de capacidade máxima por microtask**
@@ -376,6 +379,18 @@ dependencies:
 - **Eventos:** active, completed, cancelled
 - **Tasks:** pending, in_progress, completed
 - **Microtasks:** pending, assigned, in_progress, completed, cancelled
+
+### Sistema de Data/Hora Específica para Microtasks
+- **Definição precisa de horários**: Cada microtask possui data/hora inicial e final específicas (formato dd/mm/yyyy HH:MM)
+- **Substituição do sistema de horas estimadas**: Ao invés de estimar duração, define-se período exato de execução
+- **Validação de períodos**: Sistema impede criação de microtasks com data/hora inicial posterior à final
+- **Compatibilidade com disponibilidade**: Verifica se voluntários estão disponíveis no período da microtask
+
+### Sistema de Disponibilidade Integral para Voluntários
+- **Opção de disponibilidade total**: Voluntários podem marcar disponibilidade integral (qualquer horário)
+- **Flexibilidade máxima**: Voluntários com disponibilidade integral podem ser atribuídos a qualquer microtask
+- **Interface simplificada**: Quando marcada disponibilidade integral, campos específicos de dias/horários são ocultados
+- **Validação inteligente**: Sistema aceita tanto disponibilidade específica quanto integral
 
 ### Sistema de Participação Inteligente
 - **Verificação de participação existente** antes de permitir nova inscrição

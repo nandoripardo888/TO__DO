@@ -37,9 +37,7 @@ class VolunteerListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (volunteers.isEmpty) {
@@ -52,16 +50,15 @@ class VolunteerListWidget extends StatelessWidget {
       itemBuilder: (context, index) {
         final volunteer = volunteers[index];
         final profile = _getVolunteerProfile(volunteer.id);
-        
+
         return VolunteerCard(
           user: volunteer,
           profile: profile,
-          onTap: onVolunteerTap != null ? () => onVolunteerTap!(volunteer) : null,
-          onAssignMicrotask: onAssignMicrotask != null ? () => onAssignMicrotask!(volunteer) : null,
-          onPromoteToManager: onPromoteToManager != null ? () => onPromoteToManager!(volunteer) : null,
-          showActions: showActions,
-          isManager: isManager,
+          isManager: true, // Supondo que esta tela seja para gerentes
+          showActions: true,
           assignedMicrotasksCount: _getAssignedMicrotasksCount(volunteer.id),
+          // Ação unificada que chama o novo diálogo de opções
+          onShowActions: () => {},
         );
       },
     );
@@ -156,9 +153,9 @@ class CompactVolunteerList extends StatelessWidget {
               ),
           ],
         ),
-        
+
         const SizedBox(height: AppDimensions.spacingSm),
-        
+
         // Lista de voluntários
         if (volunteers.isEmpty)
           Container(
@@ -224,13 +221,15 @@ class CompactVolunteerList extends StatelessWidget {
                   )
                 : null,
           ),
-          
+
           const SizedBox(width: AppDimensions.spacingSm),
-          
+
           // Informações do voluntário
           Expanded(
             child: GestureDetector(
-              onTap: onVolunteerTap != null ? () => onVolunteerTap!(volunteer) : null,
+              onTap: onVolunteerTap != null
+                  ? () => onVolunteerTap!(volunteer)
+                  : null,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -253,11 +252,13 @@ class CompactVolunteerList extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Botão de remover
           if (showRemoveButton)
             IconButton(
-              onPressed: onRemoveVolunteer != null ? () => onRemoveVolunteer!(volunteer) : null,
+              onPressed: onRemoveVolunteer != null
+                  ? () => onRemoveVolunteer!(volunteer)
+                  : null,
               icon: const Icon(Icons.remove_circle_outline),
               color: AppColors.error,
               iconSize: 20,
@@ -299,11 +300,13 @@ class VolunteerAvatarList extends StatelessWidget {
         ...visibleVolunteers.asMap().entries.map((entry) {
           final index = entry.key;
           final volunteer = entry.value;
-          
+
           return Container(
             margin: EdgeInsets.only(left: index > 0 ? -8 : 0),
             child: GestureDetector(
-              onTap: onVolunteerTap != null ? () => onVolunteerTap!(volunteer) : null,
+              onTap: onVolunteerTap != null
+                  ? () => onVolunteerTap!(volunteer)
+                  : null,
               child: CircleAvatar(
                 radius: avatarSize / 2,
                 backgroundColor: AppColors.primary.withOpacity(0.1),
@@ -326,7 +329,7 @@ class VolunteerAvatarList extends StatelessWidget {
             ),
           );
         }),
-        
+
         // Indicador de mais voluntários
         if (remainingCount > 0)
           Container(

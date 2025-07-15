@@ -24,8 +24,6 @@ class TrackTasksScreen extends StatefulWidget {
 class _TrackTasksScreenState extends State<TrackTasksScreen> {
   final Set<String> _expandedTasks = {};
   String _searchQuery = '';
-  TaskStatus? _statusFilter;
-  TaskPriority? _priorityFilter;
 
   @override
   Widget build(BuildContext context) {
@@ -38,25 +36,23 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
         final allTasks = taskController.tasks;
         final filteredTasks = _getFilteredTasks(allTasks);
 
-        if (filteredTasks.isEmpty) {
-          return _buildEmptyState();
-        }
-
         return Column(
           children: [
             _buildSearchAndFilters(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppDimensions.paddingLg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(filteredTasks),
-                    const SizedBox(height: AppDimensions.spacingLg),
-                    _buildTasksList(filteredTasks, taskController),
-                  ],
-                ),
-              ),
+              child: filteredTasks.isEmpty
+                  ? _buildEmptyState()
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(AppDimensions.paddingLg),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHeader(allTasks),
+                          const SizedBox(height: AppDimensions.spacingLg),
+                          _buildTasksList(allTasks, taskController),
+                        ],
+                      ),
+                    ),
             ),
           ],
         );
@@ -398,21 +394,6 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
         return title.contains(query) || description.contains(query);
       }).toList();
     }
-
-    // Aplicar filtro de status
-    if (_statusFilter != null) {
-      filtered = filtered
-          .where((task) => task.status == _statusFilter)
-          .toList();
-    }
-
-    // Aplicar filtro de prioridade
-    if (_priorityFilter != null) {
-      filtered = filtered
-          .where((task) => task.priority == _priorityFilter)
-          .toList();
-    }
-
     return filtered;
   }
 
@@ -444,162 +425,9 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
               ),
             ),
           ),
-
           const SizedBox(height: AppDimensions.spacingMd),
-
-          // Filtros
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                const Text(
-                  'Filtros:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-
-                // Filtro de status
-                _buildStatusFilter(),
-                const SizedBox(width: AppDimensions.spacingSm),
-
-                // Filtro de prioridade
-                _buildPriorityFilter(),
-
-                // Botão limpar filtros
-                if (_statusFilter != null || _priorityFilter != null) ...[
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _statusFilter = null;
-                        _priorityFilter = null;
-                      });
-                    },
-                    child: const Text('Limpar'),
-                  ),
-                ],
-              ],
-            ),
-          ),
         ],
       ),
     );
-  }
-
-  Widget _buildStatusFilter() {
-    return PopupMenuButton<TaskStatus?>(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: _statusFilter != null
-              ? AppColors.primary.withOpacity(0.1)
-              : null,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.filter_list, size: 16),
-            const SizedBox(width: 4),
-            Text(
-              _statusFilter != null ? _getStatusText(_statusFilter!) : 'Status',
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-      itemBuilder: (context) => [
-        const PopupMenuItem(value: null, child: Text('Todos')),
-        ...TaskStatus.values.map(
-          (status) =>
-              PopupMenuItem(value: status, child: Text(_getStatusText(status))),
-        ),
-      ],
-      onSelected: (status) {
-        setState(() {
-          _statusFilter = status;
-        });
-      },
-    );
-  }
-
-  Widget _buildPriorityFilter() {
-    return PopupMenuButton<TaskPriority?>(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: _priorityFilter != null
-              ? AppColors.primary.withOpacity(0.1)
-              : null,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.priority_high, size: 16),
-            const SizedBox(width: 4),
-            Text(
-              _priorityFilter != null
-                  ? _getPriorityText(_priorityFilter!)
-                  : 'Prioridade',
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-      itemBuilder: (context) => [
-        const PopupMenuItem(value: null, child: Text('Todas')),
-        ...TaskPriority.values.map(
-          (priority) => PopupMenuItem(
-            value: priority,
-            child: Text(_getPriorityText(priority)),
-          ),
-        ),
-      ],
-      onSelected: (priority) {
-        setState(() {
-          _priorityFilter = priority;
-        });
-      },
-    );
-  }
-
-  String _getStatusText(TaskStatus status) {
-    switch (status) {
-      case TaskStatus.pending:
-        return 'Pendente';
-      case TaskStatus.inProgress:
-        return 'Em Progresso';
-      case TaskStatus.completed:
-        return 'Concluída';
-      case TaskStatus.cancelled:
-        return 'Cancelada';
-    }
-  }
-
-  String _getPriorityText(TaskPriority priority) {
-    switch (priority) {
-      case TaskPriority.high:
-        return 'Alta';
-      case TaskPriority.medium:
-        return 'Média';
-      case TaskPriority.low:
-        return 'Baixa';
-    }
-  }
-
-  void _toggleTaskExpansion(String taskId) {
-    setState(() {
-      if (_expandedTasks.contains(taskId)) {
-        _expandedTasks.remove(taskId);
-      } else {
-        _expandedTasks.add(taskId);
-      }
-    });
   }
 }

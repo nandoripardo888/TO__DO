@@ -35,6 +35,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
   final List<String> _selectedDays = [];
   TimeOfDay _startTime = const TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 18, minute: 0);
+  bool _isFullTimeAvailable = false; // Disponibilidade integral
 
   // Dias da semana
   final List<Map<String, String>> _weekDays = [
@@ -391,112 +392,151 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
         ),
         const SizedBox(height: AppDimensions.spacingSm),
 
-        // Dias da semana
-        const Text(
-          'Dias disponíveis:',
-          style: TextStyle(
-            fontSize: AppDimensions.fontSizeMd,
-            color: AppColors.textSecondary,
+        // Opção de disponibilidade integral
+        CheckboxListTile(
+          title: const Text(
+            'Disponibilidade integral (qualquer horário)',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeMd,
+              color: AppColors.textPrimary,
+            ),
           ),
-        ),
-        const SizedBox(height: AppDimensions.spacingSm),
-
-        Wrap(
-          spacing: AppDimensions.spacingSm,
-          runSpacing: AppDimensions.spacingSm,
-          children: _weekDays.map((day) {
-            final isSelected = _selectedDays.contains(day['key']);
-            return SkillChip(
-              label: day['label']!,
-              isSelected: isSelected,
-              onTap: () => _toggleDay(day['key']!),
-            );
-          }).toList(),
+          subtitle: const Text(
+            'Marque esta opção se você está disponível a qualquer momento',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeSm,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          value: _isFullTimeAvailable,
+          onChanged: (bool? value) {
+            setState(() {
+              _isFullTimeAvailable = value ?? false;
+              if (_isFullTimeAvailable) {
+                // Limpa seleções específicas quando disponibilidade integral é marcada
+                _selectedDays.clear();
+              }
+            });
+          },
+          activeColor: AppColors.primary,
+          contentPadding: EdgeInsets.zero,
         ),
 
         const SizedBox(height: AppDimensions.spacingMd),
 
-        // Horários
-        const Text(
-          'Horário disponível:',
-          style: TextStyle(
-            fontSize: AppDimensions.fontSizeMd,
-            color: AppColors.textSecondary,
+        // Seção de disponibilidade específica (só aparece se não for integral)
+        if (!_isFullTimeAvailable) ...[
+          // Dias da semana
+          const Text(
+            'Dias disponíveis:',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeMd,
+              color: AppColors.textSecondary,
+            ),
           ),
-        ),
-        const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.spacingSm),
 
-        Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _selectTime(context, true),
-                child: Container(
-                  padding: const EdgeInsets.all(AppDimensions.paddingMd),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Início',
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeSm,
-                          color: AppColors.textSecondary,
-                        ),
+          Wrap(
+            spacing: AppDimensions.spacingSm,
+            runSpacing: AppDimensions.spacingSm,
+            children: _weekDays.map((day) {
+              final isSelected = _selectedDays.contains(day['key']);
+              return SkillChip(
+                label: day['label']!,
+                isSelected: isSelected,
+                onTap: () => _toggleDay(day['key']!),
+              );
+            }).toList(),
+          ),
+
+          const SizedBox(height: AppDimensions.spacingMd),
+
+          // Horários
+          const Text(
+            'Horário disponível:',
+            style: TextStyle(
+              fontSize: AppDimensions.fontSizeMd,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _selectTime(context, true),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppDimensions.paddingMd),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.border),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusMd,
                       ),
-                      const SizedBox(height: AppDimensions.spacingXs),
-                      Text(
-                        _startTime.format(context),
-                        style: const TextStyle(
-                          fontSize: AppDimensions.fontSizeLg,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Início',
+                          style: TextStyle(
+                            fontSize: AppDimensions.fontSizeSm,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: AppDimensions.spacingXs),
+                        Text(
+                          _startTime.format(context),
+                          style: const TextStyle(
+                            fontSize: AppDimensions.fontSizeLg,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: AppDimensions.spacingMd),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _selectTime(context, false),
-                child: Container(
-                  padding: const EdgeInsets.all(AppDimensions.paddingMd),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Fim',
-                        style: TextStyle(
-                          fontSize: AppDimensions.fontSizeSm,
-                          color: AppColors.textSecondary,
-                        ),
+              const SizedBox(width: AppDimensions.spacingMd),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _selectTime(context, false),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppDimensions.paddingMd),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.border),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusMd,
                       ),
-                      const SizedBox(height: AppDimensions.spacingXs),
-                      Text(
-                        _endTime.format(context),
-                        style: const TextStyle(
-                          fontSize: AppDimensions.fontSizeLg,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Fim',
+                          style: TextStyle(
+                            fontSize: AppDimensions.fontSizeSm,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: AppDimensions.spacingXs),
+                        Text(
+                          _endTime.format(context),
+                          style: const TextStyle(
+                            fontSize: AppDimensions.fontSizeLg,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ], // Fecha a seção condicional
       ],
     );
   }
@@ -884,23 +924,40 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
     }
 
     // Validações específicas
-    if (_selectedDays.isEmpty) {
+    if (!_isFullTimeAvailable && _selectedDays.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Selecione pelo menos um dia de disponibilidade'),
+          content: Text(
+            'Selecione pelo menos um dia de disponibilidade ou marque disponibilidade integral',
+          ),
           backgroundColor: AppColors.error,
         ),
       );
       return;
     }
 
-    // Converte horários para string
-    final startTimeString =
-        '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}';
-    final endTimeString =
-        '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}';
+    // Converte horários para string (ou usa valores padrão para disponibilidade integral)
+    final startTimeString = _isFullTimeAvailable
+        ? '00:00'
+        : '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}';
+    final endTimeString = _isFullTimeAvailable
+        ? '23:59'
+        : '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}';
 
     final timeRange = TimeRange(start: startTimeString, end: endTimeString);
+
+    // Para disponibilidade integral, usa todos os dias da semana
+    final availableDays = _isFullTimeAvailable
+        ? [
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+            'sunday',
+          ]
+        : _selectedDays;
 
     // Limpa erros anteriores
     eventController.clearError();
@@ -908,8 +965,9 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
     final success = await eventController.joinEvent(
       eventId: event.id,
       userId: user.id,
-      availableDays: _selectedDays,
+      availableDays: availableDays,
       availableHours: timeRange,
+      isFullTimeAvailable: _isFullTimeAvailable,
       skills: _selectedSkills,
       resources: _selectedResources,
     );
