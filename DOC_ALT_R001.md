@@ -147,3 +147,72 @@ Essa modificação irá:
 | AC-08 | Clicar em "Editar" leva a um formulário com todos os campos pré-preenchidos com os dados atuais. | ☐ |
 | AC-09 | Após modificar os dados e salvar, o documento na collectionvolunteer_profilesdo Firestore é atualizado com sucesso. | ☐ |
 | AC-10 | Após salvar a edição, o usuário é redirecionado para a tela de visualização e os novos dados são exibidos corretamente. | ☐ |
+
+
+-------------------------------------------------------------------------
+Resumo da Implementação
+✅ REQ-04: FAB de Edição na Tela de Detalhes do Evento
+Implementado com sucesso:
+
+✅ AC-11: FAB de edição (ícone lápis) posicionado acima do FAB de "+"
+✅ AC-12: FAB de edição visível apenas na aba "Evento"
+✅ AC-13: FAB de edição visível apenas para gerenciadores
+Código implementado:
+
+Modificado _buildFloatingActionButton() para retornar Column com dois FABs na aba "Evento"
+Adicionado método _isEventTabActive() para verificar aba ativa
+Adicionado método _navigateToEditEvent() para navegação
+✅ REQ-05: Tela de Edição de Evento
+Implementado com sucesso:
+
+✅ AC-14: Navegação para tela de edição com campos pré-preenchidos
+✅ AC-15: Botões "Cancelar" e "Salvar Alterações" no lugar de "Criar Evento"
+Código implementado:
+
+Modificado CreateEventScreen para aceitar EventModel? eventToEdit
+Adicionado _isEditMode getter para controlar modo
+Implementado _populateFieldsForEdit() para pré-preenchimento
+Modificado AppBar para mostrar título correto
+Implementado _buildActionButtons() para botões diferentes por modo
+Atualizado app_routes.dart para aceitar evento como argumento
+✅ REQ-06: Lógica de Salvamento e Cancelamento
+Implementado com sucesso:
+
+✅ AC-16: Botão "Cancelar" retorna sem salvar alterações
+✅ AC-17: Botão "Salvar Alterações" atualiza dados no Firestore
+✅ AC-18: Após salvar, retorna à tela de detalhes com dados atualizados
+Código implementado:
+
+Implementado updateEvent() no EventController
+Método updateEvent() já existia no EventRepository e EventService
+Implementado _handleUpdateEvent() no CreateEventScreen
+Adicionado tratamento de erros e feedback visual
+Implementado recarregamento de dados após edição
+Arquivos Modificados
+Update Task List
+2 updated
+✅ Implementação Completa da Funcionalidade de Edição de Eventos
+A funcionalidade de edição de eventos foi implementada com sucesso conforme especificado no DOC_ALT_R002.md. Todos os requisitos funcionais (REQ-04, REQ-05, REQ-06) e critérios de aceite (AC-11 a AC-18) foram atendidos.
+
+📋 Arquivos Modificados:
+ lib/presentation/screens/event/event_details_screen.dart
+Adicionado FAB de edição posicionado acima do FAB existente
+Implementado controle de visibilidade baseado na aba ativa e permissões
+Adicionado navegação para modo de edição
+ lib/presentation/screens/event/create_event_screen.dart
+Refatorado para aceitar evento opcional para edição
+Implementado pré-preenchimento de campos
+Adicionado botões diferentes para modo de criação vs edição
+Implementado lógica de atualização de evento
+ lib/presentation/controllers/event_controller.dart
+Implementado método updateEvent() com validações
+Adicionado tratamento de erros e atualização de estado
+ lib/presentation/routes/app_routes.dart
+Modificado para aceitar EventModel opcional como argumento
+🎯 Funcionalidades Implementadas:
+✅ FAB de Edição: Botão flutuante com ícone de lápis, visível apenas na aba "Evento" para gerenciadores
+✅ Modo de Edição: Tela reutilizada com campos pré-preenchidos e botões apropriados
+✅ Validações: Mesmas validações da criação aplicadas na edição
+✅ Persistência: Dados atualizados salvos no Firestore
+✅ Feedback: Mensagens de sucesso/erro e recarregamento automático
+✅ Navegação: Fluxo completo de edição com retorno à tela de detalhes

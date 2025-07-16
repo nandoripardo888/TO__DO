@@ -106,8 +106,39 @@ Atualmente, uma vez que um evento é criado, seus dados são imutáveis. Na prá
 | AC-17 | Após editar um ou mais campos e clicar em "Salvar Alterações", os dados do evento são atualizados no Firestore.
 | AC-18 | Após salvar, o usuário é retornado à tela de detalhes e pode visualizar as informações atualizadas do evento.
 
-Exportar para as Planilhas
+Funcionalidade de Edição de Eventos - IMPLEMENTADA COM SUCESSO
+🔧 Problema Identificado e Resolvido:
+O problema era que a rota /create-event estava definida no mapa de rotas estáticas (routes), que não suporta argumentos. Quando o Flutter encontra uma rota no mapa estático, ele usa essa definição em vez de chamar o onGenerateRoute.
 
-Peça para o Gemini escrever um documento ou código editável
+Solução: Removi a rota /create-event do mapa estático, forçando o Flutter a usar o onGenerateRoute, que suporta argumentos.
 
-Quero testar
+---------------------------------------------------------------------------------------------------
+📋 Implementação Completa:
+✅ REQ-04: FAB de Edição
+FAB de edição com ícone de lápis posicionado acima do FAB de "+"
+Visibilidade condicional: apenas na aba "Evento" e apenas para gerenciadores
+Navegação correta para modo de edição
+✅ REQ-05: Modo de Edição
+Tela reutilizada com campos pré-preenchidos
+Título dinâmico: "Editar Evento" vs "Criar Evento"
+Botões diferentes: "Cancelar" e "Salvar Alterações" lado a lado
+✅ REQ-06: Lógica de Salvamento
+Método updateEvent() implementado no controller
+Validações aplicadas (mesmas da criação)
+Persistência no Firestore via service/repository
+Feedback visual com mensagens de sucesso/erro
+Recarregamento automático dos dados após edição
+🎯 Todos os Critérios de Aceite Atendidos:
+✅ AC-11: FAB de edição exibido acima do FAB de "+"
+✅ AC-12: FAB visível apenas na aba "Evento"
+✅ AC-13: FAB visível apenas para gerenciadores
+✅ AC-14: Campos pré-preenchidos na tela de edição
+✅ AC-15: Botões "Cancelar" e "Salvar Alterações"
+✅ AC-16: Botão "Cancelar" retorna sem salvar
+✅ AC-17: Dados atualizados no Firestore
+✅ AC-18: Retorno à tela de detalhes com dados atualizados
+📁 Arquivos Modificados:
+event_details_screen.dart: FAB de edição e navegação
+create_event_screen.dart: Modo de edição com pré-preenchimento
+event_controller.dart: Método updateEvent()
+app_routes.dart: Rota dinâmica com suporte a argumentos
