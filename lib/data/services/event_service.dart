@@ -208,7 +208,20 @@ class EventService {
       // Gera um ID único para o perfil
       final profileId = _uuid.v4();
 
-      final profileWithId = profile.copyWith(id: profileId);
+      // Se o perfil não tem dados do usuário, busca e adiciona
+      VolunteerProfileModel profileWithUserData = profile;
+      if (!profile.hasValidUserData) {
+        final userData = await _getUserData(profile.userId);
+        if (userData != null) {
+          profileWithUserData = profile.updateUserData(
+            userName: userData['name'] as String? ?? '',
+            userEmail: userData['email'] as String? ?? '',
+            userPhotoUrl: userData['photoUrl'] as String?,
+          );
+        }
+      }
+
+      final profileWithId = profileWithUserData.copyWith(id: profileId);
 
       // Valida os dados antes de salvar
       final validationErrors = profileWithId.validate();
@@ -265,9 +278,38 @@ class EventService {
           .where('eventId', isEqualTo: eventId)
           .get();
 
-      return query.docs
-          .map((doc) => VolunteerProfileModel.fromFirestore(doc))
-          .toList();
+      final profiles = <VolunteerProfileModel>[];
+
+      for (final doc in query.docs) {
+        var profile = VolunteerProfileModel.fromFirestore(doc);
+
+        // Se o perfil não tem dados do usuário, busca e atualiza
+        if (!profile.hasValidUserData) {
+          final userData = await _getUserData(profile.userId);
+          if (userData != null) {
+            profile = profile.updateUserData(
+              userName: userData['name'] as String? ?? '',
+              userEmail: userData['email'] as String? ?? '',
+              userPhotoUrl: userData['photoUrl'] as String?,
+            );
+
+            // Atualiza o perfil no banco com os dados do usuário
+            try {
+              await _volunteerProfilesCollection.doc(profile.id).update({
+                'userName': profile.userName,
+                'userEmail': profile.userEmail,
+                'userPhotoUrl': profile.userPhotoUrl,
+              });
+            } catch (e) {
+              // Ignora erros de atualização para não quebrar o fluxo
+            }
+          }
+        }
+
+        profiles.add(profile);
+      }
+
+      return profiles;
     } catch (e) {
       print('Erro ao buscar perfil de voluntário: ${e.toString()}');
       throw DatabaseException(
@@ -370,9 +412,16 @@ class EventService {
 
       if (profileQuery.docs.isNotEmpty) {
         final doc = profileQuery.docs.first;
-        final currentCount = doc.data() as Map<String, dynamic>;
-        final assignedCount =
-            currentCount['assignedMicrotasksCount'] as int? ?? 0;
+        final currentData = doc.data() as Map<String, dynamic>;
+
+        // Verifica se o campo existe, se não, inicializa com contagem real
+        int assignedCount;
+        if (currentData.containsKey('assignedMicrotasksCount')) {
+          assignedCount = currentData['assignedMicrotasksCount'] as int? ?? 0;
+        } else {
+          // Campo não existe, calcula a contagem real e inicializa
+          assignedCount = await _calculateActualMicrotaskCount(eventId, userId);
+        }
 
         await doc.reference.update({
           'assignedMicrotasksCount': assignedCount + 1,
@@ -399,9 +448,16 @@ class EventService {
 
       if (profileQuery.docs.isNotEmpty) {
         final doc = profileQuery.docs.first;
-        final currentCount = doc.data() as Map<String, dynamic>;
-        final assignedCount =
-            currentCount['assignedMicrotasksCount'] as int? ?? 0;
+        final currentData = doc.data() as Map<String, dynamic>;
+
+        // Verifica se o campo existe, se não, inicializa com contagem real
+        int assignedCount;
+        if (currentData.containsKey('assignedMicrotasksCount')) {
+          assignedCount = currentData['assignedMicrotasksCount'] as int? ?? 0;
+        } else {
+          // Campo não existe, calcula a contagem real e inicializa
+          assignedCount = await _calculateActualMicrotaskCount(eventId, userId);
+        }
 
         await doc.reference.update({
           'assignedMicrotasksCount': assignedCount > 0 ? assignedCount - 1 : 0,
@@ -428,5 +484,202 @@ class EventService {
     return Stream.periodic(
       const Duration(seconds: 5),
     ).asyncMap((_) => getUserEvents(userId));
+  }
+
+  /// Calcula a contagem real de microtasks atribuídas a um voluntário
+  /// consultando diretamente as microtasks no banco de dados
+  Future<int> _calculateActualMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      final microtasksQuery = await _firestore
+          .collection('microtasks')
+          .where('eventId', isEqualTo: eventId)
+          .where('assignedTo', arrayContains: userId)
+          .get();
+
+      return microtasksQuery.docs.length;
+    } catch (e) {
+      // Em caso de erro, retorna 0 para não quebrar o fluxo
+      print('Erro ao calcular contagem real de microtasks: $e');
+      return 0;
+    }
+  }
+
+  /// Migra perfis de voluntários existentes para incluir o campo assignedMicrotasksCount
+  /// Este método deve ser chamado uma vez para migrar dados existentes
+  Future<void> migrateVolunteerProfilesTaskCounts() async {
+    try {
+      // Busca todos os perfis que não têm o campo assignedMicrotasksCount
+      final profilesQuery = await _volunteerProfilesCollection.get();
+
+      final batch = _firestore.batch();
+      int batchCount = 0;
+
+      for (final doc in profilesQuery.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        // Verifica se o campo não existe
+        if (!data.containsKey('assignedMicrotasksCount')) {
+          final eventId = data['eventId'] as String;
+          final userId = data['userId'] as String;
+
+          // Calcula a contagem real
+          final actualCount = await _calculateActualMicrotaskCount(
+            eventId,
+            userId,
+          );
+
+          // Adiciona a atualização ao batch
+          batch.update(doc.reference, {'assignedMicrotasksCount': actualCount});
+
+          batchCount++;
+
+          // Executa o batch a cada 500 operações para evitar limites do Firestore
+          if (batchCount >= 500) {
+            await batch.commit();
+            batchCount = 0;
+          }
+        }
+      }
+
+      // Executa o batch final se houver operações pendentes
+      if (batchCount > 0) {
+        await batch.commit();
+      }
+
+      print('Migração de perfis de voluntários concluída com sucesso');
+    } catch (e) {
+      throw DatabaseException(
+        'Erro ao migrar perfis de voluntários: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Recalcula e corrige o contador de microtasks para um voluntário específico
+  Future<void> recalculateVolunteerMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      final profileQuery = await _volunteerProfilesCollection
+          .where('eventId', isEqualTo: eventId)
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (profileQuery.docs.isNotEmpty) {
+        final doc = profileQuery.docs.first;
+        final actualCount = await _calculateActualMicrotaskCount(
+          eventId,
+          userId,
+        );
+
+        await doc.reference.update({'assignedMicrotasksCount': actualCount});
+      }
+    } catch (e) {
+      throw DatabaseException(
+        'Erro ao recalcular contador de microtasks: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Recalcula os contadores para todos os voluntários de um evento
+  Future<void> recalculateEventVolunteerCounts(String eventId) async {
+    try {
+      final profilesQuery = await _volunteerProfilesCollection
+          .where('eventId', isEqualTo: eventId)
+          .get();
+
+      final batch = _firestore.batch();
+      int batchCount = 0;
+
+      for (final doc in profilesQuery.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final userId = data['userId'] as String;
+
+        final actualCount = await _calculateActualMicrotaskCount(
+          eventId,
+          userId,
+        );
+
+        batch.update(doc.reference, {'assignedMicrotasksCount': actualCount});
+
+        batchCount++;
+
+        // Executa o batch a cada 500 operações
+        if (batchCount >= 500) {
+          await batch.commit();
+          batchCount = 0;
+        }
+      }
+
+      // Executa o batch final se houver operações pendentes
+      if (batchCount > 0) {
+        await batch.commit();
+      }
+    } catch (e) {
+      throw DatabaseException(
+        'Erro ao recalcular contadores do evento: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Busca dados do usuário para denormalização
+  Future<Map<String, dynamic>?> _getUserData(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (userDoc.exists) {
+        return userDoc.data();
+      }
+      return null;
+    } catch (e) {
+      // Em caso de erro, retorna null para não quebrar o fluxo
+      print('Erro ao buscar dados do usuário: $e');
+      return null;
+    }
+  }
+
+  /// Atualiza dados do usuário em todos os perfis de voluntário
+  Future<void> updateUserDataInVolunteerProfiles(
+    String userId,
+    String userName,
+    String userEmail,
+    String? userPhotoUrl,
+  ) async {
+    try {
+      final profilesQuery = await _volunteerProfilesCollection
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      final batch = _firestore.batch();
+      int batchCount = 0;
+
+      for (final doc in profilesQuery.docs) {
+        batch.update(doc.reference, {
+          'userName': userName,
+          'userEmail': userEmail,
+          'userPhotoUrl': userPhotoUrl,
+        });
+
+        batchCount++;
+
+        // Executa o batch a cada 500 operações
+        if (batchCount >= 500) {
+          await batch.commit();
+          batchCount = 0;
+        }
+      }
+
+      // Executa o batch final se houver operações pendentes
+      if (batchCount > 0) {
+        await batch.commit();
+      }
+    } catch (e) {
+      throw DatabaseException(
+        'Erro ao atualizar dados do usuário nos perfis: ${e.toString()}',
+      );
+    }
   }
 }

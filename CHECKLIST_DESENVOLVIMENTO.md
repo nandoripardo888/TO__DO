@@ -16,10 +16,22 @@
 - [x] **Configuração do tema base** (cores, dimensões, tema Material Design)
 
 ### 📁 Estrutura de Pastas
+
 - [x] **`/lib/core/` - Constantes, utils, tema, exceções**
-- [x] **`/lib/data/` - Models, repositories, services**
+- [x] **`/lib/data/` - Separação por domínio:**
+    - **`models/`** (user, event, task, volunteer)
+    - **`repositories/`** (user, event, task, volunteer)
+    - **`services/`** (auth, event, task, volunteer, firebase, storage)
 - [x] **`/lib/presentation/` - Controllers, screens, widgets, routes**
-- [x] **Arquivos de configuração base**
+
+### ✅ Boas práticas para models, repositories e services
+
+- [x] Cada model, repositório e service em seu próprio arquivo
+- [x] Organização por domínio: facilita encontrar e modificar funcionalidades específicas
+- [x] Evite dependências cruzadas entre domínios
+- [x] Services só interagem com dados externos (Firebase, APIs)
+- [x] Repositories fazem a ponte entre services e o restante do app
+- [x] Models não devem conter lógica de negócio, apenas estrutura e serialização
 
 ---
 

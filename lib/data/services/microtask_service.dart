@@ -301,6 +301,16 @@ class MicrotaskService {
 
       final batch = _firestore.batch();
       for (final microtask in microtasks) {
+        // Decrementa o contador para cada voluntário atribuído
+        for (final userId in microtask.assignedTo) {
+          try {
+            await _decrementVolunteerMicrotaskCount(microtask.eventId, userId);
+          } catch (e) {
+            // Log do erro, mas não interrompe o processo de deleção
+            print('Erro ao decrementar contador para usuário $userId: $e');
+          }
+        }
+
         // Remove relações usuário-microtask
         await _deleteAllUserMicrotaskRelations(microtask.id);
 
@@ -419,6 +429,64 @@ class MicrotaskService {
       throw DatabaseException(
         'Erro ao remover relações usuário-microtask: ${e.toString()}',
       );
+    }
+  }
+
+  /// Decrementa o contador de microtasks atribuídas para um voluntário
+  /// Implementação local para evitar dependência circular com EventService
+  Future<void> _decrementVolunteerMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      final profileQuery = await _firestore
+          .collection('volunteer_profiles')
+          .where('eventId', isEqualTo: eventId)
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (profileQuery.docs.isNotEmpty) {
+        final doc = profileQuery.docs.first;
+        final currentData = doc.data();
+
+        // Verifica se o campo existe, se não, inicializa com contagem real
+        int assignedCount;
+        if (currentData.containsKey('assignedMicrotasksCount')) {
+          assignedCount = currentData['assignedMicrotasksCount'] as int? ?? 0;
+        } else {
+          // Campo não existe, calcula a contagem real e inicializa
+          assignedCount = await _calculateActualMicrotaskCount(eventId, userId);
+        }
+
+        await doc.reference.update({
+          'assignedMicrotasksCount': assignedCount > 0 ? assignedCount - 1 : 0,
+        });
+      }
+    } catch (e) {
+      throw DatabaseException(
+        'Erro ao decrementar contador de microtasks: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Calcula a contagem real de microtasks atribuídas a um voluntário
+  /// Implementação local para evitar dependência circular
+  Future<int> _calculateActualMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      final microtasksQuery = await _microtasksCollection
+          .where('eventId', isEqualTo: eventId)
+          .where('assignedTo', arrayContains: userId)
+          .get();
+
+      return microtasksQuery.docs.length;
+    } catch (e) {
+      // Em caso de erro, retorna 0 para não quebrar o fluxo
+      print('Erro ao calcular contagem real de microtasks: $e');
+      return 0;
     }
   }
 }

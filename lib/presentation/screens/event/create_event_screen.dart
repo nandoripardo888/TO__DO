@@ -590,6 +590,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             text: 'Copiar Código',
             onPressed: () => _copyEventTag(eventTag),
           ),
+          const SizedBox(height: AppDimensions.spacingMd),
           CustomButton(
             text: 'Continuar',
             onPressed: () {

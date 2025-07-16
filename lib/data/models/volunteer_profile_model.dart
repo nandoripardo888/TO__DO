@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Modelo de dados para representar o perfil de um voluntário em um evento
 /// Baseado na estrutura definida no SPEC_GERAL.md
+/// Inclui dados denormalizados do usuário para otimizar consultas
 class VolunteerProfileModel {
   final String id;
   final String userId;
@@ -15,6 +16,11 @@ class VolunteerProfileModel {
   final int assignedMicrotasksCount; // Contador de microtasks atribuídas
   final DateTime joinedAt;
 
+  // Dados denormalizados do usuário para otimização de consultas
+  final String userName;
+  final String userEmail;
+  final String? userPhotoUrl;
+
   const VolunteerProfileModel({
     required this.id,
     required this.userId,
@@ -26,6 +32,9 @@ class VolunteerProfileModel {
     required this.resources,
     required this.assignedMicrotasksCount,
     required this.joinedAt,
+    required this.userName,
+    required this.userEmail,
+    this.userPhotoUrl,
   });
 
   /// Cria uma instância de VolunteerProfileModel a partir de um Map (JSON)
@@ -43,6 +52,9 @@ class VolunteerProfileModel {
       resources: List<String>.from(map['resources'] as List),
       assignedMicrotasksCount: map['assignedMicrotasksCount'] as int? ?? 0,
       joinedAt: (map['joinedAt'] as Timestamp).toDate(),
+      userName: map['userName'] as String? ?? '',
+      userEmail: map['userEmail'] as String? ?? '',
+      userPhotoUrl: map['userPhotoUrl'] as String?,
     );
   }
 
@@ -65,6 +77,9 @@ class VolunteerProfileModel {
       'resources': resources,
       'assignedMicrotasksCount': assignedMicrotasksCount,
       'joinedAt': Timestamp.fromDate(joinedAt),
+      'userName': userName,
+      'userEmail': userEmail,
+      'userPhotoUrl': userPhotoUrl,
     };
   }
 
@@ -87,6 +102,9 @@ class VolunteerProfileModel {
     List<String>? resources,
     int? assignedMicrotasksCount,
     DateTime? joinedAt,
+    String? userName,
+    String? userEmail,
+    String? userPhotoUrl,
   }) {
     return VolunteerProfileModel(
       id: id ?? this.id,
@@ -100,6 +118,9 @@ class VolunteerProfileModel {
       assignedMicrotasksCount:
           assignedMicrotasksCount ?? this.assignedMicrotasksCount,
       joinedAt: joinedAt ?? this.joinedAt,
+      userName: userName ?? this.userName,
+      userEmail: userEmail ?? this.userEmail,
+      userPhotoUrl: userPhotoUrl ?? this.userPhotoUrl,
     );
   }
 
@@ -265,6 +286,9 @@ class VolunteerProfileModel {
     required List<String> skills,
     required List<String> resources,
     int assignedMicrotasksCount = 0,
+    required String userName,
+    required String userEmail,
+    String? userPhotoUrl,
   }) {
     return VolunteerProfileModel(
       id: '', // Será definido pelo Firestore
@@ -277,7 +301,80 @@ class VolunteerProfileModel {
       resources: resources,
       assignedMicrotasksCount: assignedMicrotasksCount,
       joinedAt: DateTime.now(),
+      userName: userName,
+      userEmail: userEmail,
+      userPhotoUrl: userPhotoUrl,
     );
+  }
+
+  /// Factory para criar um perfil com dados do usuário (para compatibilidade)
+  factory VolunteerProfileModel.createWithUserData({
+    required String userId,
+    required String eventId,
+    required List<String> availableDays,
+    required TimeRange availableHours,
+    bool isFullTimeAvailable = false,
+    required List<String> skills,
+    required List<String> resources,
+    int assignedMicrotasksCount = 0,
+    required String userName,
+    required String userEmail,
+    String? userPhotoUrl,
+  }) {
+    return VolunteerProfileModel.create(
+      userId: userId,
+      eventId: eventId,
+      availableDays: availableDays,
+      availableHours: availableHours,
+      isFullTimeAvailable: isFullTimeAvailable,
+      skills: skills,
+      resources: resources,
+      assignedMicrotasksCount: assignedMicrotasksCount,
+      userName: userName,
+      userEmail: userEmail,
+      userPhotoUrl: userPhotoUrl,
+    );
+  }
+
+  /// Atualiza os dados do usuário no perfil
+  VolunteerProfileModel updateUserData({
+    required String userName,
+    required String userEmail,
+    String? userPhotoUrl,
+  }) {
+    return copyWith(
+      userName: userName,
+      userEmail: userEmail,
+      userPhotoUrl: userPhotoUrl,
+    );
+  }
+
+  /// Verifica se tem dados do usuário válidos
+  bool get hasValidUserData {
+    return userName.isNotEmpty && userEmail.isNotEmpty;
+  }
+
+  /// Retorna as iniciais do nome do usuário
+  String get userInitials {
+    if (userName.isEmpty) return '';
+
+    final words = userName.trim().split(' ');
+    if (words.length == 1) {
+      return words[0][0].toUpperCase();
+    }
+
+    return '${words[0][0]}${words[words.length - 1][0]}'.toUpperCase();
+  }
+
+  /// Retorna o primeiro nome do usuário
+  String get userFirstName {
+    if (userName.isEmpty) return '';
+    return userName.split(' ')[0];
+  }
+
+  /// Verifica se o usuário tem foto de perfil
+  bool get hasUserPhoto {
+    return userPhotoUrl != null && userPhotoUrl!.isNotEmpty;
   }
 
   /// Valida se os dados do perfil são válidos

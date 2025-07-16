@@ -618,8 +618,6 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
         listen: false,
       );
 
-      print("ABACAXI: assinando microtask");
-
       // Atribui a microtask
       await taskController.assignVolunteerToMicrotask(
         microtaskId: microtask.id,

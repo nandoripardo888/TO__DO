@@ -1,15 +1,18 @@
 import '../models/event_model.dart';
 import '../models/volunteer_profile_model.dart';
 import '../services/event_service.dart';
+import '../repositories/user_repository.dart';
 import '../../core/exceptions/app_exceptions.dart';
 
 /// Repositório responsável por gerenciar dados de eventos
 /// Atua como uma camada de abstração entre os controllers e os services
 class EventRepository {
   final EventService _eventService;
+  final UserRepository _userRepository;
 
-  EventRepository({EventService? eventService})
-    : _eventService = eventService ?? EventService();
+  EventRepository({EventService? eventService, UserRepository? userRepository})
+    : _eventService = eventService ?? EventService(),
+      _userRepository = userRepository ?? UserRepository();
 
   /// Cria um novo evento
   Future<EventModel> createEvent({
@@ -133,7 +136,13 @@ class EventRepository {
         userId,
       );
 
-      // Cria o perfil do voluntário
+      // Busca dados do usuário para denormalização
+      final userData = await _userRepository.getUserById(userId);
+      if (userData == null) {
+        throw NotFoundException('Usuário não encontrado');
+      }
+
+      // Cria o perfil do voluntário com dados do usuário
       final profile = VolunteerProfileModel.create(
         userId: userId,
         eventId: eventId,
@@ -142,6 +151,9 @@ class EventRepository {
         isFullTimeAvailable: isFullTimeAvailable,
         skills: skills,
         resources: resources,
+        userName: userData.name,
+        userEmail: userData.email,
+        userPhotoUrl: userData.photoUrl,
       );
 
       await _eventService.createVolunteerProfile(profile);
@@ -381,5 +393,66 @@ class EventRepository {
   /// Normaliza uma tag de evento
   String normalizeTag(String tag) {
     return tag.trim().toUpperCase();
+  }
+
+  /// Migra perfis de voluntários existentes para incluir o campo assignedMicrotasksCount
+  Future<void> migrateVolunteerProfilesTaskCounts() async {
+    try {
+      await _eventService.migrateVolunteerProfilesTaskCounts();
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw RepositoryException(
+        'Erro ao migrar perfis de voluntários: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Recalcula e corrige o contador de microtasks para um voluntário específico
+  Future<void> recalculateVolunteerMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      await _eventService.recalculateVolunteerMicrotaskCount(eventId, userId);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw RepositoryException(
+        'Erro ao recalcular contador de microtasks: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Recalcula os contadores para todos os voluntários de um evento
+  Future<void> recalculateEventVolunteerCounts(String eventId) async {
+    try {
+      await _eventService.recalculateEventVolunteerCounts(eventId);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw RepositoryException(
+        'Erro ao recalcular contadores do evento: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Atualiza dados do usuário em todos os perfis de voluntário
+  Future<void> updateUserDataInVolunteerProfiles(
+    String userId,
+    String userName,
+    String userEmail,
+    String? userPhotoUrl,
+  ) async {
+    try {
+      await _eventService.updateUserDataInVolunteerProfiles(
+        userId,
+        userName,
+        userEmail,
+        userPhotoUrl,
+      );
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw RepositoryException(
+        'Erro ao atualizar dados do usuário nos perfis: ${e.toString()}',
+      );
+    }
   }
 }

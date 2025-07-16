@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import '../../data/models/event_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/volunteer_profile_model.dart';
@@ -30,6 +31,11 @@ class EventController extends ChangeNotifier {
   List<VolunteerProfileModel> _eventVolunteers = [];
   final List<UserModel> _eventVolunteerUsers = [];
   String? _errorMessage;
+
+  // Cache para perfis de voluntários por evento
+  final Map<String, List<VolunteerProfileModel>> _volunteersCache = {};
+  final Map<String, DateTime> _cacheTimestamps = {};
+  static const Duration _cacheExpiration = Duration(minutes: 5);
 
   // Getters
   bool get isLoading => _isLoading;
@@ -234,9 +240,17 @@ class EventController extends ChangeNotifier {
 
   /// Carrega um evento específico
   Future<EventModel?> loadEvent(String eventId) async {
+    if (_isLoading) {
+      return _currentEvent; // Evita múltiplas chamadas simultâneas
+    }
+
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+
+    // Usar WidgetsBinding para evitar setState durante build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
 
     try {
       if (eventId.isEmpty) {
@@ -256,7 +270,9 @@ class EventController extends ChangeNotifier {
       return null;
     } finally {
       _isLoading = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
@@ -348,6 +364,58 @@ class EventController extends ChangeNotifier {
       _setError(_getErrorMessage(e));
       return {'profiles': <VolunteerProfileModel>[], 'users': <UserModel>[]};
     }
+  }
+
+  /// Busca dados de voluntários otimizado (com cache e dados denormalizados)
+  Future<List<VolunteerProfileModel>> getEventVolunteersOptimized(
+    String eventId,
+  ) async {
+    try {
+      if (eventId.isEmpty) {
+        throw ValidationException('ID do evento é obrigatório');
+      }
+
+      // Verifica se tem dados válidos no cache
+      if (_isCacheValid(eventId)) {
+        return List.from(_volunteersCache[eventId]!);
+      }
+
+      // Busca os perfis de voluntários (com dados denormalizados)
+      final profiles = await _eventRepository.getEventVolunteers(eventId);
+
+      // Atualiza o cache
+      _volunteersCache[eventId] = List.from(profiles);
+      _cacheTimestamps[eventId] = DateTime.now();
+
+      return profiles;
+    } catch (e) {
+      _setError(_getErrorMessage(e));
+      return <VolunteerProfileModel>[];
+    }
+  }
+
+  /// Verifica se o cache é válido para um evento
+  bool _isCacheValid(String eventId) {
+    if (!_volunteersCache.containsKey(eventId) ||
+        !_cacheTimestamps.containsKey(eventId)) {
+      return false;
+    }
+
+    final cacheTime = _cacheTimestamps[eventId]!;
+    final now = DateTime.now();
+    return now.difference(cacheTime) < _cacheExpiration;
+  }
+
+  /// Limpa o cache de voluntários para um evento específico
+  void clearVolunteersCache(String eventId) {
+    _volunteersCache.remove(eventId);
+    _cacheTimestamps.remove(eventId);
+  }
+
+  /// Limpa todo o cache de voluntários
+  void clearAllVolunteersCache() {
+    _volunteersCache.clear();
+    _cacheTimestamps.clear();
   }
 
   /// Promove um voluntário a gerenciador
@@ -551,6 +619,82 @@ class EventController extends ChangeNotifier {
     }
   }
 
+  /// Migra perfis de voluntários existentes para incluir o campo assignedMicrotasksCount
+  Future<bool> migrateVolunteerProfilesTaskCounts() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await _eventRepository.migrateVolunteerProfilesTaskCounts();
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = _getErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Recalcula e corrige o contador de microtasks para um voluntário específico
+  Future<bool> recalculateVolunteerMicrotaskCount(
+    String eventId,
+    String userId,
+  ) async {
+    try {
+      await _eventRepository.recalculateVolunteerMicrotaskCount(
+        eventId,
+        userId,
+      );
+
+      // Atualiza o perfil local se disponível
+      final profileIndex = _eventVolunteers.indexWhere(
+        (p) => p.userId == userId,
+      );
+      if (profileIndex != -1) {
+        // Recarrega o perfil atualizado
+        final updatedProfile = await _eventRepository.getVolunteerProfile(
+          userId,
+          eventId,
+        );
+        if (updatedProfile != null) {
+          _eventVolunteers[profileIndex] = updatedProfile;
+          notifyListeners();
+        }
+      }
+
+      return true;
+    } catch (e) {
+      _errorMessage = _getErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Recalcula os contadores para todos os voluntários de um evento
+  Future<bool> recalculateEventVolunteerCounts(String eventId) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await _eventRepository.recalculateEventVolunteerCounts(eventId);
+
+      // Recarrega os perfis de voluntários do evento
+      await loadEventVolunteers(eventId);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = _getErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Limpa todos os dados
   void clear() {
     _userEvents.clear();
@@ -562,6 +706,7 @@ class EventController extends ChangeNotifier {
     _isCreatingEvent = false;
     _isJoiningEvent = false;
     _isLoadingUserEvents = false;
+    clearAllVolunteersCache();
     notifyListeners();
   }
 }

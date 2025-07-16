@@ -60,13 +60,15 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
       // Carrega tasks e microtasks
       await taskController.loadTasksByEventId(widget.eventId);
 
-      // Carrega voluntários e perfis
-      final volunteersData = await eventController.getEventVolunteersWithUsers(
+      // Carrega voluntários e perfis (OTIMIZADO - dados denormalizados)
+      final profiles = await eventController.getEventVolunteersOptimized(
         widget.eventId,
       );
-      final volunteers = volunteersData['users'] as List<UserModel>;
-      final profiles =
-          volunteersData['profiles'] as List<VolunteerProfileModel>;
+
+      // DEBUG: Carregados ${profiles.length} perfis de voluntários
+
+      // Não precisamos mais buscar usuários separadamente - dados estão nos perfis
+      final volunteers = <UserModel>[]; // Mantido para compatibilidade
 
       // Se não há voluntários, você pode adicionar dados de teste aqui
       // _addTestVolunteers(); // Descomente para testar
@@ -352,24 +354,63 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
   }
 
   Widget _buildVolunteersList(List<UserModel> volunteers) {
+    // Agora usamos os perfis diretamente (com dados denormalizados)
+    final profiles = _volunteerProfiles.where((profile) {
+      return _shouldShowVolunteer(profile);
+    }).toList();
+
     return ListView.builder(
       padding: const EdgeInsets.all(AppDimensions.paddingSm),
-      itemCount: volunteers.length,
+      itemCount: profiles.length,
       itemBuilder: (context, index) {
-        final volunteer = volunteers[index];
-        final profile = _getVolunteerProfile(volunteer.id);
+        final profile = profiles[index];
+
+        // Cria um UserModel temporário para compatibilidade com VolunteerCard
+        final user = UserModel(
+          id: profile.userId,
+          name: profile.userName,
+          email: profile.userEmail,
+          photoUrl: profile.userPhotoUrl,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
 
         return VolunteerCard(
-          user: volunteer,
+          user: user,
           profile: profile,
           isManager: true,
           showActions: true,
-          assignedMicrotasksCount: _getAssignedMicrotasksCount(volunteer.id),
+          assignedMicrotasksCount: _getAssignedMicrotasksCount(profile.userId),
           isCompatible: _isVolunteerCompatible(profile),
           showDetailedAvailability: true,
-          onShowActions: () => _showVolunteerActionsDialog(volunteer, profile),
+          onShowActions: () => _showVolunteerActionsDialog(user, profile),
         );
       },
+    );
+  }
+
+  /// Verifica se um voluntário deve ser mostrado baseado nos filtros
+  bool _shouldShowVolunteer(VolunteerProfileModel profile) {
+    // Filtro por status
+    if (_filterStatus == 'available') {
+      final assignedCount = _getAssignedMicrotasksCount(profile.userId);
+      if (assignedCount > 0) return false;
+    } else if (_filterStatus == 'assigned') {
+      final assignedCount = _getAssignedMicrotasksCount(profile.userId);
+      if (assignedCount == 0) return false;
+    }
+
+    // Filtro por habilidades
+    if (!_hasRequiredSkills(profile)) return false;
+
+    return true;
+  }
+
+  /// Verifica se o perfil tem as habilidades necessárias (filtro)
+  bool _hasRequiredSkills(VolunteerProfileModel profile) {
+    if (_selectedSkillsFilter.isEmpty) return true;
+    return _selectedSkillsFilter.every(
+      (skill) => profile.skills.contains(skill),
     );
   }
 
@@ -579,7 +620,17 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
   }
 
   List<UserModel> _getFilteredVolunteers() {
-    List<UserModel> filtered = List.from(_volunteers);
+    // Agora criamos UserModels a partir dos perfis (dados denormalizados)
+    List<UserModel> filtered = _volunteerProfiles.map((profile) {
+      return UserModel(
+        id: profile.userId,
+        name: profile.userName,
+        email: profile.userEmail,
+        photoUrl: profile.userPhotoUrl,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    }).toList();
 
     // Aplicar filtro de busca
     if (_searchQuery.isNotEmpty) {

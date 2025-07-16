@@ -101,8 +101,8 @@ class VolunteerListWidget extends StatelessWidget {
   }
 
   int _getAssignedMicrotasksCount(String userId) {
-    // TODO: Implementar contagem real de microtasks atribuídas
-    return 0;
+    final profile = _getVolunteerProfile(userId);
+    return profile?.assignedMicrotasksCount ?? 0;
   }
 }
 

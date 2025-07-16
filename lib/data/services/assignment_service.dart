@@ -47,8 +47,17 @@ class AssignmentService {
       // Validações de atribuição
       await _validateAssignment(microtask, userId, volunteerProfile);
       print("ABACAXI5: assinando microtask");
+
       // Atribui o voluntário
-      return await _microtaskService.assignVolunteer(microtaskId, userId);
+      final updatedMicrotask = await _microtaskService.assignVolunteer(
+        microtaskId,
+        userId,
+      );
+
+      // Incrementa o contador de microtasks atribuídas para o voluntário
+      await _eventService.incrementVolunteerMicrotaskCount(eventId, userId);
+
+      return updatedMicrotask;
     } catch (e) {
       if (e is ValidationException || e is DatabaseException) rethrow;
       throw DatabaseException('Erro ao atribuir voluntário: ${e.toString()}');
@@ -61,7 +70,25 @@ class AssignmentService {
     required String userId,
   }) async {
     try {
-      return await _microtaskService.unassignVolunteer(microtaskId, userId);
+      // Busca a microtask para obter o eventId
+      final microtask = await _microtaskService.getMicrotaskById(microtaskId);
+      if (microtask == null) {
+        throw ValidationException('Microtask não encontrada');
+      }
+
+      // Remove o voluntário
+      final updatedMicrotask = await _microtaskService.unassignVolunteer(
+        microtaskId,
+        userId,
+      );
+
+      // Decrementa o contador de microtasks atribuídas para o voluntário
+      await _eventService.decrementVolunteerMicrotaskCount(
+        microtask.eventId,
+        userId,
+      );
+
+      return updatedMicrotask;
     } catch (e) {
       if (e is ValidationException || e is DatabaseException) rethrow;
       throw DatabaseException('Erro ao remover voluntário: ${e.toString()}');

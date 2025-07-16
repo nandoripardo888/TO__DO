@@ -177,23 +177,43 @@ lib/
 │       └── app_exceptions.dart
 ├── data/
 │   ├── models/
-│   │   ├── user_model.dart
-│   │   ├── event_model.dart
-│   │   ├── task_model.dart
-│   │   ├── microtask_model.dart
-│   │   ├── volunteer_profile_model.dart
-│   │   └── user_microtask_model.dart
+│   │   ├── user/
+│   │   │   └── user_model.dart
+│   │   ├── event/
+│   │   │   └── event_model.dart
+│   │   ├── task/
+│   │   │   ├── task_model.dart
+│   │   │   └── microtask_model.dart
+│   │   ├── volunteer/
+│   │   │   ├── volunteer_profile_model.dart
+│   │   │   └── user_microtask_model.dart
+│   │   └── ... (outros models)
 │   ├── repositories/
-│   │   ├── auth_repository.dart
-│   │   ├── event_repository.dart
-│   │   ├── task_repository.dart
-│   │   ├── microtask_repository.dart
-│   │   └── user_repository.dart
+│   │   ├── user/
+│   │   │   └── user_repository.dart
+│   │   ├── event/
+│   │   │   └── event_repository.dart
+│   │   ├── task/
+│   │   │   ├── task_repository.dart
+│   │   │   └── microtask_repository.dart
+│   │   ├── volunteer/
+│   │   │   └── volunteer_repository.dart
+│   │   └── ... (outros repositórios)
 │   └── services/
-│       ├── firebase_service.dart
-│       ├── auth_service.dart
-│       ├── storage_service.dart
-│       └── assignment_service.dart
+│       ├── auth/
+│       │   └── auth_service.dart
+│       ├── event/
+│       │   └── event_service.dart
+│       ├── task/
+│       │   ├── task_service.dart
+│       │   └── microtask_service.dart
+│       ├── volunteer/
+│       │   └── assignment_service.dart
+│       ├── firebase/
+│       │   └── firebase_service.dart
+│       ├── storage/
+│       │   └── storage_service.dart
+│       └── ... (outros services)
 ├── presentation/
 │   ├── controllers/ (usando GetX ou Provider)
 │   │   ├── auth_controller.dart
@@ -234,6 +254,15 @@ lib/
 │       └── app_routes.dart
 └── main.dart
 ```
+
+### Boas práticas para organização de models, repositories e services
+
+- **Separação por domínio:** Crie subpastas para cada domínio (usuário, evento, tarefa, voluntário) dentro de models, repositories e services.
+- **Responsabilidade única:** Cada arquivo deve ter apenas uma classe principal.
+- **Nada de lógica de UI:** Models, repositórios e services não devem importar nada de Flutter UI.
+- **Services:** Responsáveis por interagir diretamente com Firebase, APIs externas, armazenamento, etc.
+- **Repositories:** Camada de abstração entre os services e o restante do app. Só chamam services e retornam models.
+- **Models:** Representam as entidades do domínio, com métodos de serialização (`fromJson`, `toJson`). Não misturar lógica de negócio ou acesso a dados aqui.
 
 ## 🗄️ Estrutura do Banco de Dados (Firestore)
 
