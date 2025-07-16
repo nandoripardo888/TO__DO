@@ -1,57 +1,22 @@
-Gemini Replied:
----------------
+# PRD: Funcionalidade - Aba Agenda do Voluntário
 
-Mostrar raciocínio
+**Documento de Requisitos do Produto (PRD)**
+**Projeto:** Task Manager para Eventos - ConTask
+**Funcionalidade:** Aba "AGENDA" para Voluntários
 
-**Breaking Down Requirements**
+---
 
-I've started dissecting the user's request, focusing on its core components. The goal is to fully grasp the essential elements before I start building the PRD. I am identifying the primary needs and expectations to ensure a comprehensive understanding of the agenda feature.
+## Informações do Documento
 
-**Pinpointing Core Features**
-
-I'm now zeroing in on the essential features. I've broken down the request into key components, specifically the "AGENDA" tab, the microtask listing for the logged-in volunteer, the visual design (clean, easy-to-use component with checks), and the user interaction rules that will change the `status` field in the `user_microtasks` collection. I understand the flow. Now I am trying to figure out the status propagation logic.
-
-**Analyzing Status Logic**
-
-I'm now diving deep into the status propagation rules. I need to iron out the edge cases within the `user_microtasks` collection. I am thinking through the intricacies of how microtask statuses cascade up to the task level, and how the interaction rules affect `status` changes. I will finalize and document the logic with precise conditions.
-
-**Clarifying the Interface**
-
-I'm solidifying the UI design. I've pinpointed the location for the "AGENDA" tab, ensuring its placement in `event_details_screen.dart` is contextually logical. Now, the main challenge is to figure out the user interaction flows. The user didn't specify the visual component, so I will draft a UI/UX proposal.
-
-**Outlining the PRD**
-
-I'm now outlining the PRD structure, ensuring a clear and comprehensive document. I'll include sections on the summary, justification, detailed functional requirements, UI/UX mockups (if needed), data models, API changes, and impact analysis. I'm ready to move onto drafting the concrete requirements.
-
-**Formulating Detailed Requirements**
-
-I'm translating the user's instructions into concrete, testable requirements. I'm focusing on the "AGENDA" tab, interactive microtask component, and the business rules for status updates within the `user_microtasks` collection. I'll outline the exact interactions and rules within the component.
-
-\\n\\nI'm now detailing the user interactions within the microtask component, clarifying how status changes propagate across related records. I'm solidifying the "clean and easy-to-use" visual component idea to deliver a clear outline of user interactions. Furthermore, I am formulating a prototype of the PRD structure, ensuring a well-organized and informative document for this new feature.
-
-**Drafting User Interactions**
-
-I'm developing the detailed requirements for the user interactions within the microtask component. I'm focusing on clarifying how each check affects the `status` field in the `user_microtasks` collection. Furthermore, I am visualizing the "clean and easy-to-use" component the user requested. Lastly, I am building the PRD outline, ensuring that the document will be comprehensive and well-structured, as per the established professional standards.
-
-**Formulating the PRD Structure**
-
-I'm now focusing on outlining the PRD, making sure it addresses all user instructions. I'll include sections for the summary, justification, functional requirements, a UI/UX proposal for the component, data models, and a thorough impact analysis, with a keen eye on detailing user interactions. My goal is to deliver a concise and well-structured PRD.
-
-Com certeza! Esta é uma funcionalidade excelente que melhora muito a experiência do voluntário e automatiza o acompanhamento do progresso para os gerentes.
-
-Preparei um PRD completo para a criação da aba "AGENDA", com foco na clareza do componente visual e nas regras de negócio para atualização de status.
-
-* * *
-
-PRD: Funcionalidade - Aba Agenda do Voluntário
-----------------------------------------------
-
-| Documento: | PRD - Nova Funcionalidade | Status: | Proposta |
-| --- | --- | --- | --- |
-| Recurso: | Aba "Agenda" de Microtarefas do Voluntário | Autor: | Gemini AI |
-| Data: | 16/07/2025 | Versão: | 1.0 |
-
-Exportar para as Planilhas
+| Campo | Valor |
+|-------|-------|
+| **Documento** | PRD - Nova Funcionalidade |
+| **Status** | Em Desenvolvimento |
+| **Recurso** | Aba "AGENDA" de Microtarefas do Voluntário |
+| **Autor** | Equipe de Desenvolvimento |
+| **Data** | 16/07/2025 |
+| **Versão** | 1.1 |
+| **Projeto** | ConTask - Task Manager para Eventos |
 
 ### 1\. Resumo e Objetivo
 
@@ -76,30 +41,36 @@ Esta funcionalidade irá:
 
 #### REQ-01: Nova Aba "AGENDA"
 
-*   **Descrição:** Uma nova aba chamada **"AGENDA"** deve ser adicionada à tela de detalhes do evento.
-    
+*   **Descrição:** Uma nova aba chamada **"AGENDA"** deve ser adicionada à tela de detalhes do evento para fornecer aos voluntários uma visão personalizada de suas microtarefas.
+
 *   **Regras de Negócio:**
-    
-    *   **Posicionamento:** A aba "AGENDA" deve ser inserida na `TabBar` da tela `event_details_screen.dart`, preferencialmente após a aba "Evento" e antes de "Acompanhar Tasks".
-        
-    *   **Visibilidade:** A aba deve ser visível **apenas** para usuários que estão na lista `volunteers` do evento.
-        
-    *   **Conteúdo:** A aba deve listar verticalmente todas as microtarefas atribuídas ao usuário logado para aquele evento específico. A lista deve ser obtida consultando a collection `user_microtasks` onde `userId` e `eventId` correspondem aos do usuário e do evento atuais.
+
+    *   **RN-01.1 - Posicionamento:** A aba "AGENDA" deve ser inserida na `TabBar` da tela `event_details_screen.dart`, seguindo a ordem: "Evento" → "AGENDA" → "Meus Dados" → "Acompanhar".
+
+    *   **RN-01.2 - Visibilidade:** A aba deve ser visível **apenas** para usuários que estão na lista `volunteers` do evento, seguindo o padrão de tabs dinâmicas estabelecido (RN-02 da especificação geral).
+
+    *   **RN-01.3 - Conteúdo:** A aba deve listar verticalmente todas as microtarefas atribuídas ao usuário logado para aquele evento específico.
+
+    *   **RN-01.4 - Fonte de Dados:** A lista deve ser obtida consultando a collection `user_microtasks` com filtros: `userId == currentUser.id AND eventId == currentEvent.id`.
+
+    *   **RN-01.5 - Ordenação:** As microtarefas devem ser ordenadas por: 1) Status (assigned → in_progress → completed), 2) Data de atribuição (assignedAt).
         
 
 #### REQ-02: Componente da Microtarefa (Card da Agenda)
 
-*   **Descrição:** Cada item na lista da agenda será um componente de card com um design limpo e funcional, focado na ação.
-    
+*   **Descrição:** Cada item na lista da agenda será um componente de card reutilizável (`microtask_agenda_card.dart`) com design limpo e funcional, focado na ação do usuário.
+
 *   **Estrutura do Card:**
-    
-    *   **Título da Microtarefa:** Em destaque.
-        
-    *   **Título da Tarefa Pai:** Logo abaixo, com menor destaque (ex: "Pertence a: Limpeza da Área Leste").
-        
-    *   **Informações Adicionais:** Data/hora da microtarefa (se houver, campos `startDateTime`, `endDateTime` do model `microtask_model`).
-        
-    *   **Status Stepper Horizontal:** Na parte inferior do card, haverá um controle de status com 3 "checks" (círculos) dispostos horizontalmente.
+
+    *   **RN-02.1 - Título da Microtarefa:** Texto em destaque usando estilo de título (font weight bold, cor #374151).
+
+    *   **RN-02.2 - Título da Tarefa Pai:** Logo abaixo, com menor destaque (ex: "Pertence a: Limpeza da Área Leste"), usando cor secundária #A78BFA.
+
+    *   **RN-02.3 - Informações Temporais:** Data/hora da microtarefa formatada como "dd/mm/yyyy HH:MM - HH:MM" (campos `startDateTime`, `endDateTime` do model `microtask_model`).
+
+    *   **RN-02.4 - Status Stepper Horizontal:** Na parte inferior do card, controle de status com 3 estados dispostos horizontalmente.
+
+    *   **RN-02.5 - Responsividade:** Card deve adaptar-se a diferentes tamanhos de tela mantendo legibilidade.
         
 *   **Design do Status Stepper:**
     
@@ -109,42 +80,61 @@ Esta funcionalidade irá:
         
     *   **Completed (Concluída):** Círculo com contorno e um ícone de "check" (✓) dentro. Torna-se interativo.
         
-    *   **Visual do Progresso:** Uma linha conectará os círculos. Quando um status é selecionado, o círculo e a linha até ele são preenchidos com a cor principal (Roxo), e os números/ícones ficam brancos.
+    *   **Visual do Progresso:** Uma linha conectará os círculos. Quando um status é selecionado, o círculo e a linha até ele são preenchidos com a cor principal (#6B46C1 - Roxo), e os números/ícones ficam brancos, seguindo o Design System estabelecido.
         
 
 #### REQ-03: Lógica de Interação do Usuário na Agenda
 
-*   **Descrição:** Define como o voluntário interage com o Status Stepper no card.
-    
+*   **Descrição:** Define como o voluntário interage com o Status Stepper no card, incluindo validações e feedback visual.
+
 *   **Regras de Negócio:**
-    
-    *   A ação do usuário (clicar em um status) deve atualizar **apenas o seu próprio status** na collection `user_microtasks`. O `status` do documento `user_microtask` correspondente deve ser modificado.
-        
-    *   O status `assigned` é o estado inicial e não pode ser selecionado pelo usuário.
-        
-    *   O usuário pode marcar o status `in_progress`.
-        
-    *   O usuário pode marcar o status `completed`.
-        
-    *   O usuário pode desmarcar `completed` (voltando para `in_progress`) ou desmarcar `in_progress` (voltando para `assigned`). A lógica deve impedir que se pule de `completed` diretamente para `assigned`.
+
+    *   **RN-03.1 - Escopo de Atualização:** A ação do usuário (clicar em um status) deve atualizar **apenas o seu próprio status** na collection `user_microtasks`. O campo `status` do documento `user_microtask` correspondente deve ser modificado.
+
+    *   **RN-03.2 - Estado Inicial:** O status `assigned` é o estado inicial (não interativo) e não pode ser selecionado pelo usuário.
+
+    *   **RN-03.3 - Progressão Permitida:** O usuário pode marcar `in_progress` a partir de `assigned`, e `completed` a partir de `in_progress`.
+
+    *   **RN-03.4 - Regressão Permitida:** O usuário pode desmarcar `completed` (voltando para `in_progress`) ou desmarcar `in_progress` (voltando para `assigned`).
+
+    *   **RN-03.5 - Validação de Fluxo:** A lógica deve impedir transição direta de `completed` para `assigned` (deve passar por `in_progress`).
+
+    *   **RN-03.6 - Feedback Visual:** Cada mudança de status deve fornecer feedback visual imediato (loading, sucesso, erro).
+
+    *   **RN-03.7 - Timestamps:** Atualizar campos `startedAt` (ao marcar in_progress) e `completedAt` (ao marcar completed).
         
 
 #### REQ-04: Lógica de Propagação de Status (Backend/Cloud Functions)
 
-*   **Descrição:** Define as regras de negócio automáticas que ocorrem em cascata quando um voluntário atualiza seu status. **Esta lógica é crítica e deve, preferencialmente, ser implementada via Cloud Functions ou transações no backend para garantir a consistência dos dados.**
-    
+*   **Descrição:** Define as regras de negócio automáticas que ocorrem em cascata quando um voluntário atualiza seu status. **Esta lógica é crítica e deve ser implementada via Cloud Functions ou transações no backend para garantir a consistência dos dados.**
+
 *   **Regras de Negócio:**
-    
-    1.  **Microtarefa para "Em Andamento":** Quando **pelo menos 1** voluntário de uma microtarefa atualiza seu status em `user_microtasks` para `in_progress`, o status do documento principal na collection `microtasks` deve ser automaticamente alterado para `in_progress`.
-        
-    2.  **Tarefa para "Em Andamento":** Se o status de uma `microtask` muda para `in_progress` (conforme regra anterior), o status de sua `task` pai na collection `tasks` também deve ser alterado para `in_progress`.
-        
-    3.  **Microtarefa para "Concluída":** Quando **todos** os voluntários listados no campo `assignedTo` da `microtask` tiverem seus respectivos documentos em `user_microtasks` com o status `completed`, o status do documento principal na collection `microtasks` deve ser alterado para `completed`.
-        
-    4.  **Tarefa para "Concluída":** Quando **todas** as `microtasks` pertencentes a uma `task` estiverem com o status `completed`, o status do documento da `task` pai na collection `tasks` deve ser alterado para `completed`.
+
+    *   **RN-04.1 - Microtarefa para "Em Andamento":** Quando **pelo menos 1** voluntário de uma microtarefa atualiza seu status em `user_microtasks` para `in_progress`, o status do documento principal na collection `microtasks` deve ser automaticamente alterado para `in_progress`.
+
+    *   **RN-04.2 - Tarefa para "Em Andamento":** Se o status de uma `microtask` muda para `in_progress` (conforme RN-04.1), o status de sua `task` pai na collection `tasks` também deve ser alterado para `in_progress`.
+
+    *   **RN-04.3 - Microtarefa para "Concluída":** Quando **todos** os voluntários listados no campo `assignedTo` da `microtask` tiverem seus respectivos documentos em `user_microtasks` com o status `completed`, o status do documento principal na collection `microtasks` deve ser alterado para `completed`.
+
+    *   **RN-04.4 - Tarefa para "Concluída":** Quando **todas** as `microtasks` pertencentes a uma `task` estiverem com o status `completed`, o status do documento da `task` pai na collection `tasks` deve ser alterado para `completed`.
+
+    *   **RN-04.5 - Atomicidade:** Todas as operações de propagação devem ser atômicas para evitar estados inconsistentes.
+
+    *   **RN-04.6 - Auditoria:** Registrar logs de todas as mudanças de status para rastreabilidade.
         
 
-### 4\. Proposta de Design (Componente da Agenda)
+### 4\. Design System e Especificações Visuais
+
+#### 4.1 Cores e Estilo
+Seguindo o Design System estabelecido na especificação geral:
+- **Cor Principal:** #6B46C1 (Roxo)
+- **Cor Secundária:** #A78BFA (Roxo claro)
+- **Cor de Fundo:** #FFFFFF (Branco)
+- **Cor de Texto:** #374151 (Cinza escuro)
+- **Cor de Sucesso:** #10B981 (Verde)
+- **Estilo:** Clean, minimalista, Material Design
+
+#### 4.2 Proposta de Design (Componente da Agenda)
 
 Abaixo, uma maquete textual do card proposto:
 
@@ -168,39 +158,158 @@ _Estado "Em Andamento":_
 
 _(Onde `/ \` representa um círculo preenchido)_
 
-### 5\. Análise de Impacto
+### 5\. Modelos de Dados Envolvidos
 
-*   **Firestore:**
-    
-    *   Será necessário criar queries eficientes para a aba Agenda: `db.collection('user_microtasks').where('userId', '==', currentUser.id).where('eventId', '==', currentEvent.id)`.
-        
-*   **Código da Aplicação (Arquivos a serem modificados/criados):**
-    
-    *   `lib/presentation/screens/event/event_details_screen.dart`: Adicionar a nova `Tab` "AGENDA" na `TabBar`.
-        
-    *   **\[NOVO\]** `lib/presentation/screens/agenda/agenda_screen.dart`: Arquivo que conterá a UI da nova aba, incluindo a lógica para buscar e listar as microtarefas.
-        
-    *   **\[NOVO\]** `lib/presentation/widgets/agenda/microtask_agenda_card.dart`: O novo componente de card reutilizável.
-        
-    *   `lib/presentation/controllers/task_controller.dart` (ou um novo `agenda_controller.dart`): Gerenciar o estado da agenda, buscar os dados e lidar com as ações de clique do usuário.
-        
-    *   `lib/data/services/task_service.dart` ou `microtask_service.dart`: Adicionar um método para o usuário atualizar seu status em `user_microtasks`. Ex: `updateUserMicrotaskStatus(userMicrotaskId, newStatus)`.
-        
-    *   Os serviços `task_service` e `microtask_service` também podem precisar de métodos para a atualização de status em cascata, caso não seja usado Cloud Functions.
+Esta funcionalidade interage com os seguintes modelos definidos na especificação geral:
+
+#### 5.1 Collections Firestore Utilizadas
+
+**user_microtasks** (Principal):
+```json
+{
+  "id": "user_microtask_id",
+  "userId": "user_id",
+  "microtaskId": "microtask_id",
+  "eventId": "event_id",
+  "status": "assigned|in_progress|completed",
+  "assignedAt": "timestamp",
+  "startedAt": "timestamp",
+  "completedAt": "timestamp",
+  "actualHours": 0.0,
+  "notes": "Observações do voluntário"
+}
+```
+
+**microtasks** (Para informações da microtarefa):
+```json
+{
+  "id": "microtask_id",
+  "taskId": "task_id",
+  "title": "Título da Microtarefa",
+  "startDateTime": "timestamp",
+  "endDateTime": "timestamp",
+  "status": "pending|assigned|in_progress|completed|cancelled"
+}
+```
+
+**tasks** (Para informações da tarefa pai):
+```json
+{
+  "id": "task_id",
+  "title": "Título da Tarefa",
+  "status": "pending|in_progress|completed"
+}
+```
+
+#### 5.2 Queries Necessárias
+- **Agenda do Voluntário:** `user_microtasks.where('userId', '==', currentUser.id).where('eventId', '==', currentEvent.id)`
+- **Dados da Microtarefa:** `microtasks.doc(microtaskId).get()`
+- **Dados da Tarefa Pai:** `tasks.doc(taskId).get()`
+
+### 6\. Análise de Impacto
+
+#### 6.1 Impacto no Banco de Dados (Firestore)
+
+**Queries Necessárias:**
+- **Principal:** `user_microtasks.where('userId', '==', currentUser.id).where('eventId', '==', currentEvent.id).orderBy('assignedAt')`
+- **Joins necessários:** Buscar dados de `microtasks` e `tasks` para cada item da agenda
+- **Índices recomendados:** Criar índice composto em `user_microtasks` para `(userId, eventId, assignedAt)`
+
+**Estimativa de Performance:**
+- **Leitura:** ~10-50 documentos por usuário por evento (baixo impacto)
+- **Escrita:** 1 documento por mudança de status + propagação em cascata
+- **Custo:** Baixo a médio, dependendo da frequência de atualizações
+
+#### 6.2 Impacto no Código da Aplicação
+
+**Arquivos Modificados:**
+```
+lib/presentation/screens/event/event_details_screen.dart
+├── Adicionar Tab "AGENDA" na TabBar dinâmica
+├── Implementar lógica de visibilidade baseada em permissões
+└── Integrar com AgendaController
+
+lib/presentation/controllers/task_controller.dart
+├── Adicionar métodos para buscar user_microtasks
+└── Integrar com agenda_controller para sincronização
+
+lib/data/services/task/microtask_service.dart
+├── updateUserMicrotaskStatus(userMicrotaskId, newStatus)
+├── getUserMicrotasksByEvent(userId, eventId)
+└── Métodos para propagação de status
+```
+
+**Arquivos Criados:**
+```
+lib/presentation/screens/agenda/
+├── agenda_screen.dart (Tela principal da aba)
+└── widgets/
+    └── microtask_agenda_card.dart (Componente reutilizável)
+
+lib/presentation/controllers/
+└── agenda_controller.dart (Gerenciamento de estado específico)
+
+lib/data/repositories/volunteer/
+└── user_microtask_repository.dart (Abstração de dados)
+
+lib/data/models/volunteer/
+└── user_microtask_model.dart (Se não existir)
+```
+
+#### 6.3 Serviços de Backend (Cloud Functions)
+
+**Funções Recomendadas:**
+```javascript
+// functions/src/statusPropagation.js
+exports.onUserMicrotaskStatusChange = functions.firestore
+  .document('user_microtasks/{docId}')
+  .onUpdate(async (change, context) => {
+    // Lógica de propagação RN-04.1 a RN-04.4
+  });
+```
+
+**Benefícios:**
+- Garantia de consistência de dados
+- Redução de lógica complexa no cliente
+- Auditoria centralizada de mudanças
         
 
-### 6\. Critérios de Aceite
+### 7\. Considerações de Implementação
 
-| ID | Critério | Verificação |
-| --- | --- | --- |
-| AC-19 | A aba "AGENDA" está visível na tela de detalhes do evento apenas para voluntários.
-| AC-20 | A aba "AGENDA" lista todos (e somente) os cards das microtarefas atribuídas ao usuário logado para aquele evento.
-| AC-21 | Cada card na agenda exibe o título da microtarefa, a tarefa pai e o stepper de status horizontal (Atribuída, Em Andamento, Concluída).
-| AC-22 | Ao clicar no check "Em Andamento", o status do documento correspondente emuser_microtasksé atualizado parain_progresse o visual do card reflete a mudança.
-| AC-23 | Ao clicar no check "Concluída", o status emuser_microtasksé atualizado paracompleted.
-| AC-24 | O usuário pode desmarcar um status, voltando para o estado anterior (ex: de Concluída para Em Andamento).
-| AC-25 | (Regra 1)Quando o 1º voluntário de uma microtarefa marca "Em Andamento", o status do documento emmicrotasksmuda parain_progress.
-| AC-26 | (Regra 2)Quando umamicrotaskfica "Em Andamento", suataskpai também fica "Em Andamento".
-| AC-27 | (Regra 3)O status de umamicrotasksó muda paracompleteddepois quetodosos seus voluntários atribuídos marcarem "Concluída".
-| AC-28 | (Regra 4)O status de umatasksó muda paracompleteddepois quetodasas suas microtarefas estiverem "Concluídas".
+#### 7.1 Arquitetura e Padrões
+- **Controller Pattern:** Utilizar `agenda_controller.dart` seguindo padrão GetX/Provider estabelecido
+- **Repository Pattern:** Implementar `user_microtask_repository.dart` para abstração de dados
+- **Service Layer:** Estender `microtask_service.dart` com métodos específicos da agenda
+- **Widget Reutilizável:** `microtask_agenda_card.dart` deve ser componentizado e reutilizável
+
+#### 7.2 Performance e Otimização
+- **Paginação:** Implementar para listas grandes de microtarefas
+- **Cache Local:** Armazenar dados da agenda para acesso offline
+- **Queries Otimizadas:** Usar índices compostos no Firestore para melhor performance
+- **Real-time Updates:** Implementar listeners para atualizações em tempo real
+
+#### 7.3 Tratamento de Erros
+- **Conectividade:** Tratar cenários offline/online
+- **Permissões:** Validar acesso do usuário antes de exibir dados
+- **Estados de Loading:** Implementar indicadores visuais durante carregamento
+- **Fallbacks:** Definir comportamentos para casos de erro
+
+### 8\. Critérios de Aceite
+
+| ID | Critério | Verificação | Prioridade |
+| --- | --- | --- | --- |
+| **AC-01** | **Visibilidade da Aba** | A aba "AGENDA" está visível na tela de detalhes do evento apenas para usuários que estão na lista `volunteers` do evento. | Alta |
+| **AC-02** | **Conteúdo da Agenda** | A aba "AGENDA" lista todos (e somente) os cards das microtarefas atribuídas ao usuário logado para aquele evento específico. | Alta |
+| **AC-03** | **Estrutura do Card** | Cada card na agenda exibe: título da microtarefa, tarefa pai ("Pertence a: X"), data/hora (se disponível) e stepper de status horizontal. | Alta |
+| **AC-04** | **Ordenação** | As microtarefas são exibidas ordenadas por status (assigned → in_progress → completed) e depois por data de atribuição. | Média |
+| **AC-05** | **Interação - Em Andamento** | Ao clicar no check "Em Andamento", o status em `user_microtasks` é atualizado para `in_progress` e o visual do card reflete a mudança imediatamente. | Alta |
+| **AC-06** | **Interação - Concluída** | Ao clicar no check "Concluída", o status em `user_microtasks` é atualizado para `completed` e `completedAt` é preenchido. | Alta |
+| **AC-07** | **Regressão de Status** | O usuário pode desmarcar status seguindo o fluxo: completed → in_progress → assigned (sem pular etapas). | Média |
+| **AC-08** | **Feedback Visual** | Cada mudança de status exibe loading durante processamento e feedback de sucesso/erro. | Média |
+| **AC-09** | **Propagação - Microtarefa In Progress** | Quando o 1º voluntário marca "Em Andamento", o status da microtarefa muda para `in_progress`. | Alta |
+| **AC-10** | **Propagação - Tarefa In Progress** | Quando uma microtarefa fica "Em Andamento", sua tarefa pai também fica "Em Andamento". | Alta |
+| **AC-11** | **Propagação - Microtarefa Completed** | O status de uma microtarefa só muda para `completed` depois que todos os voluntários atribuídos marcarem "Concluída". | Alta |
+| **AC-12** | **Propagação - Tarefa Completed** | O status de uma tarefa só muda para `completed` depois que todas as suas microtarefas estiverem "Concluídas". | Alta |
+| **AC-13** | **Responsividade** | A interface se adapta corretamente a diferentes tamanhos de tela mantendo usabilidade. | Baixa |
+| **AC-14** | **Performance** | A aba carrega em menos de 2 segundos com até 50 microtarefas. | Média |
 
