@@ -343,6 +343,12 @@ lib/
 ### Collection: volunteer_profiles
 ```json
 {
+  // Dados denormalizados do usuário
+  "userName": "Nome do Usuário",
+  "userEmail": "email@exemplo.com",
+  "userPhotoUrl": "url_da_foto",
+  // Dados do perfil
+  "assignedMicrotasksCount": 0,
   "id": "volunteer_profile_id",
   "userId": "user_id",
   "eventId": "event_id",
@@ -355,6 +361,23 @@ lib/
   "skills": ["skill1", "skill2"],
   "resources": ["resource1", "resource2"],
   "joinedAt": "timestamp"
+}
+```
+### Collection: user_microtasks
+```json
+{
+  "id": "user_microtask_id",
+  "userId": "user_id",
+  "microtaskId": "microtask_id",
+  "eventId": "event_id",
+  "status": "assigned|in_progress|completed",
+  "assignedAt": "timestamp",
+  "startedAt": "timestamp",
+  "completedAt": "timestamp",
+  "actualHours": 0.0,
+  "notes": "Observações do voluntário",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp"
 }
 ```
 

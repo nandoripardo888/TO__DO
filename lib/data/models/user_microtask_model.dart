@@ -62,11 +62,11 @@ class UserMicrotaskModel {
       eventId: map['eventId'] as String,
       status: UserMicrotaskStatus.fromString(map['status'] as String),
       assignedAt: (map['assignedAt'] as Timestamp).toDate(),
-      startedAt: map['startedAt'] != null 
-          ? (map['startedAt'] as Timestamp).toDate() 
+      startedAt: map['startedAt'] != null
+          ? (map['startedAt'] as Timestamp).toDate()
           : null,
-      completedAt: map['completedAt'] != null 
-          ? (map['completedAt'] as Timestamp).toDate() 
+      completedAt: map['completedAt'] != null
+          ? (map['completedAt'] as Timestamp).toDate()
           : null,
       actualHours: (map['actualHours'] as num?)?.toDouble(),
       notes: map['notes'] as String? ?? '',
@@ -91,7 +91,9 @@ class UserMicrotaskModel {
       'status': status.value,
       'assignedAt': Timestamp.fromDate(assignedAt),
       'startedAt': startedAt != null ? Timestamp.fromDate(startedAt!) : null,
-      'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
+      'completedAt': completedAt != null
+          ? Timestamp.fromDate(completedAt!)
+          : null,
       'actualHours': actualHours,
       'notes': notes,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -143,23 +145,26 @@ class UserMicrotaskModel {
   }
 
   /// Factory para criar uma nova relação usuário-microtask
+  /// Note: ID e timestamps devem ser definidos pelo service
   factory UserMicrotaskModel.create({
+    required String id,
     required String userId,
     required String microtaskId,
     required String eventId,
+    required DateTime assignedAt,
+    required DateTime createdAt,
+    required DateTime updatedAt,
   }) {
-    final now = DateTime.now();
-    
     return UserMicrotaskModel(
-      id: '', // Será definido pelo Firestore
+      id: id,
       userId: userId,
       microtaskId: microtaskId,
       eventId: eventId,
       status: UserMicrotaskStatus.assigned,
-      assignedAt: now,
+      assignedAt: assignedAt,
       notes: '',
-      createdAt: now,
-      updatedAt: now,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 
@@ -187,7 +192,9 @@ class UserMicrotaskModel {
       errors.add('Data de início não pode ser anterior à data de atribuição');
     }
 
-    if (completedAt != null && startedAt != null && completedAt!.isBefore(startedAt!)) {
+    if (completedAt != null &&
+        startedAt != null &&
+        completedAt!.isBefore(startedAt!)) {
       errors.add('Data de conclusão não pode ser anterior à data de início');
     }
 
@@ -236,18 +243,12 @@ class UserMicrotaskModel {
   /// Marca como cancelado
   UserMicrotaskModel markAsCancelled() {
     final now = DateTime.now();
-    return copyWith(
-      status: UserMicrotaskStatus.cancelled,
-      updatedAt: now,
-    );
+    return copyWith(status: UserMicrotaskStatus.cancelled, updatedAt: now);
   }
 
   /// Atualiza as notas
   UserMicrotaskModel updateNotes(String newNotes) {
-    return copyWith(
-      notes: newNotes,
-      updatedAt: DateTime.now(),
-    );
+    return copyWith(notes: newNotes, updatedAt: DateTime.now());
   }
 
   /// Atualiza as horas trabalhadas
@@ -275,7 +276,7 @@ class UserMicrotaskModel {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    
+
     return other is UserMicrotaskModel &&
         other.id == id &&
         other.userId == userId &&
@@ -286,13 +287,7 @@ class UserMicrotaskModel {
 
   @override
   int get hashCode {
-    return Object.hash(
-      id,
-      userId,
-      microtaskId,
-      eventId,
-      status,
-    );
+    return Object.hash(id, userId, microtaskId, eventId, status);
   }
 
   @override

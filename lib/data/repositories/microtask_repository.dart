@@ -33,7 +33,35 @@ class MicrotaskRepository {
     String? notes,
   }) async {
     try {
-      final microtask = MicrotaskModel.create(
+      // Create a temporary microtask for validation
+      final tempMicrotask = MicrotaskModel.create(
+        id: 'temp', // Temporary ID for validation
+        taskId: taskId,
+        eventId: eventId,
+        title: title.trim(),
+        description: description.trim(),
+        requiredSkills: requiredSkills,
+        requiredResources: requiredResources,
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
+        priority: priority,
+        maxVolunteers: maxVolunteers,
+        createdBy: createdBy,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        notes: notes?.trim(),
+      );
+
+      // Validate before calling service
+      final validationErrors = tempMicrotask.validate();
+      if (validationErrors.isNotEmpty) {
+        throw ValidationException(
+          'Dados inválidos: ${validationErrors.join(', ')}',
+        );
+      }
+
+      // Repository delegates to service for creation with ID/timestamp generation
+      return await _microtaskService.createMicrotask(
         taskId: taskId,
         eventId: eventId,
         title: title.trim(),
@@ -47,8 +75,6 @@ class MicrotaskRepository {
         createdBy: createdBy,
         notes: notes?.trim(),
       );
-
-      return await _microtaskService.createMicrotask(microtask);
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException('Erro ao criar microtask: ${e.toString()}');
@@ -159,14 +185,10 @@ class MicrotaskRepository {
     required String eventId,
   }) async {
     try {
-      if (microtaskId.isEmpty) {
-        throw ValidationException('ID da microtask é obrigatório');
-      }
-      if (userId.isEmpty) {
-        throw ValidationException('ID do usuário é obrigatório');
-      }
-      if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
+      if (microtaskId.isEmpty || userId.isEmpty || eventId.isEmpty) {
+        throw ValidationException(
+          'IDs da microtask, usuário e evento são obrigatórios',
+        );
       }
 
       print("ABACAXI4: assinando microtask");

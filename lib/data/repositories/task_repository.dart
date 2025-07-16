@@ -19,15 +19,34 @@ class TaskRepository {
     required String createdBy,
   }) async {
     try {
-      final task = TaskModel.create(
+      // Create a temporary task for validation
+      final tempTask = TaskModel.create(
+        id: 'temp', // Temporary ID for validation
+        eventId: eventId,
+        title: title.trim(),
+        description: description.trim(),
+        priority: priority,
+        createdBy: createdBy,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Validate before calling service
+      final validationErrors = tempTask.validate();
+      if (validationErrors.isNotEmpty) {
+        throw ValidationException(
+          'Dados inválidos: ${validationErrors.join(', ')}',
+        );
+      }
+
+      // Repository delegates to service for creation with ID/timestamp generation
+      return await _taskService.createTask(
         eventId: eventId,
         title: title.trim(),
         description: description.trim(),
         priority: priority,
         createdBy: createdBy,
       );
-
-      return await _taskService.createTask(task);
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException('Erro ao criar task: ${e.toString()}');

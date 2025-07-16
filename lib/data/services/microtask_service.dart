@@ -16,28 +16,50 @@ class MicrotaskService {
       _firestore.collection('user_microtasks');
 
   /// Cria uma nova microtask
-  Future<MicrotaskModel> createMicrotask(MicrotaskModel microtask) async {
+  Future<MicrotaskModel> createMicrotask({
+    required String taskId,
+    required String eventId,
+    required String title,
+    required String description,
+    required List<String> requiredSkills,
+    required List<String> requiredResources,
+    DateTime? startDateTime,
+    DateTime? endDateTime,
+    required String priority,
+    required int maxVolunteers,
+    required String createdBy,
+    String? notes,
+  }) async {
     try {
       // Gera um ID único para a microtask
       final microtaskId = _uuid.v4();
+      final now = DateTime.now();
 
-      // Cria a microtask com ID único
-      final microtaskWithId = microtask.copyWith(id: microtaskId);
+      // Cria a microtask com dados gerados pelo service
+      final microtask = MicrotaskModel.create(
+        id: microtaskId,
+        taskId: taskId,
+        eventId: eventId,
+        title: title,
+        description: description,
+        requiredSkills: requiredSkills,
+        requiredResources: requiredResources,
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
+        priority: priority,
+        maxVolunteers: maxVolunteers,
+        createdBy: createdBy,
+        createdAt: now,
+        updatedAt: now,
+        notes: notes,
+      );
 
-      // Valida os dados antes de salvar
-      final validationErrors = microtaskWithId.validate();
-      if (validationErrors.isNotEmpty) {
-        throw ValidationException(
-          'Dados inválidos: ${validationErrors.join(', ')}',
-        );
-      }
+      // Note: Validation should be done by repository/controller before calling service
 
       // Salva no Firestore
-      await _microtasksCollection
-          .doc(microtaskId)
-          .set(microtaskWithId.toFirestore());
+      await _microtasksCollection.doc(microtaskId).set(microtask.toFirestore());
 
-      return microtaskWithId;
+      return microtask;
     } catch (e) {
       if (e is ValidationException) rethrow;
       throw DatabaseException('Erro ao criar microtask: ${e.toString()}');
@@ -367,18 +389,22 @@ class MicrotaskService {
     String eventId,
   ) async {
     try {
+      final relationId = _uuid.v4();
+      final now = DateTime.now();
+
       final userMicrotask = UserMicrotaskModel.create(
+        id: relationId,
         userId: userId,
         microtaskId: microtaskId,
         eventId: eventId,
+        assignedAt: now,
+        createdAt: now,
+        updatedAt: now,
       );
-
-      final relationId = _uuid.v4();
-      final userMicrotaskWithId = userMicrotask.copyWith(id: relationId);
 
       await _userMicrotasksCollection
           .doc(relationId)
-          .set(userMicrotaskWithId.toFirestore());
+          .set(userMicrotask.toFirestore());
       print('Relação usuário-microtask criada com sucesso!');
     } catch (e) {
       print('Erro ao criar relação usuário-microtask: ${e.toString()}');

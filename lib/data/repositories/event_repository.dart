@@ -24,7 +24,30 @@ class EventRepository {
     required List<String> requiredResources,
   }) async {
     try {
-      final event = EventModel.create(
+      // Create a temporary event for validation
+      final tempEvent = EventModel.create(
+        id: 'temp', // Temporary ID for validation
+        name: name.trim(),
+        description: description.trim(),
+        tag: 'temp', // Temporary tag for validation
+        location: location.trim(),
+        createdBy: createdBy,
+        requiredSkills: requiredSkills,
+        requiredResources: requiredResources,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Validate before calling service
+      final validationErrors = tempEvent.validate();
+      if (validationErrors.isNotEmpty) {
+        throw ValidationException(
+          'Dados inválidos: ${validationErrors.join(', ')}',
+        );
+      }
+
+      // Repository delegates to service for creation with ID/tag generation
+      return await _eventService.createEvent(
         name: name.trim(),
         description: description.trim(),
         location: location.trim(),
@@ -32,8 +55,6 @@ class EventRepository {
         requiredSkills: requiredSkills,
         requiredResources: requiredResources,
       );
-
-      return await _eventService.createEvent(event);
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException('Erro ao criar evento: ${e.toString()}');
@@ -114,20 +135,9 @@ class EventRepository {
     required List<String> resources,
   }) async {
     try {
-      // Valida os parâmetros
-      if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
-      }
-      if (userId.isEmpty) {
-        throw ValidationException('ID do usuário é obrigatório');
-      }
-      if (!isFullTimeAvailable && availableDays.isEmpty) {
-        throw ValidationException(
-          'Pelo menos um dia de disponibilidade é obrigatório',
-        );
-      }
-      if (!availableHours.isValid()) {
-        throw ValidationException('Horário de disponibilidade inválido');
+      // Basic parameter validation (detailed validation should be in models/controllers)
+      if (eventId.isEmpty || userId.isEmpty) {
+        throw ValidationException('IDs do evento e usuário são obrigatórios');
       }
 
       // Adiciona o voluntário ao evento
@@ -142,8 +152,8 @@ class EventRepository {
         throw NotFoundException('Usuário não encontrado');
       }
 
-      // Cria o perfil do voluntário com dados do usuário
-      final profile = VolunteerProfileModel.create(
+      // Cria o perfil do voluntário delegando ao service
+      await _eventService.createVolunteerProfile(
         userId: userId,
         eventId: eventId,
         availableDays: availableDays,
@@ -155,8 +165,6 @@ class EventRepository {
         userEmail: userData.email,
         userPhotoUrl: userData.photoUrl,
       );
-
-      await _eventService.createVolunteerProfile(profile);
 
       return updatedEvent;
     } catch (e) {
@@ -170,11 +178,8 @@ class EventRepository {
   /// Remove um voluntário do evento
   Future<EventModel> leaveEvent(String eventId, String userId) async {
     try {
-      if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
-      }
-      if (userId.isEmpty) {
-        throw ValidationException('ID do usuário é obrigatório');
+      if (eventId.isEmpty || userId.isEmpty) {
+        throw ValidationException('IDs do evento e usuário são obrigatórios');
       }
 
       // Remove o voluntário do evento

@@ -7,6 +7,13 @@ import '../services/event_service.dart';
 import '../../core/exceptions/app_exceptions.dart';
 
 /// Serviço responsável pelo sistema de atribuição múltipla de voluntários
+///
+/// ARCHITECTURAL NOTE: This service currently violates clean architecture
+/// by depending on other services (MicrotaskService, EventService).
+/// In proper clean architecture, this coordination should be done in repositories.
+///
+/// TODO: Refactor to move business logic to repositories and make this service
+/// handle only direct database operations for assignment-related data.
 class AssignmentService {
   final MicrotaskService _microtaskService;
   final EventService _eventService;

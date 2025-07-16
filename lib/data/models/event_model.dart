@@ -203,20 +203,21 @@ class EventModel {
   }
 
   /// Factory para criar um novo evento
+  /// Note: ID, tag e timestamps devem ser definidos pelo service
   factory EventModel.create({
+    required String id,
     required String name,
     required String description,
+    required String tag,
     required String location,
     required String createdBy,
     required List<String> requiredSkills,
     required List<String> requiredResources,
-    String? customTag,
+    required DateTime createdAt,
+    required DateTime updatedAt,
   }) {
-    final now = DateTime.now();
-    final tag = customTag ?? _generateUniqueTag();
-
     return EventModel(
-      id: '', // Será definido pelo Firestore
+      id: id,
       name: name,
       description: description,
       tag: tag,
@@ -227,22 +228,9 @@ class EventModel {
       requiredSkills: requiredSkills,
       requiredResources: requiredResources,
       status: EventStatus.active,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
-  }
-
-  /// Gera uma tag única para o evento
-  static String _generateUniqueTag() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    final random = DateTime.now().millisecondsSinceEpoch;
-    var result = '';
-
-    for (int i = 0; i < 6; i++) {
-      result += chars[(random + i) % chars.length];
-    }
-
-    return result;
   }
 
   /// Converte para string para debug

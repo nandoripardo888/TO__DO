@@ -15,7 +15,14 @@ class EventService {
       _firestore.collection('volunteer_profiles');
 
   /// Cria um novo evento
-  Future<EventModel> createEvent(EventModel event) async {
+  Future<EventModel> createEvent({
+    required String name,
+    required String description,
+    required String location,
+    required String createdBy,
+    required List<String> requiredSkills,
+    required List<String> requiredResources,
+  }) async {
     try {
       // Gera um ID único para o evento
       final eventId = _uuid.v4();
@@ -26,21 +33,29 @@ class EventService {
         tag = _generateUniqueTag();
       } while (await _isTagTaken(tag));
 
-      // Cria o evento com ID e tag únicos
-      final eventWithId = event.copyWith(id: eventId, tag: tag);
+      // Gera timestamps
+      final now = DateTime.now();
 
-      // Valida os dados antes de salvar
-      final validationErrors = eventWithId.validate();
-      if (validationErrors.isNotEmpty) {
-        throw ValidationException(
-          'Dados inválidos: ${validationErrors.join(', ')}',
-        );
-      }
+      // Cria o evento com dados gerados pelo service
+      final event = EventModel.create(
+        id: eventId,
+        name: name,
+        description: description,
+        tag: tag,
+        location: location,
+        createdBy: createdBy,
+        requiredSkills: requiredSkills,
+        requiredResources: requiredResources,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      // Note: Validation should be done by repository/controller before calling service
 
       // Salva no Firestore
-      await _eventsCollection.doc(eventId).set(eventWithId.toFirestore());
+      await _eventsCollection.doc(eventId).set(event.toFirestore());
 
-      return eventWithId;
+      return event;
     } catch (e) {
       if (e is ValidationException) rethrow;
       throw DatabaseException('Erro ao criar evento: ${e.toString()}');
@@ -114,13 +129,7 @@ class EventService {
   /// Atualiza um evento
   Future<EventModel> updateEvent(EventModel event) async {
     try {
-      // Valida os dados antes de salvar
-      final validationErrors = event.validate();
-      if (validationErrors.isNotEmpty) {
-        throw ValidationException(
-          'Dados inválidos: ${validationErrors.join(', ')}',
-        );
-      }
+      // Note: Validation should be done by repository/controller before calling service
 
       final updatedEvent = event.withUpdatedTimestamp();
 
@@ -201,42 +210,48 @@ class EventService {
   }
 
   /// Cria um perfil de voluntário
-  Future<VolunteerProfileModel> createVolunteerProfile(
-    VolunteerProfileModel profile,
-  ) async {
+  Future<VolunteerProfileModel> createVolunteerProfile({
+    required String userId,
+    required String eventId,
+    required List<String> availableDays,
+    required TimeRange availableHours,
+    bool isFullTimeAvailable = false,
+    required List<String> skills,
+    required List<String> resources,
+    required String userName,
+    required String userEmail,
+    String? userPhotoUrl,
+  }) async {
     try {
       // Gera um ID único para o perfil
       final profileId = _uuid.v4();
+      final now = DateTime.now();
 
-      // Se o perfil não tem dados do usuário, busca e adiciona
-      VolunteerProfileModel profileWithUserData = profile;
-      if (!profile.hasValidUserData) {
-        final userData = await _getUserData(profile.userId);
-        if (userData != null) {
-          profileWithUserData = profile.updateUserData(
-            userName: userData['name'] as String? ?? '',
-            userEmail: userData['email'] as String? ?? '',
-            userPhotoUrl: userData['photoUrl'] as String?,
-          );
-        }
-      }
+      // Cria o perfil com dados gerados pelo service
+      final profile = VolunteerProfileModel.create(
+        id: profileId,
+        userId: userId,
+        eventId: eventId,
+        availableDays: availableDays,
+        availableHours: availableHours,
+        isFullTimeAvailable: isFullTimeAvailable,
+        skills: skills,
+        resources: resources,
+        assignedMicrotasksCount: 0,
+        userName: userName,
+        userEmail: userEmail,
+        userPhotoUrl: userPhotoUrl,
+        joinedAt: now,
+      );
 
-      final profileWithId = profileWithUserData.copyWith(id: profileId);
-
-      // Valida os dados antes de salvar
-      final validationErrors = profileWithId.validate();
-      if (validationErrors.isNotEmpty) {
-        throw ValidationException(
-          'Dados inválidos: ${validationErrors.join(', ')}',
-        );
-      }
+      // Note: Validation should be done by repository/controller before calling service
 
       // Salva no Firestore
       await _volunteerProfilesCollection
           .doc(profileId)
-          .set(profileWithId.toFirestore());
+          .set(profile.toFirestore());
 
-      return profileWithId;
+      return profile;
     } catch (e) {
       if (e is ValidationException) rethrow;
       throw DatabaseException(

@@ -152,17 +152,19 @@ class TaskModel {
   }
 
   /// Factory para criar uma nova task
+  /// Note: ID e timestamps devem ser definidos pelo service
   factory TaskModel.create({
+    required String id,
     required String eventId,
     required String title,
     required String description,
     required TaskPriority priority,
     required String createdBy,
+    required DateTime createdAt,
+    required DateTime updatedAt,
   }) {
-    final now = DateTime.now();
-    
     return TaskModel(
-      id: '', // Será definido pelo Firestore
+      id: id,
       eventId: eventId,
       title: title,
       description: description,
@@ -171,8 +173,8 @@ class TaskModel {
       createdBy: createdBy,
       microtaskCount: 0,
       completedMicrotasks: 0,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 
@@ -211,7 +213,9 @@ class TaskModel {
     }
 
     if (completedMicrotasks > microtaskCount) {
-      errors.add('Número de microtasks concluídas não pode ser maior que o total');
+      errors.add(
+        'Número de microtasks concluídas não pode ser maior que o total',
+      );
     }
 
     return errors;
@@ -241,7 +245,7 @@ class TaskModel {
   /// Atualiza o status baseado no progresso das microtasks
   TaskModel updateStatusFromMicrotasks() {
     TaskStatus newStatus;
-    
+
     if (completedMicrotasks == 0) {
       newStatus = TaskStatus.pending;
     } else if (completedMicrotasks == microtaskCount) {
@@ -264,8 +268,10 @@ class TaskModel {
   /// Decrementa o contador de microtasks
   TaskModel decrementMicrotaskCount() {
     final newCount = microtaskCount > 0 ? microtaskCount - 1 : 0;
-    final newCompleted = completedMicrotasks > newCount ? newCount : completedMicrotasks;
-    
+    final newCompleted = completedMicrotasks > newCount
+        ? newCount
+        : completedMicrotasks;
+
     return copyWith(
       microtaskCount: newCount,
       completedMicrotasks: newCompleted,
@@ -275,10 +281,10 @@ class TaskModel {
 
   /// Incrementa o contador de microtasks concluídas
   TaskModel incrementCompletedMicrotasks() {
-    final newCompleted = completedMicrotasks < microtaskCount 
-        ? completedMicrotasks + 1 
+    final newCompleted = completedMicrotasks < microtaskCount
+        ? completedMicrotasks + 1
         : completedMicrotasks;
-    
+
     return copyWith(
       completedMicrotasks: newCompleted,
       updatedAt: DateTime.now(),
@@ -288,7 +294,7 @@ class TaskModel {
   /// Decrementa o contador de microtasks concluídas
   TaskModel decrementCompletedMicrotasks() {
     final newCompleted = completedMicrotasks > 0 ? completedMicrotasks - 1 : 0;
-    
+
     return copyWith(
       completedMicrotasks: newCompleted,
       updatedAt: DateTime.now(),
@@ -298,7 +304,7 @@ class TaskModel {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    
+
     return other is TaskModel &&
         other.id == id &&
         other.eventId == eventId &&

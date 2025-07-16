@@ -209,7 +209,9 @@ class MicrotaskModel {
   }
 
   /// Factory para criar uma nova microtask
+  /// Note: ID e timestamps devem ser definidos pelo service
   factory MicrotaskModel.create({
+    required String id,
     required String taskId,
     required String eventId,
     required String title,
@@ -221,12 +223,12 @@ class MicrotaskModel {
     required String priority,
     required int maxVolunteers,
     required String createdBy,
+    required DateTime createdAt,
+    required DateTime updatedAt,
     String? notes,
   }) {
-    final now = DateTime.now();
-
     return MicrotaskModel(
-      id: '', // Será definido pelo Firestore
+      id: id,
       taskId: taskId,
       eventId: eventId,
       title: title,
@@ -241,8 +243,8 @@ class MicrotaskModel {
       status: MicrotaskStatus.pending,
       createdBy: createdBy,
       notes: notes ?? '',
-      createdAt: now,
-      updatedAt: now,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 

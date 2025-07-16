@@ -277,7 +277,9 @@ class VolunteerProfileModel {
   }
 
   /// Factory para criar um novo perfil de voluntário
+  /// Note: ID e timestamp devem ser definidos pelo service
   factory VolunteerProfileModel.create({
+    required String id,
     required String userId,
     required String eventId,
     required List<String> availableDays,
@@ -289,9 +291,10 @@ class VolunteerProfileModel {
     required String userName,
     required String userEmail,
     String? userPhotoUrl,
+    required DateTime joinedAt,
   }) {
     return VolunteerProfileModel(
-      id: '', // Será definido pelo Firestore
+      id: id,
       userId: userId,
       eventId: eventId,
       availableDays: availableDays,
@@ -300,7 +303,7 @@ class VolunteerProfileModel {
       skills: skills,
       resources: resources,
       assignedMicrotasksCount: assignedMicrotasksCount,
-      joinedAt: DateTime.now(),
+      joinedAt: joinedAt,
       userName: userName,
       userEmail: userEmail,
       userPhotoUrl: userPhotoUrl,
@@ -308,7 +311,9 @@ class VolunteerProfileModel {
   }
 
   /// Factory para criar um perfil com dados do usuário (para compatibilidade)
+  /// Note: ID e timestamp devem ser definidos pelo service
   factory VolunteerProfileModel.createWithUserData({
+    required String id,
     required String userId,
     required String eventId,
     required List<String> availableDays,
@@ -320,8 +325,10 @@ class VolunteerProfileModel {
     required String userName,
     required String userEmail,
     String? userPhotoUrl,
+    required DateTime joinedAt,
   }) {
     return VolunteerProfileModel.create(
+      id: id,
       userId: userId,
       eventId: eventId,
       availableDays: availableDays,
@@ -333,6 +340,7 @@ class VolunteerProfileModel {
       userName: userName,
       userEmail: userEmail,
       userPhotoUrl: userPhotoUrl,
+      joinedAt: joinedAt,
     );
   }
 

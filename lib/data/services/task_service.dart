@@ -12,26 +12,36 @@ class TaskService {
   CollectionReference get _tasksCollection => _firestore.collection('tasks');
 
   /// Cria uma nova task
-  Future<TaskModel> createTask(TaskModel task) async {
+  Future<TaskModel> createTask({
+    required String eventId,
+    required String title,
+    required String description,
+    required TaskPriority priority,
+    required String createdBy,
+  }) async {
     try {
       // Gera um ID único para a task
       final taskId = _uuid.v4();
+      final now = DateTime.now();
 
-      // Cria a task com ID único
-      final taskWithId = task.copyWith(id: taskId);
+      // Cria a task com dados gerados pelo service
+      final task = TaskModel.create(
+        id: taskId,
+        eventId: eventId,
+        title: title,
+        description: description,
+        priority: priority,
+        createdBy: createdBy,
+        createdAt: now,
+        updatedAt: now,
+      );
 
-      // Valida os dados antes de salvar
-      final validationErrors = taskWithId.validate();
-      if (validationErrors.isNotEmpty) {
-        throw ValidationException(
-          'Dados inválidos: ${validationErrors.join(', ')}',
-        );
-      }
+      // Note: Validation should be done by repository/controller before calling service
 
       // Salva no Firestore
-      await _tasksCollection.doc(taskId).set(taskWithId.toFirestore());
+      await _tasksCollection.doc(taskId).set(task.toFirestore());
 
-      return taskWithId;
+      return task;
     } catch (e) {
       if (e is ValidationException) rethrow;
       throw DatabaseException('Erro ao criar task: ${e.toString()}');
@@ -157,13 +167,7 @@ class TaskService {
         throw ValidationException('ID da task é obrigatório para atualização');
       }
 
-      // Valida os dados antes de salvar
-      final validationErrors = task.validate();
-      if (validationErrors.isNotEmpty) {
-        throw ValidationException(
-          'Dados inválidos: ${validationErrors.join(', ')}',
-        );
-      }
+      // Note: Validation should be done by repository/controller before calling service
 
       // Atualiza o timestamp
       final updatedTask = task.withUpdatedTimestamp();
