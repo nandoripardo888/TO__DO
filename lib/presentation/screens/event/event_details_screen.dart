@@ -10,10 +10,11 @@ import '../../controllers/task_controller.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_message_widget.dart';
 import '../../widgets/common/custom_app_bar.dart';
-import '../../widgets/common/error_widget.dart';
+
 import '../../widgets/common/skill_chip.dart';
 import 'manage_volunteers_screen.dart';
 import 'track_tasks_screen.dart';
+import '../profile/my_volunteer_profile_screen.dart';
 
 /// Tela de detalhes do evento com sistema de tabs
 class EventDetailsScreen extends StatefulWidget {
@@ -35,6 +36,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   @override
   void initState() {
     super.initState();
+    // Initialize with default length, will be updated after loading event
     _tabController = TabController(length: 3, vsync: this);
     _loadEventDetails();
   }
@@ -43,6 +45,31 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  /// REQ-02: Calcula o número de tabs baseado nas permissões do usuário
+  int _getTabCount() {
+    if (_event == null) return 3; // Default
+
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final currentUserId = authController.currentUser?.id;
+    final isManager = _event!.isManager(currentUserId ?? '');
+    final isVolunteer = _event!.isVolunteer(currentUserId ?? '');
+
+    int count = 2; // Evento + Acompanhar (sempre visíveis)
+    if (isManager) count++; // Voluntários
+    if (isVolunteer) count++; // Meus Dados
+
+    return count;
+  }
+
+  /// REQ-02: Atualiza o TabController quando o evento é carregado
+  void _updateTabController() {
+    final newLength = _getTabCount();
+    if (_tabController.length != newLength) {
+      _tabController.dispose();
+      _tabController = TabController(length: newLength, vsync: this);
+    }
   }
 
   Future<void> _loadEventDetails() async {
@@ -62,6 +89,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         setState(() {
           _event = event;
         });
+
+        // REQ-02: Atualiza o TabController baseado nas permissões
+        _updateTabController();
 
         // Carrega tasks do evento
         if (mounted) {
@@ -136,11 +166,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                _buildEventTab(),
-                _buildManageVolunteersTab(),
-                _buildTrackTasksTab(),
-              ],
+              children: _buildTabViews(),
             ),
           ),
         ],
@@ -171,6 +197,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     final authController = Provider.of<AuthController>(context, listen: false);
     final currentUserId = authController.currentUser?.id;
     final isManager = _event!.isManager(currentUserId ?? '');
+    final isVolunteer = _event!.isVolunteer(currentUserId ?? '');
+
+    // REQ-02: Constrói lista de tabs dinamicamente baseada nas permissões
+    final tabs = <Widget>[
+      const Tab(icon: Icon(Icons.info_outline), text: 'Evento'),
+      if (isManager) const Tab(icon: Icon(Icons.people), text: 'Voluntários'),
+      if (isVolunteer) const Tab(icon: Icon(Icons.person), text: 'Meus Dados'),
+      const Tab(icon: Icon(Icons.track_changes), text: 'Acompanhar'),
+    ];
 
     return Container(
       color: AppColors.primary,
@@ -179,14 +214,26 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         indicatorColor: AppColors.textOnPrimary,
         labelColor: AppColors.textOnPrimary,
         unselectedLabelColor: AppColors.textOnPrimary.withOpacity(0.7),
-        tabs: [
-          const Tab(icon: Icon(Icons.info_outline), text: 'Evento'),
-          if (isManager)
-            const Tab(icon: Icon(Icons.people), text: 'Voluntários'),
-          const Tab(icon: Icon(Icons.track_changes), text: 'Acompanhar'),
-        ],
+        tabs: tabs,
       ),
     );
+  }
+
+  /// REQ-02: Constrói lista de views dinamicamente baseada nas permissões
+  List<Widget> _buildTabViews() {
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final currentUserId = authController.currentUser?.id;
+    final isManager = _event!.isManager(currentUserId ?? '');
+    final isVolunteer = _event!.isVolunteer(currentUserId ?? '');
+
+    final views = <Widget>[
+      _buildEventTab(),
+      if (isManager) _buildManageVolunteersTab(),
+      if (isVolunteer) _buildMyDataTab(),
+      _buildTrackTasksTab(),
+    ];
+
+    return views;
   }
 
   Widget _buildEventTab() {
@@ -220,6 +267,28 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     }
 
     return ManageVolunteersScreen(eventId: widget.eventId);
+  }
+
+  /// REQ-02: Nova aba "Meus Dados" para gerenciamento do perfil de voluntário
+  Widget _buildMyDataTab() {
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final currentUserId = authController.currentUser?.id;
+
+    if (currentUserId == null) {
+      return const Center(
+        child: Text(
+          'Usuário não encontrado',
+          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        ),
+      );
+    }
+
+    // REQ-03: Usa a nova tela unificada de perfil de voluntário
+    return MyVolunteerProfileScreen(
+      eventId: widget.eventId,
+      userId: currentUserId,
+      isEditMode: false,
+    );
   }
 
   Widget _buildTrackTasksTab() {

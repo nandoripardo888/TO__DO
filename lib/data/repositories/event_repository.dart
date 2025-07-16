@@ -46,6 +46,12 @@ class EventRepository {
         );
       }
 
+      // REQ-01: Busca dados do usuário criador para criar o perfil de voluntário
+      final userData = await _userRepository.getUserById(createdBy);
+      if (userData == null) {
+        throw NotFoundException('Usuário criador não encontrado');
+      }
+
       // Repository delegates to service for creation with ID/tag generation
       return await _eventService.createEvent(
         name: name.trim(),
@@ -54,6 +60,9 @@ class EventRepository {
         createdBy: createdBy,
         requiredSkills: requiredSkills,
         requiredResources: requiredResources,
+        creatorName: userData.name,
+        creatorEmail: userData.email,
+        creatorPhotoUrl: userData.photoUrl,
       );
     } catch (e) {
       if (e is AppException) rethrow;

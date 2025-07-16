@@ -30,9 +30,10 @@ Sistema onde usuários podem criar eventos, gerenciar tarefas hierárquicas (Tas
 ## 🔄 Fluxo Principal
 
 1. **Criação de Evento**
-   - Usuário cria evento → torna-se gerenciador
+   - Usuário cria evento → torna-se gerenciador **E voluntário automaticamente**
    - Sistema gera código/tag único
    - Define: nome, descrição, localização, habilidades necessárias, recursos necessários
+   - **NOVO:** Criador é automaticamente inscrito como voluntário com perfil padrão
 
 2. **Ingresso de Voluntários**
    - Voluntário insere código/tag
@@ -109,13 +110,50 @@ Sistema onde usuários podem criar eventos, gerenciar tarefas hierárquicas (Tas
   - Botão "Confirmar Participação" (apenas se ainda não for participante)
 
 ### 6. Tela Detalhes do Evento
-- **Tabs de Navegação:**
+- **Tabs de Navegação (Dinâmicas):**
   - **Evento:** Informações gerais, localização, código/tag
-  - **Criar Tasks:** (apenas gerenciadores)
-  - **Gerenciar Voluntários:** (apenas gerenciadores)
-  - **Acompanhar Tasks:** Visualização de todas as tasks/microtasks
+  - **Voluntários:** (apenas gerenciadores) - Gerenciar voluntários do evento
+  - **Meus Dados:** (apenas voluntários) - **NOVA TAB** para gerenciar perfil de voluntário
+  - **Acompanhar:** Visualização de todas as tasks/microtasks
 
-### 7. Tela Criar Tasks
+### 7. **NOVA FUNCIONALIDADE:** Gerenciamento de Perfil de Voluntário
+
+#### 7.1 Tela Visualizar Perfil de Voluntário
+- **Acesso:** Tab "Meus Dados" na tela de detalhes do evento (apenas para voluntários)
+- **Funcionalidades:**
+  - Visualização em modo somente leitura das informações do voluntário
+  - Informações do evento (nome, localização)
+  - Informações pessoais (nome, e-mail, data de participação)
+  - Disponibilidade (dias da semana, horários ou integral)
+  - Habilidades cadastradas (com destaque para as necessárias ao evento)
+  - Recursos disponibilizados
+  - Botão "Editar Meus Dados" para navegação à tela de edição
+
+#### 7.2 Tela Editar Perfil de Voluntário
+- **Acesso:** Botão "Editar" na tela de visualização ou AppBar
+- **Funcionalidades:**
+  - **Seção Disponibilidade:**
+    - Checkbox para "Disponibilidade integral"
+    - Se não integral: seleção de dias da semana (checkboxes)
+    - Se não integral: seleção de horário de início e fim (time pickers)
+  - **Seção Habilidades:**
+    - Chips selecionáveis para habilidades necessárias ao evento (prioritárias)
+    - Visualização de outras habilidades já cadastradas
+    - Campo de texto para adicionar novas habilidades
+  - **Seção Recursos:**
+    - Chips selecionáveis para recursos necessários ao evento (prioritários)
+    - Visualização de outros recursos já cadastrados
+    - Campo de texto para adicionar novos recursos
+  - **Validações:**
+    - Pelo menos um dia deve ser selecionado (se não integral)
+    - Horário de início deve ser anterior ao de fim
+  - **Ações:**
+    - Botão "Salvar" no AppBar
+    - Botão "Salvar Alterações" no final da tela
+    - Feedback visual durante salvamento
+    - Retorno automático à tela de visualização após sucesso
+
+### 8. Tela Criar Tasks
 - **Seção Criar Task:**
   - Nome da task
   - Descrição
@@ -234,7 +272,8 @@ lib/
 │   │   │   ├── manage_volunteers_screen.dart
 │   │   │   └── track_tasks_screen.dart
 │   │   └── profile/
-│   │       └── volunteer_profile_screen.dart
+│   │       ├── view_volunteer_profile_screen.dart  // NOVA TELA
+│   │       └── edit_volunteer_profile_screen.dart  // NOVA TELA
 │   ├── widgets/
 │   │   ├── common/
 │   │   │   ├── custom_button.dart
@@ -264,6 +303,62 @@ lib/
 - **Repositories:** Camada de abstração entre os services e o restante do app. Só chamam services e retornam models.
 - **Models:** Representam as entidades do domínio, com métodos de serialização (`fromJson`, `toJson`). Não misturar lógica de negócio ou acesso a dados aqui.
 
+## 📋 Regras de Negócio e Melhorias Implementadas
+
+### Regras de Negócio Principais
+
+#### RN-01: Registro Automático de Voluntário para Criador de Evento
+- **Descrição:** Quando um usuário cria um evento, ele é automaticamente registrado como voluntário além de gerenciador
+- **Implementação:**
+  - Array `volunteers` do evento inclui automaticamente o `createdBy`
+  - Perfil de voluntário é criado automaticamente com valores padrão
+  - Valores padrão: horário 09:00-17:00, disponibilidade não integral, listas vazias para skills/resources
+- **Benefício:** Facilita o processo para criadores que também querem participar como voluntários
+
+#### RN-02: Tabs Dinâmicas na Tela de Detalhes do Evento
+- **Descrição:** As tabs são exibidas dinamicamente baseadas nas permissões do usuário
+- **Lógica:**
+  - Tab "Evento": sempre visível
+  - Tab "Voluntários": apenas para gerenciadores
+  - Tab "Meus Dados": apenas para voluntários (NOVA)
+  - Tab "Acompanhar": sempre visível
+- **Implementação:** TabController com length dinâmico baseado em permissões
+
+#### RN-03: Gerenciamento de Perfil de Voluntário
+- **Descrição:** Voluntários podem visualizar e editar suas informações específicas do evento
+- **Funcionalidades:**
+  - Visualização completa do perfil em modo somente leitura
+  - Edição de disponibilidade (dias, horários, integral)
+  - Gerenciamento de habilidades (prioritárias do evento + personalizadas)
+  - Gerenciamento de recursos (prioritários do evento + personalizados)
+  - Validações de consistência (horários, dias mínimos)
+
+### Melhorias de UX/UI
+
+#### UI-01: Interface Responsiva para Perfil de Voluntário
+- Cards organizados por seção (evento, pessoal, disponibilidade, skills, recursos)
+- Chips diferenciados para habilidades/recursos prioritários vs. personalizados
+- Feedback visual durante operações (loading, salvamento)
+- Navegação intuitiva entre visualização e edição
+
+#### UI-02: Validações e Feedback
+- Validação em tempo real para campos obrigatórios
+- Mensagens de erro contextuais
+- Confirmação visual de operações bem-sucedidas
+- Estados de loading durante operações assíncronas
+
+### Considerações Técnicas
+
+#### TC-01: Consistência de Dados
+- Sincronização entre collections `events` e `volunteer_profiles`
+- Manutenção de integridade referencial
+- Tratamento de casos edge (usuário removido, evento deletado)
+
+#### TC-02: Performance
+- Carregamento otimizado de dados do usuário
+- Cache local para informações frequentemente acessadas
+- Queries eficientes no Firestore
+
 ## 🗄️ Estrutura do Banco de Dados (Firestore)
 
 ### Collection: users
@@ -288,7 +383,7 @@ lib/
   "location": "Endereço descritivo",
   "createdBy": "user_id",
   "managers": ["user_id1", "user_id2"],
-  "volunteers": ["user_id3", "user_id4"],
+  "volunteers": ["user_id1", "user_id3", "user_id4"], // NOTA: createdBy é automaticamente incluído
   "requiredSkills": ["skill1", "skill2"],
   "requiredResources": ["resource1", "resource2"],
   "status": "active|completed|cancelled",
@@ -509,6 +604,70 @@ dependencies:
 - **Filtros inteligentes:** Habilidades/recursos do evento aparecem como opções prioritárias
 - **Feedback visual:** Indicadores claros de status de participação
 
+## 🚀 Melhorias Futuras Recomendadas
+
+### Funcionalidades Avançadas de Perfil de Voluntário
+
+#### FUT-01: Histórico de Participação
+- Dashboard com estatísticas de participação do voluntário
+- Histórico de eventos participados
+- Métricas de desempenho (microtasks completadas, horas contribuídas)
+- Sistema de badges/conquistas baseado em participação
+
+#### FUT-02: Preferências e Configurações
+- Configuração de notificações personalizadas
+- Preferências de tipos de eventos
+- Configuração de disponibilidade padrão
+- Sincronização com calendário externo
+
+#### FUT-03: Sistema de Avaliação e Feedback
+- Avaliação mútua entre voluntários e gerenciadores
+- Sistema de reputação baseado em participação
+- Feedback específico por microtask completada
+- Relatórios de desempenho para gerenciadores
+
+### Melhorias de UX/UI
+
+#### UX-01: Interface Mais Intuitiva
+- Wizard de configuração inicial para novos voluntários
+- Onboarding interativo explicando funcionalidades
+- Tooltips contextuais para campos complexos
+- Modo escuro/claro configurável
+
+#### UX-02: Funcionalidades Colaborativas
+- Chat integrado entre voluntários do evento
+- Fórum de discussão por evento
+- Sistema de mentoria (voluntários experientes ajudam novatos)
+- Compartilhamento de recursos entre voluntários
+
+### Otimizações Técnicas
+
+#### OPT-01: Performance e Escalabilidade
+- Implementação de paginação para listas grandes
+- Cache inteligente com invalidação automática
+- Otimização de queries Firestore
+- Implementação de offline-first para funcionalidades críticas
+
+#### OPT-02: Segurança e Privacidade
+- Criptografia de dados sensíveis
+- Auditoria de ações críticas
+- Controle granular de privacidade
+- Compliance com LGPD/GDPR
+
+### Integrações Externas
+
+#### INT-01: Serviços de Terceiros
+- Integração com Google Calendar/Outlook
+- Importação de contatos para convites
+- Integração com redes sociais para compartilhamento
+- APIs de geolocalização para eventos presenciais
+
+#### INT-02: Ferramentas de Produtividade
+- Exportação de relatórios em PDF/Excel
+- Integração com ferramentas de gestão de projetos
+- API pública para integrações customizadas
+- Webhooks para notificações externas
+
 ---
 
-**Observação:** Esta especificação serve como base para desenvolvimento. Detalhes de implementação e ajustes podem ser refinados durante o processo de desenvolvimento.
+**Observação:** Esta especificação serve como base para desenvolvimento. Detalhes de implementação e ajustes podem ser refinados durante o processo de desenvolvimento. As melhorias implementadas seguem as preferências do usuário para gerenciamento de tarefas, participação em eventos voluntários e otimização de dados.

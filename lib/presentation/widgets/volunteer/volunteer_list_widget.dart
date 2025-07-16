@@ -74,7 +74,7 @@ class VolunteerListWidget extends StatelessWidget {
             Icon(
               Icons.people_outline,
               size: 64,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             Text(
@@ -204,7 +204,7 @@ class CompactVolunteerList extends StatelessWidget {
           // Avatar
           CircleAvatar(
             radius: 16,
-            backgroundColor: AppColors.primary.withOpacity(0.1),
+            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
             backgroundImage: volunteer.photoUrl != null
                 ? NetworkImage(volunteer.photoUrl!)
                 : null,
@@ -309,7 +309,7 @@ class VolunteerAvatarList extends StatelessWidget {
                   : null,
               child: CircleAvatar(
                 radius: avatarSize / 2,
-                backgroundColor: AppColors.primary.withOpacity(0.1),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                 backgroundImage: volunteer.photoUrl != null
                     ? NetworkImage(volunteer.photoUrl!)
                     : null,
@@ -338,7 +338,7 @@ class VolunteerAvatarList extends StatelessWidget {
               onTap: onShowAll,
               child: CircleAvatar(
                 radius: avatarSize / 2,
-                backgroundColor: AppColors.textSecondary.withOpacity(0.2),
+                backgroundColor: AppColors.textSecondary.withValues(alpha: 0.2),
                 child: Text(
                   '+$remainingCount',
                   style: TextStyle(

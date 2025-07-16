@@ -22,6 +22,9 @@ class EventService {
     required String createdBy,
     required List<String> requiredSkills,
     required List<String> requiredResources,
+    required String creatorName,
+    required String creatorEmail,
+    String? creatorPhotoUrl,
   }) async {
     try {
       // Gera um ID único para o evento
@@ -54,6 +57,25 @@ class EventService {
 
       // Salva no Firestore
       await _eventsCollection.doc(eventId).set(event.toFirestore());
+
+      // REQ-01: Cria automaticamente um perfil de voluntário para o criador do evento
+      // com valores padrão que podem ser preenchidos posteriormente
+      await createVolunteerProfile(
+        userId: createdBy,
+        eventId: eventId,
+        availableDays:
+            [], // Valores padrão vazios - usuário deve preencher depois
+        availableHours: const TimeRange(
+          start: '09:00',
+          end: '17:00',
+        ), // Horário padrão
+        isFullTimeAvailable: false,
+        skills: [], // Valores padrão vazios - usuário deve preencher depois
+        resources: [], // Valores padrão vazios - usuário deve preencher depois
+        userName: creatorName,
+        userEmail: creatorEmail,
+        userPhotoUrl: creatorPhotoUrl,
+      );
 
       return event;
     } catch (e) {

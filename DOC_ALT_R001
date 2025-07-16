@@ -1,0 +1,149 @@
+### 1\. Resumo e Objetivo
+
+Este documento detalha os requisitos para modificar a regra de negócio durante a criação de um evento e introduzir uma nova funcionalidade para o gerenciamento de dados de voluntário do próprio usuário.
+
+O objetivo é duplo:
+
+1.  **Otimizar o fluxo do Gerenciador:** Ao criar um evento, o gerenciador, que frequentemente também atua como voluntário, será automaticamente inscrito como tal, eliminando a necessidade de um passo manual posterior.
+    
+2.  **Melhorar a Autonomia do Usuário:** Fornecer uma interface clara e acessível para que qualquer voluntário (incluindo o gerenciador) possa visualizar e atualizar suas informações de voluntariado (disponibilidade, habilidades, etc.) a qualquer momento dentro do contexto de um evento.
+    
+
+### 2\. Justificativa
+
+Atualmente, o fluxo exige que um gerenciador crie o evento e, em um segundo momento, use o código do evento para se inscrever como voluntário, um passo redundante. Além disso, não há uma maneira direta para um voluntário já inscrito editar suas informações, como mudar sua disponibilidade.
+
+Essa modificação irá:
+
+*   **Aumentar a eficiência:** Reduz o número de etapas para o gerenciador participar ativamente do seu próprio evento.
+    
+*   **Melhorar a experiência do usuário (UX):** Oferece um local centralizado e intuitivo para o usuário gerenciar seus próprios dados de voluntariado, dando-lhe mais controle e flexibilidade.
+    
+*   **Garantir a consistência dos dados:** Facilita a manutenção de perfis de voluntário atualizados, o que beneficia o gerenciamento e a atribuição de tarefas.
+    
+
+### 3\. Requisitos Funcionais Detalhados
+
+#### REQ-01: Inscrição Automática do Gerenciador como Voluntário
+
+*   **Descrição:** Ao concluir a criação de um novo evento na `create_event_screen.dart`, o sistema deve executar duas ações simultaneamente.
+    
+*   **Regra de Negócio:**
+    
+    1.  O usuário que criou o evento (`createdBy`) é adicionado à lista `managers` da collection `events`. (Comportamento atual)
+        
+    2.  **\[NOVO\]** O mesmo usuário (`createdBy`) deve ser **automaticamente adicionado** à lista `volunteers` na mesma collection `events`.
+        
+    3.  **\[NOVO\]** Um documento correspondente deve ser criado na collection `volunteer_profiles`. Este perfil inicial pode ter valores padrão (ex: disponibilidade a ser preenchida), mas deve ligar `userId` e `eventId`. O ideal é que o usuário seja levado a preencher esses dados logo após a criação.
+        
+
+#### REQ-02: Nova Aba "Meus Dados" na Tela de Detalhes do Evento
+
+*   **Descrição:** A tela `event_details_screen.dart` deve ser modificada para incluir uma nova aba.
+    
+*   **Regra de Negócio:**
+    
+    1.  A estrutura de `Tabs` nesta tela, que atualmente contém "Evento", "Criar Tasks", "Gerenciar Voluntários" e "Acompanhar Tasks", deve ser atualizada.
+        
+    2.  **\[NOVO\]** Uma nova aba chamada **"Meus Dados"** (ou "Meu Perfil de Voluntário") deve ser adicionada.
+        
+    3.  **Visibilidade:** Esta aba deve ser visível para **qualquer usuário que esteja na lista `volunteers` do evento**, incluindo o gerenciador (conforme REQ-01). Se o usuário não for voluntário, a aba não deve ser exibida.
+        
+
+#### REQ-03: Tela de Visualização e Edição de Dados de Voluntário
+
+*   **Descrição:** A nova aba "Meus Dados" deve exibir uma tela dedicada para o gerenciamento do perfil de voluntário do usuário logado. A melhor abordagem de UX é criar uma tela de visualização que leva para uma tela de edição.
+    
+*   **Proposta de Fluxo:**
+    
+    1.  **Tela de Visualização (`view_volunteer_profile_screen.dart` - NOVA):**
+        
+        *   Ao clicar na aba "Meus Dados", o usuário vê suas informações atuais de voluntário para aquele evento.
+            
+        *   **Conteúdo:** Exibição clara e apenas de leitura dos campos do `volunteer_profiles_model.dart`:
+            
+            *   Disponibilidade (Dias e Horários)
+                
+            *   Disponibilidade Integral
+                
+            *   Habilidades
+                
+            *   Recursos
+                
+        *   **Ação:** A tela deve conter um botão ou ícone de "Editar".
+            
+    2.  **Tela de Edição (Reaproveitamento da `join_event_screen.dart` ou criação de `edit_volunteer_profile_screen.dart`):**
+        
+        *   Ao clicar em "Editar", o usuário é levado para uma tela de formulário.
+            
+        *   **Reaproveitamento:** A tela `join_event_screen.dart` pode ser adaptada para um "modo de edição".
+            
+        *   **Pré-preenchimento:** O formulário deve vir preenchido com os dados atuais do voluntário.
+            
+        *   **Funcionalidade:** O usuário pode alterar todos os campos (disponibilidade, habilidades, recursos) e salvar.
+            
+        *   **Ação de Salvar:** Ao salvar, o sistema atualiza o documento correspondente na collection `volunteer_profiles` no Firestore. Após salvar, o usuário deve ser redirecionado de volta para a tela de visualização (passo 1) com os dados atualizados.
+            
+
+### 4\. Escopo e Exclusões
+
+*   **DENTRO DO ESCOPO:**
+    
+    *   Modificação da lógica de criação de evento para registrar o gerenciador como voluntário.
+        
+    *   Criação da nova aba "Meus Dados" na tela de detalhes do evento.
+        
+    *   Criação de uma tela para visualizar o perfil de voluntário.
+        
+    *   Criação ou adaptação de uma tela para editar o perfil de voluntário.
+        
+*   **FORA DO ESCOPO (Nesta Iteração):**
+    
+    *   **Impacto nas Microtarefas:** A lógica de como a alteração de disponibilidade ou habilidades de um voluntário afeta as microtarefas para as quais ele já foi atribuído **não será tratada neste momento**. O sistema não irá re-validar ou remover atribuições existentes com base nas edições feitas.
+        
+    *   Notificações sobre a mudança de perfil.
+        
+    *   Histórico de alterações do perfil de voluntário.
+        
+
+### 5\. Análise de Impacto (Com base nos arquivos fornecidos)
+
+*   **Estrutura de Dados (Firestore):**
+    
+    *   `events`: O processo de criação de eventos precisa ser modificado para popular o array `volunteers` com o ID do criador.
+        
+    *   `volunteer_profiles`: O processo de criação de eventos precisa acionar a criação de um novo documento nesta collection. A nova funcionalidade de edição irá realizar operações de `UPDATE` neste documento.
+        
+*   **Código da Aplicação (Arquivos a serem modificados):**
+    
+    *   `lib/data/services/event_service.dart`: A lógica de criação de evento (`createEvent`) precisará ser estendida para incluir a inscrição como voluntário.
+        
+    *   `lib/presentation/controllers/event_controller.dart`: Deverá chamar o método de serviço atualizado e gerenciar o estado da nova aba.
+        
+    *   `lib/presentation/screens/event/create_event_screen.dart`: O fluxo pós-criação pode ser ajustado para, talvez, incentivar o usuário a completar seu perfil de voluntário.
+        
+    *   `lib/presentation/screens/event/event_details_screen.dart`: Será necessário adicionar a lógica da nova `Tab` e seu controle de visibilidade.
+        
+    *   `lib/presentation/screens/event/join_event_screen.dart`: Precisará ser analisado se pode ser adaptado para um modo de edição ou se é melhor criar uma nova tela (`edit_volunteer_profile_screen.dart`) baseada nela.
+        
+    *   **Novos Arquivos:**
+        
+        *   `lib/presentation/screens/profile/view_volunteer_profile_screen.dart` (ou similar): Para exibir os dados do voluntário.
+            
+        *   (Opcional) `lib/presentation/screens/profile/edit_volunteer_profile_screen.dart`: Caso se opte por não reutilizar a tela `join_event_screen`.
+            
+
+### 6\. Critérios de Aceite
+
+| ID | Critério | Verificação |
+| --- | --- | --- |
+| AC-01 | Ao criar um novo evento, ouserIddo criador está presente tanto no arraymanagersquanto no arrayvolunteersdo documento do evento no Firestore. | ☐ |
+| AC-02 | Ao criar um novo evento, um documento correspondente é criado na collectionvolunteer_profilescom ouserIdeeventIdcorretos. | ☐ |
+| AC-03 | Na tela de Detalhes do Evento, a aba "Meus Dados" aparece para o gerenciador que acabou de criar o evento. | ☐ |
+| AC-04 | A aba "Meus Dados" aparece para qualquer outro usuário que tenha se juntado ao evento como voluntário. | ☐ |
+| AC-05 | A aba "Meus Dados"não aparece para usuários que não são voluntários no evento. | ☐ |
+| AC-06 | Clicar na aba "Meus Dados" exibe uma tela com as informações atuais de voluntariado do usuário (habilidades, disponibilidade, etc.) em modo de visualização. | ☐ |
+| AC-07 | A tela de visualização possui um botão "Editar". | ☐ |
+| AC-08 | Clicar em "Editar" leva a um formulário com todos os campos pré-preenchidos com os dados atuais. | ☐ |
+| AC-09 | Após modificar os dados e salvar, o documento na collectionvolunteer_profilesdo Firestore é atualizado com sucesso. | ☐ |
+| AC-10 | Após salvar a edição, o usuário é redirecionado para a tela de visualização e os novos dados são exibidos corretamente. | ☐ |

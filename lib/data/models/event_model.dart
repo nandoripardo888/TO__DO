@@ -224,7 +224,9 @@ class EventModel {
       location: location,
       createdBy: createdBy,
       managers: [createdBy], // Criador é automaticamente gerenciador
-      volunteers: [],
+      volunteers: [
+        createdBy,
+      ], // REQ-01: Criador é automaticamente voluntário também
       requiredSkills: requiredSkills,
       requiredResources: requiredResources,
       status: EventStatus.active,
