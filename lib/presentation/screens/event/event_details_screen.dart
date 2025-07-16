@@ -571,6 +571,26 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
+  /// REQ-04: Verifica se a aba "Evento" está ativa
+  bool _isEventTabActive() {
+    return _tabController.index ==
+        0; // A aba "Evento" é sempre a primeira (índice 0)
+  }
+
+  /// REQ-04: Navega para a tela de edição do evento
+  void _navigateToEditEvent() {
+    if (_event == null) return;
+
+    Navigator.pushNamed(
+      context,
+      '/create-event',
+      arguments: _event, // Passa o evento atual como argumento para edição
+    ).then((_) {
+      // Recarrega os dados do evento após retornar da edição
+      _loadEventDetails();
+    });
+  }
+
   Widget? _buildFloatingActionButton() {
     final authController = Provider.of<AuthController>(context, listen: false);
     final currentUserId = authController.currentUser?.id;
@@ -582,11 +602,39 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       builder: (context, taskController, child) {
         final tasks = taskController.tasks;
 
-        return FloatingActionButton(
-          onPressed: () => _showCreateOptionsDialog(tasks),
-          backgroundColor: AppColors.primary,
-          child: const Icon(Icons.add, color: AppColors.textOnPrimary),
-        );
+        // REQ-04: Verifica se está na aba "Evento" para mostrar FAB de edição
+        final isEventTab = _isEventTabActive();
+
+        if (isEventTab) {
+          // REQ-04: Mostra ambos os FABs na aba "Evento"
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // FAB de edição (acima)
+              FloatingActionButton(
+                heroTag: "edit_event_fab",
+                onPressed: _navigateToEditEvent,
+                backgroundColor: AppColors.secondary,
+                child: const Icon(Icons.edit, color: AppColors.textOnPrimary),
+              ),
+              const SizedBox(height: 16),
+              // FAB de adicionar tasks (abaixo)
+              FloatingActionButton(
+                heroTag: "add_task_fab",
+                onPressed: () => _showCreateOptionsDialog(tasks),
+                backgroundColor: AppColors.primary,
+                child: const Icon(Icons.add, color: AppColors.textOnPrimary),
+              ),
+            ],
+          );
+        } else {
+          // Outras abas: apenas FAB de adicionar tasks
+          return FloatingActionButton(
+            onPressed: () => _showCreateOptionsDialog(tasks),
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.add, color: AppColors.textOnPrimary),
+          );
+        }
       },
     );
   }

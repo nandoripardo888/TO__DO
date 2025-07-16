@@ -51,6 +51,14 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
   List<String> _selectedSkills = [];
   List<String> _selectedResources = [];
 
+  // Dados originais para cancelar alterações
+  List<String> _originalSelectedDays = [];
+  TimeOfDay _originalStartTime = const TimeOfDay(hour: 9, minute: 0);
+  TimeOfDay _originalEndTime = const TimeOfDay(hour: 17, minute: 0);
+  bool _originalIsFullTimeAvailable = false;
+  List<String> _originalSelectedSkills = [];
+  List<String> _originalSelectedResources = [];
+
   // Dias da semana - exatamente como na join_event_screen.dart
   final List<Map<String, String>> _weekDays = [
     {'key': 'monday', 'label': 'Segunda-feira'},
@@ -120,10 +128,17 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
   }
 
   void _initializeFormData(VolunteerProfileModel profile) {
+    // Inicializa dados atuais
     _selectedDays = List.from(profile.availableDays);
     _isFullTimeAvailable = profile.isFullTimeAvailable;
     _selectedSkills = List.from(profile.skills);
     _selectedResources = List.from(profile.resources);
+
+    // Salva dados originais para cancelar alterações
+    _originalSelectedDays = List.from(profile.availableDays);
+    _originalIsFullTimeAvailable = profile.isFullTimeAvailable;
+    _originalSelectedSkills = List.from(profile.skills);
+    _originalSelectedResources = List.from(profile.resources);
 
     // Converte horários de string para TimeOfDay
     final startParts = profile.availableHours.start.split(':');
@@ -138,6 +153,10 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
       hour: int.parse(endParts[0]),
       minute: int.parse(endParts[1]),
     );
+
+    // Salva horários originais
+    _originalStartTime = _startTime;
+    _originalEndTime = _endTime;
   }
 
   @override
@@ -203,15 +222,29 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
 
             const SizedBox(height: AppDimensions.spacingXl),
 
-            // 2 - Botão "Salvar Alterações" quando editando (substitui "Confirmar Participação")
+            // 2 - Botões quando editando (substitui "Confirmar Participação")
             if (_isEditMode) ...[
-              SizedBox(
-                width: double.infinity,
-                child: CustomButton(
-                  text: 'Salvar Alterações',
-                  onPressed: _handleSave,
-                  isLoading: _isSaving,
-                ),
+              Row(
+                children: [
+                  // Botão Cancelar Alterações
+                  Expanded(
+                    child: CustomButton(
+                      text: 'Cancelar',
+                      onPressed: _isSaving ? null : _cancelChanges,
+                      type: CustomButtonType.outline,
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingMd),
+                  // Botão Salvar Alterações
+                  Expanded(
+                    flex: 2,
+                    child: CustomButton(
+                      text: 'Salvar Alterações',
+                      onPressed: _handleSave,
+                      isLoading: _isSaving,
+                    ),
+                  ),
+                ],
               ),
             ],
 
@@ -662,6 +695,25 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
     });
   }
 
+  void _cancelChanges() {
+    setState(() {
+      // Restaura dados originais
+      _selectedDays = List.from(_originalSelectedDays);
+      _startTime = _originalStartTime;
+      _endTime = _originalEndTime;
+      _isFullTimeAvailable = _originalIsFullTimeAvailable;
+      _selectedSkills = List.from(_originalSelectedSkills);
+      _selectedResources = List.from(_originalSelectedResources);
+
+      // Limpa os controllers
+      _skillController.clear();
+      _resourceController.clear();
+
+      // Sai do modo de edição
+      _isEditMode = false;
+    });
+  }
+
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -695,21 +747,72 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
     });
 
     try {
-      // TODO: Implementar método de atualização no EventController
-      // Por enquanto, simula operação
-      await Future.delayed(const Duration(seconds: 1));
+      final eventController = Provider.of<EventController>(
+        context,
+        listen: false,
+      );
+
+      // Converte TimeOfDay para string
+      final startTimeString =
+          '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}';
+      final endTimeString =
+          '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}';
+
+      final timeRange = TimeRange(start: startTimeString, end: endTimeString);
+
+      // Para disponibilidade integral, usa todos os dias da semana
+      final availableDays = _isFullTimeAvailable
+          ? [
+              'monday',
+              'tuesday',
+              'wednesday',
+              'thursday',
+              'friday',
+              'saturday',
+              'sunday',
+            ]
+          : _selectedDays;
+
+      // Cria o perfil atualizado
+      final updatedProfile = _profile!.copyWith(
+        availableDays: availableDays,
+        availableHours: timeRange,
+        isFullTimeAvailable: _isFullTimeAvailable,
+        skills: _selectedSkills,
+        resources: _selectedResources,
+      );
+
+      // Salva no Firestore através do EventController
+      final success = await eventController.updateVolunteerProfile(
+        updatedProfile,
+      );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Dados atualizados com sucesso!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        if (success) {
+          // Atualiza os dados originais com os novos valores salvos
+          _initializeFormData(updatedProfile);
 
-        setState(() {
-          _isEditMode = false;
-        });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Dados atualizados com sucesso!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+
+          setState(() {
+            _profile = updatedProfile;
+            _isEditMode = false;
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Erro ao salvar: ${eventController.errorMessage ?? 'Erro desconhecido'}',
+              ),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

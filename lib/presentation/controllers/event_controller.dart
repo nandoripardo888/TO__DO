@@ -486,6 +486,49 @@ class EventController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// REQ-06: Atualiza um evento existente
+  Future<bool> updateEvent(EventModel event) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // Validações básicas
+      if (event.name.trim().isEmpty) {
+        throw ValidationException('Nome do evento é obrigatório');
+      }
+      if (event.location.trim().isEmpty) {
+        throw ValidationException('Localização é obrigatória');
+      }
+
+      final updatedEvent = await _eventRepository.updateEvent(event);
+
+      // Atualiza o evento atual se for o mesmo
+      if (_currentEvent?.id == event.id) {
+        _currentEvent = updatedEvent;
+      }
+
+      // Atualiza a lista de eventos do usuário
+      final eventIndex = _userEvents.indexWhere((e) => e.id == event.id);
+      if (eventIndex != -1) {
+        _userEvents[eventIndex] = updatedEvent;
+      }
+
+      // Atualiza o evento pesquisado se for o mesmo
+      if (_searchedEvent?.id == event.id) {
+        _searchedEvent = updatedEvent;
+      }
+
+      return true;
+    } catch (e) {
+      _setError(_getErrorMessage(e));
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   /// Atualiza um evento na lista
   void updateEventInList(EventModel updatedEvent) {
     final index = _userEvents.indexWhere((e) => e.id == updatedEvent.id);
@@ -683,6 +726,41 @@ class EventController extends ChangeNotifier {
 
       // Recarrega os perfis de voluntários do evento
       await loadEventVolunteers(eventId);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = _getErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Atualiza o perfil de um voluntário
+  Future<bool> updateVolunteerProfile(VolunteerProfileModel profile) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      // Atualiza o perfil no repositório
+      final updatedProfile = await _eventRepository.updateVolunteerProfile(
+        profile,
+      );
+
+      // Atualiza o perfil na lista local se disponível
+      final profileIndex = _eventVolunteers.indexWhere(
+        (p) => p.id == profile.id,
+      );
+      if (profileIndex != -1) {
+        _eventVolunteers[profileIndex] = updatedProfile;
+      }
+
+      // Limpa o cache para forçar recarregamento
+      _volunteersCache.remove(profile.eventId);
+      _cacheTimestamps.remove(profile.eventId);
 
       _isLoading = false;
       notifyListeners();

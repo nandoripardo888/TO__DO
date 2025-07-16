@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../../data/models/event_model.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/event_controller.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/event/skill_chip.dart';
 
-/// Tela para criação de novos eventos
+/// Tela para criação e edição de eventos
+/// REQ-05: Refatorada para aceitar evento opcional para modo de edição
 class CreateEventScreen extends StatefulWidget {
-  const CreateEventScreen({super.key});
+  /// Evento opcional para modo de edição
+  final EventModel? eventToEdit;
+
+  const CreateEventScreen({super.key, this.eventToEdit});
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
@@ -26,6 +31,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   final List<String> _selectedSkills = [];
   final List<String> _selectedResources = [];
+
+  /// REQ-05: Indica se está em modo de edição
+  bool get _isEditMode => widget.eventToEdit != null;
 
   // Lista de habilidades pré-definidas
   final List<String> _predefinedSkills = [
@@ -66,6 +74,25 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // REQ-05: Pré-preenche os campos se estiver em modo de edição
+    if (_isEditMode) {
+      _populateFieldsForEdit();
+    }
+  }
+
+  /// REQ-05: Pré-preenche os campos com os dados do evento para edição
+  void _populateFieldsForEdit() {
+    final event = widget.eventToEdit!;
+    _nameController.text = event.name;
+    _descriptionController.text = event.description;
+    _locationController.text = event.location;
+    _selectedSkills.addAll(event.requiredSkills);
+    _selectedResources.addAll(event.requiredResources);
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
@@ -80,7 +107,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Criar Evento'),
+        title: Text(_isEditMode ? 'Editar Evento' : 'Criar Evento'),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
       ),
@@ -108,16 +135,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
                   const SizedBox(height: AppDimensions.spacingXl),
 
-                  // Botão de criar
-                  SizedBox(
-                    width: double.infinity,
-                    child: CustomButton(
-                      text: 'Criar Evento',
-                      onPressed: () =>
-                          _handleCreateEvent(authController, eventController),
-                      isLoading: eventController.isCreatingEvent,
-                    ),
-                  ),
+                  // REQ-05: Botões diferentes baseados no modo
+                  _buildActionButtons(authController, eventController),
 
                   // Mensagem de erro
                   if (eventController.hasError) ...[
@@ -485,6 +504,47 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     });
   }
 
+  /// REQ-05: Constrói os botões de ação baseado no modo (criar vs editar)
+  Widget _buildActionButtons(
+    AuthController authController,
+    EventController eventController,
+  ) {
+    if (_isEditMode) {
+      // Modo de edição: botões Cancelar e Salvar Alterações lado a lado
+      return Row(
+        children: [
+          // Botão Cancelar
+          Expanded(
+            child: CustomButton.outline(
+              text: 'Cancelar',
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spacingMd),
+          // Botão Salvar Alterações
+          Expanded(
+            child: CustomButton(
+              text: 'Salvar Alterações',
+              onPressed: () =>
+                  _handleUpdateEvent(authController, eventController),
+              isLoading: eventController.isLoading,
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Modo de criação: botão Criar Evento
+      return SizedBox(
+        width: double.infinity,
+        child: CustomButton(
+          text: 'Criar Evento',
+          onPressed: () => _handleCreateEvent(authController, eventController),
+          isLoading: eventController.isCreatingEvent,
+        ),
+      );
+    }
+  }
+
   Future<void> _handleCreateEvent(
     AuthController authController,
     EventController eventController,
@@ -520,6 +580,53 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       // Mostra dialog de sucesso com o código do evento
       _showSuccessDialog(event.tag);
     }
+  }
+
+  /// REQ-06: Manipula a atualização do evento
+  Future<void> _handleUpdateEvent(
+    AuthController authController,
+    EventController eventController,
+  ) async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final user = authController.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Usuário não encontrado'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    // Limpa erros anteriores
+    eventController.clearError();
+
+    // Cria o evento atualizado
+    final updatedEvent = widget.eventToEdit!.copyWith(
+      name: _nameController.text.trim(),
+      description: _descriptionController.text.trim(),
+      location: _locationController.text.trim(),
+      requiredSkills: List<String>.from(_selectedSkills),
+      requiredResources: List<String>.from(_selectedResources),
+    );
+
+    // REQ-06: Chama o método updateEvent do controller
+    final success = await eventController.updateEvent(updatedEvent);
+
+    if (mounted && success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Evento atualizado com sucesso!'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+      Navigator.of(context).pop();
+    }
+    // Se houve erro, a mensagem já é exibida pelo controller através do Consumer
   }
 
   void _showSuccessDialog(String eventTag) {

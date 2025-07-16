@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../data/models/event_model.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/home/home_screen.dart';
@@ -33,7 +34,7 @@ class AppRoutes {
       login: (context) => const LoginScreen(),
       register: (context) => const RegisterScreen(),
       home: (context) => const HomeScreen(),
-      createEvent: (context) => const CreateEventScreen(),
+      // createEvent removido para usar onGenerateRoute (suporte a argumentos)
       joinEvent: (context) => const JoinEventScreen(),
       // Outras rotas serão adicionadas conforme implementadas
     };
@@ -49,7 +50,9 @@ class AppRoutes {
       case home:
         return _createRoute(const HomeScreen());
       case createEvent:
-        return _createRoute(const CreateEventScreen());
+        // REQ-05: Aceita evento opcional para modo de edição
+        final eventToEdit = settings.arguments as EventModel?;
+        return _createRoute(CreateEventScreen(eventToEdit: eventToEdit));
       case joinEvent:
         return _createRoute(const JoinEventScreen());
 
