@@ -734,6 +734,8 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
 
   // Modal de seleção de habilidades para filtro
   void _showSkillsFilterDialog() {
+    // Cria uma cópia local do filtro para manipular no modal
+    List<String> tempSelectedSkills = List.from(_selectedSkillsFilter);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -749,27 +751,33 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
               ),
               const SizedBox(height: AppDimensions.spacingMd),
               Flexible(
-                child: ListView.builder(
+                child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: _availableSkills.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 2),
                   itemBuilder: (context, index) {
                     final skill = _availableSkills[index];
-                    final isSelected = _selectedSkillsFilter.contains(skill);
-
-                    return CheckboxListTile(
-                      title: Text(skill),
-                      value: isSelected,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          if (value == true) {
-                            _selectedSkillsFilter.add(skill);
-                          } else {
-                            _selectedSkillsFilter.remove(skill);
-                          }
-                        });
+                    final isSelected = tempSelectedSkills.contains(skill);
+                    return StatefulBuilder(
+                      builder: (context, setModalState) {
+                        return CheckboxListTile(
+                          title: Text(skill),
+                          value: isSelected,
+                          onChanged: (bool? value) {
+                            setModalState(() {
+                              if (value == true) {
+                                tempSelectedSkills.add(skill);
+                              } else {
+                                tempSelectedSkills.remove(skill);
+                              }
+                            });
+                          },
+                          activeColor: AppColors.primary,
+                          dense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                          visualDensity: VisualDensity.compact,
+                        );
                       },
-                      activeColor: AppColors.primary,
-                      dense: true,
                     );
                   },
                 ),
@@ -792,7 +800,14 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              setState(() {
+                _selectedSkillsFilter
+                  ..clear()
+                  ..addAll(tempSelectedSkills);
+              });
+              Navigator.of(context).pop();
+            },
             child: const Text('Aplicar'),
           ),
         ],

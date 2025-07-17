@@ -36,7 +36,9 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMicrotasks();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadMicrotasks();
+    });
   }
 
   Future<void> _loadMicrotasks() async {
@@ -612,32 +614,18 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
 
   // Atribui a microtask ao voluntário
   Future<void> _assignMicrotask(MicrotaskModel microtask) async {
-    try {
-      final taskController = Provider.of<TaskController>(
-        context,
-        listen: false,
-      );
+    final taskController = Provider.of<TaskController>(
+      context,
+      listen: false,
+    );
 
-      // Atribui a microtask
-      await taskController.assignVolunteerToMicrotask(
+    bool sucesso = false;
+    try {
+      sucesso = await taskController.assignVolunteerToMicrotask(
         microtaskId: microtask.id,
         userId: widget.volunteer.id,
         eventId: widget.eventId,
       );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Microtask "${microtask.title}" atribuída com sucesso!',
-            ),
-            backgroundColor: AppColors.success,
-          ),
-        );
-
-        // Volta para a tela anterior
-        Navigator.of(context).pop(true);
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -647,6 +635,34 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
           ),
         );
       }
+      return;
+    }
+
+    if (!sucesso) {
+      // Mostra mensagem de erro do controller, se houver
+      final errorMsg = taskController.errorMessage ?? 'Erro ao atribuir microtask.';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Sucesso
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Microtask "${microtask.title}" atribuída com sucesso!',
+          ),
+          backgroundColor: AppColors.success,
+        ),
+      );
+      Navigator.of(context).pop(true);
     }
   }
 }

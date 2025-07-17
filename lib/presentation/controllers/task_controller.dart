@@ -193,6 +193,13 @@ class TaskController extends ChangeNotifier {
       await _taskRepository.incrementMicrotaskCount(taskId);
       await _refreshTask(taskId);
 
+      // Se a task estava como 'completed', muda para 'in_progress'
+      final task = _tasks.where((t) => t.id == taskId).isNotEmpty ? _tasks.firstWhere((t) => t.id == taskId) : null;
+      if (task != null && task.status == TaskStatus.completed) {
+        await _taskRepository.updateTaskStatus(taskId, TaskStatus.inProgress);
+        await _refreshTask(taskId);
+      }
+
       _setState(TaskControllerState.loaded);
       return true;
     } on AppException catch (e) {
@@ -332,6 +339,21 @@ class TaskController extends ChangeNotifier {
       );
       if (microtask != null) {
         _updateMicrotaskInList(microtask);
+        // Se a microtask foi concluída, incrementa o contador na task pai
+        if (status == UserMicrotaskStatus.completed) {
+          final taskId = microtask.taskId;
+          await _taskRepository.incrementCompletedMicrotasks(taskId);
+          await _refreshTask(taskId);
+        } else {
+          // Se estava concluída antes e agora não está mais, decrementa o contador
+          final userMicrotasks = await _microtaskRepository.getUserMicrotasksByMicrotaskId(microtaskId);
+          final userMicrotask = userMicrotasks.where((um) => um.userId == userId).isNotEmpty ? userMicrotasks.firstWhere((um) => um.userId == userId) : null;
+          if (userMicrotask != null && userMicrotask.status == UserMicrotaskStatus.completed) {
+            final taskId = microtask.taskId;
+            await _taskRepository.decrementCompletedMicrotasks(taskId);
+            await _refreshTask(taskId);
+          }
+        }
       }
 
       _setState(TaskControllerState.loaded);

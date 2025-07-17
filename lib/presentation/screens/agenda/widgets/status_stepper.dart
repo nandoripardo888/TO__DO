@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_dimensions.dart';
 import '../../../../data/models/user_microtask_model.dart';
+import '../../../../core/constants/app_colors.dart';
 
 /// Componente de Status Stepper Horizontal para controle de status das microtasks
 /// Conforme RN-02.4 e RN-03 do PRD - Design do Status Stepper e Lógica de Interação
@@ -28,20 +29,20 @@ class _StatusStepperState extends State<StatusStepper> {
         Row(
           children: [
             _buildStep(
-              stepNumber: 1,
+              stepNumber: null, // Não é mais necessário, mas mantido para compatibilidade
               status: UserMicrotaskStatus.assigned,
               label: 'Atribuída',
               isFirst: true,
             ),
             _buildConnector(UserMicrotaskStatus.assigned),
             _buildStep(
-              stepNumber: 2,
+              stepNumber: null,
               status: UserMicrotaskStatus.inProgress,
               label: 'Em Andamento',
             ),
             _buildConnector(UserMicrotaskStatus.inProgress),
             _buildStep(
-              stepNumber: null, // Usa ícone de check
+              stepNumber: null,
               status: UserMicrotaskStatus.completed,
               label: 'Concluída',
               isLast: true,
@@ -50,7 +51,13 @@ class _StatusStepperState extends State<StatusStepper> {
         ),
         if (_isLoading) ...[
           const SizedBox(height: AppDimensions.spacingSm),
-          const SizedBox(height: 2, child: LinearProgressIndicator()),
+          const SizedBox(
+            height: 2,
+            child: LinearProgressIndicator(
+              backgroundColor: AppColors.disabled,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.success),
+            ),
+          ),
         ],
       ],
     );
@@ -79,14 +86,14 @@ class _StatusStepperState extends State<StatusStepper> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isActive
-                    ? const Color(0xFF6B46C1)
-                    : Colors.transparent, // #6B46C1 - Roxo
+                    ? AppColors.success
+                    : AppColors.disabled,
                 border: Border.all(
-                  color: isActive ? const Color(0xFF6B46C1) : Colors.grey[400]!,
+                  color: isActive ? AppColors.success : AppColors.disabled,
                   width: 2,
                 ),
               ),
-              child: Center(child: _buildStepContent(stepNumber, isActive)),
+              child: Center(child: _buildStepIcon(status, isActive)),
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXs),
@@ -95,7 +102,7 @@ class _StatusStepperState extends State<StatusStepper> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: isActive ? const Color(0xFF6B46C1) : Colors.grey[600],
+              color: isActive ? AppColors.success : AppColors.disabled,
             ),
             textAlign: TextAlign.center,
           ),
@@ -104,24 +111,26 @@ class _StatusStepperState extends State<StatusStepper> {
     );
   }
 
-  Widget _buildStepContent(int? stepNumber, bool isActive) {
-    if (stepNumber != null) {
-      return Text(
-        stepNumber.toString(),
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: isActive ? Colors.white : Colors.grey[600],
-        ),
-      );
-    } else {
-      // Ícone de check para o status completed
-      return Icon(
-        Icons.check,
-        size: 18,
-        color: isActive ? Colors.white : Colors.grey[600],
-      );
+  Widget _buildStepIcon(UserMicrotaskStatus status, bool isActive) {
+    IconData iconData;
+    switch (status) {
+      case UserMicrotaskStatus.assigned:
+        iconData = Icons.assignment;
+        break;
+      case UserMicrotaskStatus.inProgress:
+        iconData = Icons.autorenew;
+        break;
+      case UserMicrotaskStatus.completed:
+        iconData = Icons.check_circle;
+        break;
+      default:
+        iconData = Icons.help_outline;
     }
+    return Icon(
+      iconData,
+      size: 20,
+      color: isActive ? Colors.white : Colors.grey[600],
+    );
   }
 
   Widget _buildConnector(UserMicrotaskStatus fromStatus) {
@@ -131,7 +140,7 @@ class _StatusStepperState extends State<StatusStepper> {
       height: 2,
       width: 40,
       margin: const EdgeInsets.only(bottom: 24), // Alinha com o círculo
-      color: isActive ? const Color(0xFF6B46C1) : Colors.grey[300],
+      color: isActive ? AppColors.success : AppColors.disabled,
     );
   }
 

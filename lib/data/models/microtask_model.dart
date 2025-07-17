@@ -406,7 +406,7 @@ class MicrotaskModel {
   bool isCompatibleWith(List<String> volunteerSkills) {
     if (requiredSkills.isEmpty) return true;
 
-    return requiredSkills.every((skill) => volunteerSkills.contains(skill));
+    return requiredSkills.any((skill) => volunteerSkills.contains(skill));
   }
 
   /// Calcula a porcentagem de compatibilidade com as habilidades de um voluntário

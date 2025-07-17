@@ -148,7 +148,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
                     completedMicrotasks,
                     totalMicrotasks,
                     Icons.checklist,
-                    AppColors.secondary,
+                    AppColors.success, // Sempre verde
                   ),
                 ),
               ],
@@ -197,8 +197,8 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
           const SizedBox(height: AppDimensions.spacingSm),
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: color.withOpacity(0.2),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
+            backgroundColor: AppColors.success.withOpacity(0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.success),
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
