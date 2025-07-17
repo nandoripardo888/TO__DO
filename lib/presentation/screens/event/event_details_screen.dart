@@ -15,6 +15,7 @@ import '../../widgets/common/skill_chip.dart';
 import 'manage_volunteers_screen.dart';
 import 'track_tasks_screen.dart';
 import '../profile/my_volunteer_profile_screen.dart';
+import '../agenda/agenda_screen.dart';
 
 /// Tela de detalhes do evento com sistema de tabs
 class EventDetailsScreen extends StatefulWidget {
@@ -28,7 +29,7 @@ class EventDetailsScreen extends StatefulWidget {
 
 class _EventDetailsScreenState extends State<EventDetailsScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  TabController? _tabController;
   EventModel? _event;
   bool _isLoading = true;
   String? _errorMessage;
@@ -36,14 +37,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   @override
   void initState() {
     super.initState();
-    // Initialize with default length, will be updated after loading event
-    _tabController = TabController(length: 3, vsync: this);
     _loadEventDetails();
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     super.dispose();
   }
 
@@ -57,6 +56,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     final isVolunteer = _event!.isVolunteer(currentUserId ?? '');
 
     int count = 2; // Evento + Acompanhar (sempre visíveis)
+    if (isVolunteer) count++; // AGENDA (RN-01.2: apenas para voluntários)
     if (isManager) count++; // Voluntários
     if (isVolunteer) count++; // Meus Dados
 
@@ -66,8 +66,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   /// REQ-02: Atualiza o TabController quando o evento é carregado
   void _updateTabController() {
     final newLength = _getTabCount();
-    if (_tabController.length != newLength) {
-      _tabController.dispose();
+    if (_tabController?.length != newLength) {
+      _tabController?.dispose();
       _tabController = TabController(length: newLength, vsync: this);
     }
   }
@@ -160,17 +160,19 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildTabBar(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: _buildTabViews(),
+      body: _tabController == null
+          ? const LoadingWidget(message: 'Carregando...')
+          : Column(
+              children: [
+                _buildTabBar(),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController!,
+                    children: _buildTabViews(),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
       floatingActionButton: _buildFloatingActionButton(),
     );
   }
@@ -200,8 +202,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     final isVolunteer = _event!.isVolunteer(currentUserId ?? '');
 
     // REQ-02: Constrói lista de tabs dinamicamente baseada nas permissões
+    // RN-01.1: Ordem das tabs: "Evento" → "AGENDA" → "Meus Dados" → "Acompanhar"
     final tabs = <Widget>[
       const Tab(icon: Icon(Icons.info_outline), text: 'Evento'),
+      if (isVolunteer) const Tab(icon: Icon(Icons.assignment), text: 'AGENDA'),
       if (isManager) const Tab(icon: Icon(Icons.people), text: 'Voluntários'),
       if (isVolunteer) const Tab(icon: Icon(Icons.person), text: 'Meus Dados'),
       const Tab(icon: Icon(Icons.track_changes), text: 'Acompanhar'),
@@ -210,10 +214,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return Container(
       color: AppColors.primary,
       child: TabBar(
-        controller: _tabController,
+        controller: _tabController!,
         indicatorColor: AppColors.textOnPrimary,
         labelColor: AppColors.textOnPrimary,
-        unselectedLabelColor: AppColors.textOnPrimary.withOpacity(0.7),
+        unselectedLabelColor: AppColors.textOnPrimary.withValues(alpha: 0.7),
         tabs: tabs,
       ),
     );
@@ -228,6 +232,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
     final views = <Widget>[
       _buildEventTab(),
+      if (isVolunteer) _buildAgendaTab(),
       if (isManager) _buildManageVolunteersTab(),
       if (isVolunteer) _buildMyDataTab(),
       _buildTrackTasksTab(),
@@ -289,6 +294,24 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       userId: currentUserId,
       isEditMode: false,
     );
+  }
+
+  /// RN-01: Nova aba "AGENDA" para voluntários
+  Widget _buildAgendaTab() {
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final currentUserId = authController.currentUser?.id;
+    final isVolunteer = _event!.isVolunteer(currentUserId ?? '');
+
+    if (!isVolunteer) {
+      return const Center(
+        child: Text(
+          'Apenas voluntários podem acessar a agenda',
+          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        ),
+      );
+    }
+
+    return AgendaScreen(eventId: widget.eventId);
   }
 
   Widget _buildTrackTasksTab() {
@@ -462,7 +485,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingMd),
               decoration: BoxDecoration(
-                color: AppColors.secondary.withOpacity(0.1),
+                color: AppColors.secondary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.secondary),
               ),
@@ -528,7 +551,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingMd),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -573,7 +596,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
   /// REQ-04: Verifica se a aba "Evento" está ativa
   bool _isEventTabActive() {
-    return _tabController.index ==
+    return _tabController?.index ==
         0; // A aba "Evento" é sempre a primeira (índice 0)
   }
 

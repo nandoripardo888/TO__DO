@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// Enums para status individual do usuário na microtask
 enum UserMicrotaskStatus {
   assigned('assigned'),
-  started('started'),
+  inProgress('in_progress'),
   completed('completed'),
   cancelled('cancelled');
 
@@ -208,7 +208,7 @@ class UserMicrotaskModel {
   bool get isCompleted => status == UserMicrotaskStatus.completed;
 
   /// Verifica se o usuário iniciou a microtask
-  bool get isStarted => status == UserMicrotaskStatus.started;
+  bool get isStarted => status == UserMicrotaskStatus.inProgress;
 
   /// Verifica se o usuário foi apenas atribuído (não iniciou)
   bool get isAssigned => status == UserMicrotaskStatus.assigned;
@@ -221,7 +221,7 @@ class UserMicrotaskModel {
     if (status == UserMicrotaskStatus.assigned) {
       final now = DateTime.now();
       return copyWith(
-        status: UserMicrotaskStatus.started,
+        status: UserMicrotaskStatus.inProgress,
         startedAt: now,
         updatedAt: now,
       );

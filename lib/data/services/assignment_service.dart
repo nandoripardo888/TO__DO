@@ -2,8 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/microtask_model.dart';
 import '../models/user_microtask_model.dart';
 import '../models/volunteer_profile_model.dart';
+import '../models/task_model.dart';
 import '../services/microtask_service.dart';
 import '../services/event_service.dart';
+import '../services/task_service.dart';
 import '../../core/exceptions/app_exceptions.dart';
 
 /// Serviço responsável pelo sistema de atribuição múltipla de voluntários
@@ -17,13 +19,16 @@ import '../../core/exceptions/app_exceptions.dart';
 class AssignmentService {
   final MicrotaskService _microtaskService;
   final EventService _eventService;
+  final TaskService _taskService;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   AssignmentService({
     MicrotaskService? microtaskService,
     EventService? eventService,
+    TaskService? taskService,
   }) : _microtaskService = microtaskService ?? MicrotaskService(),
-       _eventService = eventService ?? EventService();
+       _eventService = eventService ?? EventService(),
+       _taskService = taskService ?? TaskService();
 
   // Referência da coleção
   CollectionReference get _userMicrotasksCollection =>
@@ -272,7 +277,7 @@ class AssignmentService {
 
       UserMicrotaskModel updatedUserMicrotask;
       switch (status) {
-        case UserMicrotaskStatus.started:
+        case UserMicrotaskStatus.inProgress:
           updatedUserMicrotask = userMicrotask.markAsStarted();
           break;
         case UserMicrotaskStatus.completed:
@@ -350,6 +355,94 @@ class AssignmentService {
     }
   }
 
+  /// Busca todas as microtasks de um usuário em um evento específico
+  /// Ordenadas por status (assigned → in_progress → completed) e depois por assignedAt
+  /// Conforme RN-01.4 e RN-01.5 do PRD
+  Future<List<UserMicrotaskModel>> getUserMicrotasksByEvent({
+    required String userId,
+    required String eventId,
+  }) async {
+    try {
+      final querySnapshot = await _userMicrotasksCollection
+          .where('userId', isEqualTo: userId)
+          .where('eventId', isEqualTo: eventId)
+          .orderBy('assignedAt', descending: false)
+          .get();
+
+      final userMicrotasks = querySnapshot.docs
+          .map((doc) => UserMicrotaskModel.fromFirestore(doc))
+          .toList();
+
+      // Ordena por status conforme RN-01.5: assigned → in_progress → completed
+      userMicrotasks.sort((a, b) {
+        // Primeiro ordena por status
+        final statusOrder = {
+          UserMicrotaskStatus.assigned: 0,
+          UserMicrotaskStatus.inProgress: 1,
+          UserMicrotaskStatus.completed: 2,
+          UserMicrotaskStatus.cancelled: 3,
+        };
+
+        final statusComparison = (statusOrder[a.status] ?? 99).compareTo(
+          statusOrder[b.status] ?? 99,
+        );
+
+        if (statusComparison != 0) {
+          return statusComparison;
+        }
+
+        // Se o status for igual, ordena por data de atribuição
+        return a.assignedAt.compareTo(b.assignedAt);
+      });
+
+      return userMicrotasks;
+    } catch (e) {
+      throw DatabaseException(
+        'Erro ao buscar microtasks do usuário no evento: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Stream para escutar mudanças nas microtasks de um usuário em um evento
+  /// Para atualizações em tempo real da agenda
+  Stream<List<UserMicrotaskModel>> watchUserMicrotasksByEvent({
+    required String userId,
+    required String eventId,
+  }) {
+    return _userMicrotasksCollection
+        .where('userId', isEqualTo: userId)
+        .where('eventId', isEqualTo: eventId)
+        .orderBy('assignedAt', descending: false)
+        .snapshots()
+        .map((snapshot) {
+          final userMicrotasks = snapshot.docs
+              .map((doc) => UserMicrotaskModel.fromFirestore(doc))
+              .toList();
+
+          // Ordena por status conforme RN-01.5: assigned → in_progress → completed
+          userMicrotasks.sort((a, b) {
+            final statusOrder = {
+              UserMicrotaskStatus.assigned: 0,
+              UserMicrotaskStatus.inProgress: 1,
+              UserMicrotaskStatus.completed: 2,
+              UserMicrotaskStatus.cancelled: 3,
+            };
+
+            final statusComparison = (statusOrder[a.status] ?? 99).compareTo(
+              statusOrder[b.status] ?? 99,
+            );
+
+            if (statusComparison != 0) {
+              return statusComparison;
+            }
+
+            return a.assignedAt.compareTo(b.assignedAt);
+          });
+
+          return userMicrotasks;
+        });
+  }
+
   /// Valida se um voluntário pode ser atribuído a uma microtask
   Future<void> _validateAssignment(
     MicrotaskModel microtask,
@@ -387,6 +480,7 @@ class AssignmentService {
   }
 
   /// Verifica e atualiza o status da microtask baseado nos status individuais
+  /// Implementa as regras RN-04.1 a RN-04.4 do PRD
   Future<void> _checkAndUpdateMicrotaskStatus(String microtaskId) async {
     try {
       final microtask = await _microtaskService.getMicrotaskById(microtaskId);
@@ -405,30 +499,92 @@ class AssignmentService {
         return;
       }
 
-      // Verifica se todos completaram
+      // RN-04.3: Microtarefa para "Concluída" - todos os voluntários devem ter completed
       final allCompleted = userMicrotasks.every((um) => um.isCompleted);
       if (allCompleted && microtask.status != MicrotaskStatus.completed) {
         await _microtaskService.updateMicrotaskStatus(
           microtaskId,
           MicrotaskStatus.completed,
         );
+        // RN-04.4: Propaga para a task pai
+        await _checkAndUpdateTaskStatus(microtask.taskId);
         return;
       }
 
-      // Verifica se algum iniciou
+      // RN-04.1: Microtarefa para "Em Andamento" - pelo menos 1 voluntário em in_progress
       final anyStarted = userMicrotasks.any(
         (um) => um.isStarted || um.isCompleted,
       );
-      if (anyStarted && microtask.status == MicrotaskStatus.assigned) {
+      if (anyStarted && microtask.status != MicrotaskStatus.inProgress) {
         await _microtaskService.updateMicrotaskStatus(
           microtaskId,
           MicrotaskStatus.inProgress,
         );
+        // RN-04.2: Propaga para a task pai
+        await _checkAndUpdateTaskStatus(microtask.taskId);
         return;
+      }
+
+      // Se nenhum voluntário iniciou, volta para assigned
+      if (!anyStarted && microtask.status == MicrotaskStatus.inProgress) {
+        await _microtaskService.updateMicrotaskStatus(
+          microtaskId,
+          MicrotaskStatus.assigned,
+        );
+        // Verifica se a task pai precisa ser atualizada
+        await _checkAndUpdateTaskStatus(microtask.taskId);
       }
     } catch (e) {
       // Log do erro, mas não propaga para não quebrar o fluxo principal
       print('Erro ao atualizar status da microtask: $e');
+    }
+  }
+
+  /// Verifica e atualiza o status da task baseado nos status das microtasks
+  /// Implementa as regras RN-04.2 e RN-04.4 do PRD
+  Future<void> _checkAndUpdateTaskStatus(String taskId) async {
+    try {
+      final task = await _taskService.getTaskById(taskId);
+      if (task == null) return;
+
+      // Busca todas as microtasks da task
+      final microtasks = await _microtaskService.getMicrotasksByTaskId(taskId);
+
+      if (microtasks.isEmpty) {
+        // Sem microtasks, task fica pending
+        if (task.status != TaskStatus.pending) {
+          await _taskService.updateTaskStatus(taskId, TaskStatus.pending);
+        }
+        return;
+      }
+
+      // RN-04.4: Task para "Concluída" - todas as microtasks devem estar completed
+      final allMicrotasksCompleted = microtasks.every(
+        (microtask) => microtask.status == MicrotaskStatus.completed,
+      );
+      if (allMicrotasksCompleted && task.status != TaskStatus.completed) {
+        await _taskService.updateTaskStatus(taskId, TaskStatus.completed);
+        return;
+      }
+
+      // RN-04.2: Task para "Em Andamento" - pelo menos uma microtask em in_progress
+      final anyMicrotaskInProgress = microtasks.any(
+        (microtask) =>
+            microtask.status == MicrotaskStatus.inProgress ||
+            microtask.status == MicrotaskStatus.completed,
+      );
+      if (anyMicrotaskInProgress && task.status != TaskStatus.inProgress) {
+        await _taskService.updateTaskStatus(taskId, TaskStatus.inProgress);
+        return;
+      }
+
+      // Se nenhuma microtask está em progresso, volta para pending
+      if (!anyMicrotaskInProgress && task.status == TaskStatus.inProgress) {
+        await _taskService.updateTaskStatus(taskId, TaskStatus.pending);
+      }
+    } catch (e) {
+      // Log do erro, mas não propaga para não quebrar o fluxo principal
+      print('Erro ao atualizar status da task: $e');
     }
   }
 }
