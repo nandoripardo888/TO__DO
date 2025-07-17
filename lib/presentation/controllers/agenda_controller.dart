@@ -31,6 +31,7 @@ class AgendaController extends ChangeNotifier {
   AgendaControllerState _state = AgendaControllerState.initial;
   String? _errorMessage;
   bool _isLoading = false;
+  bool _disposed = false;
 
   // Dados da agenda
   List<UserMicrotaskModel> _userMicrotasks = [];
@@ -137,13 +138,13 @@ class AgendaController extends ChangeNotifier {
   /// Aplica filtro por status
   void setStatusFilter(UserMicrotaskStatus? status) {
     _statusFilter = status;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   /// Limpa todos os filtros
   void clearFilters() {
     _statusFilter = null;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   /// Retorna a lista filtrada de user microtasks
@@ -190,13 +191,13 @@ class AgendaController extends ChangeNotifier {
   /// Define o estado de loading
   void _setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   /// Define o estado
   void _setState(AgendaControllerState newState) {
     _state = newState;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   /// Define uma mensagem de erro
@@ -219,12 +220,17 @@ class AgendaController extends ChangeNotifier {
     _state = AgendaControllerState.initial;
     _errorMessage = null;
     _isLoading = false;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   @override
   void dispose() {
+    _disposed = true;
     _userMicrotasksSubscription?.cancel();
     super.dispose();
+  }
+
+  void _safeNotifyListeners() {
+    if (!_disposed) notifyListeners();
   }
 }

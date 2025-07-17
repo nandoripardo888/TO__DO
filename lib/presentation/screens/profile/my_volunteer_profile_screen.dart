@@ -17,12 +17,14 @@ class MyVolunteerProfileScreen extends StatefulWidget {
   final String eventId;
   final String userId;
   final bool isEditMode;
+  final bool showAppBar; // Controla se deve mostrar o app bar
 
   const MyVolunteerProfileScreen({
     super.key,
     required this.eventId,
     required this.userId,
     this.isEditMode = false,
+    this.showAppBar = true, // Por padrão mostra o app bar
   });
 
   @override
@@ -86,7 +88,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
 
   Future<void> _loadData() async {
     try {
-      setState(() {
+      if (mounted) setState(() {
         _isLoading = true;
         _errorMessage = null;
       });
@@ -114,12 +116,14 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
       // Inicializa os campos do formulário com os dados atuais
       _initializeFormData(profile);
 
+      if (!mounted) return;
       setState(() {
         _event = event;
         _profile = profile;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -163,9 +167,39 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: widget.showAppBar ? _buildAppBar() : null,
       body: _buildBody(),
       // 1 - Botão flutuante para editar quando estiver visualizando
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton: widget.showAppBar
+          ? _buildFloatingActionButton()
+          : null,
+    );
+  }
+
+  /// Constrói o AppBar baseado no modo atual
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: AppColors.primary,
+      foregroundColor: AppColors.textOnPrimary,
+      title: Text(
+        _isEditMode ? 'Editar Meus Dados' : 'Meus Dados',
+        style: const TextStyle(
+          fontSize: AppDimensions.fontSizeLg,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
+          if (_isEditMode) {
+            // Se estiver editando, cancela as alterações e volta
+            _cancelChanges();
+          } else {
+            // Se estiver visualizando, volta para a tela anterior
+            Navigator.of(context).pop();
+          }
+        },
+      ),
     );
   }
 
@@ -696,6 +730,12 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
   }
 
   void _cancelChanges() {
+    // Se foi aberta diretamente em modo de edição, volta para a tela anterior
+    if (widget.isEditMode) {
+      Navigator.of(context).pop();
+      return;
+    }
+
     setState(() {
       // Restaura dados originais
       _selectedDays = List.from(_originalSelectedDays);
@@ -799,10 +839,15 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
             ),
           );
 
-          setState(() {
-            _profile = updatedProfile;
-            _isEditMode = false;
-          });
+          // Se foi aberta diretamente em modo de edição, volta para a tela anterior
+          if (widget.isEditMode) {
+            Navigator.of(context).pop();
+          } else {
+            setState(() {
+              _profile = updatedProfile;
+              _isEditMode = false;
+            });
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

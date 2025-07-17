@@ -69,6 +69,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     if (_tabController?.length != newLength) {
       _tabController?.dispose();
       _tabController = TabController(length: newLength, vsync: this);
+
+      // Adiciona listener para detectar mudanças de aba
+      _tabController?.addListener(() {
+        if (mounted) {
+          setState(() {}); // Força rebuild quando aba muda
+        }
+      });
     }
   }
 
@@ -205,10 +212,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     // RN-01.1: Ordem das tabs: "Evento" → "AGENDA" → "Meus Dados" → "Acompanhar"
     final tabs = <Widget>[
       const Tab(icon: Icon(Icons.info_outline), text: 'Evento'),
-      if (isVolunteer) const Tab(icon: Icon(Icons.assignment), text: 'AGENDA'),
+      if (isVolunteer) const Tab(icon: Icon(Icons.assignment), text: 'Agenda'),
       if (isManager) const Tab(icon: Icon(Icons.people), text: 'Voluntários'),
       if (isVolunteer) const Tab(icon: Icon(Icons.person), text: 'Meus Dados'),
-      const Tab(icon: Icon(Icons.track_changes), text: 'Acompanhar'),
+      const Tab(icon: Icon(Icons.track_changes), text: 'Tasks'),
     ];
 
     return Container(
@@ -293,6 +300,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       eventId: widget.eventId,
       userId: currentUserId,
       isEditMode: false,
+      showAppBar: false, // Não mostra app bar quando usado dentro da aba
     );
   }
 
@@ -594,10 +602,28 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
-  /// REQ-04: Verifica se a aba "Evento" está ativa
-  bool _isEventTabActive() {
-    return _tabController?.index ==
-        0; // A aba "Evento" é sempre a primeira (índice 0)
+  /// Verifica se a aba atual é a aba "Evento" (sempre índice 0)
+  bool _isCurrentTabEvent() {
+    return _tabController?.index == 0;
+  }
+
+  /// Verifica se a aba atual é a aba "Meus Dados"
+  bool _isCurrentTabMyData() {
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final currentUserId = authController.currentUser?.id;
+    final isManager = _event?.isManager(currentUserId ?? '') ?? false;
+    final isVolunteer = _event?.isVolunteer(currentUserId ?? '') ?? false;
+
+    if (!isVolunteer) return false; // Aba só existe para voluntários
+
+    final currentIndex = _tabController?.index ?? -1;
+
+    // Calcula o índice esperado da aba "Meus Dados"
+    int expectedIndex = 1; // Após "Evento"
+    if (isVolunteer) expectedIndex++; // Se tem "AGENDA", incrementa
+    if (isManager) expectedIndex++; // Se tem "Voluntários", incrementa
+
+    return currentIndex == expectedIndex;
   }
 
   /// REQ-04: Navega para a tela de edição do evento
@@ -614,52 +640,103 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     });
   }
 
+  /// Navega para a tela de edição do perfil do voluntário
+  void _navigateToEditProfile() {
+    if (_event == null) return;
+
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final currentUserId = authController.currentUser?.id;
+
+    if (currentUserId == null) return;
+
+    // Navega para a tela de perfil em modo de edição
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MyVolunteerProfileScreen(
+          eventId: _event!.id,
+          userId: currentUserId,
+          isEditMode: true, // Inicia diretamente no modo de edição
+          showAppBar:
+              true, // Mostra app bar quando navegando para tela separada
+        ),
+      ),
+    ).then((_) {
+      // Recarrega os dados do evento após retornar da edição
+      _loadEventDetails();
+    });
+  }
+
   Widget? _buildFloatingActionButton() {
     final authController = Provider.of<AuthController>(context, listen: false);
     final currentUserId = authController.currentUser?.id;
     final isManager = _event?.isManager(currentUserId ?? '') ?? false;
+    final isVolunteer = _event?.isVolunteer(currentUserId ?? '') ?? false;
 
-    if (!isManager) return null;
+    // Mostra FAB se for gerenciador OU voluntário (para aba "Meus Dados")
+    if (!isManager && !isVolunteer) return null;
 
-    return Consumer<TaskController>(
-      builder: (context, taskController, child) {
-        final tasks = taskController.tasks;
+    // Aba "Evento": mostra botão de edição + botão de adicionar tasks (apenas para gerenciadores)
+    if (_isCurrentTabEvent()) {
+      // Apenas gerenciadores podem editar o evento e criar tasks
+      if (isManager) {
+        return Consumer<TaskController>(
+          builder: (context, taskController, child) {
+            final tasks = taskController.tasks;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // FAB de edição (acima)
+                FloatingActionButton(
+                  heroTag: "edit_event_fab",
+                  onPressed: _navigateToEditEvent,
+                  backgroundColor: AppColors.secondary,
+                  child: const Icon(Icons.edit, color: AppColors.textOnPrimary),
+                ),
+                const SizedBox(height: 16),
+                // FAB de adicionar tasks (abaixo)
+                FloatingActionButton(
+                  heroTag: "add_task_fab",
+                  onPressed: () => _showCreateOptionsDialog(tasks),
+                  backgroundColor: AppColors.primary,
+                  child: const Icon(Icons.add, color: AppColors.textOnPrimary),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        // Voluntários não veem nenhum FAB na aba "Evento"
+        return null;
+      }
+    }
 
-        // REQ-04: Verifica se está na aba "Evento" para mostrar FAB de edição
-        final isEventTab = _isEventTabActive();
+    // Aba "Meus Dados": mostra apenas botão de edição do perfil
+    if (_isCurrentTabMyData()) {
+      return FloatingActionButton(
+        heroTag: "edit_profile_fab",
+        onPressed: _navigateToEditProfile,
+        backgroundColor: AppColors.secondary,
+        child: const Icon(Icons.edit, color: AppColors.textOnPrimary),
+      );
+    }
 
-        if (isEventTab) {
-          // REQ-04: Mostra ambos os FABs na aba "Evento"
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // FAB de edição (acima)
-              FloatingActionButton(
-                heroTag: "edit_event_fab",
-                onPressed: _navigateToEditEvent,
-                backgroundColor: AppColors.secondary,
-                child: const Icon(Icons.edit, color: AppColors.textOnPrimary),
-              ),
-              const SizedBox(height: 16),
-              // FAB de adicionar tasks (abaixo)
-              FloatingActionButton(
-                heroTag: "add_task_fab",
-                onPressed: () => _showCreateOptionsDialog(tasks),
-                backgroundColor: AppColors.primary,
-                child: const Icon(Icons.add, color: AppColors.textOnPrimary),
-              ),
-            ],
-          );
-        } else {
-          // Outras abas: apenas FAB de adicionar tasks
+    // Aba "Voluntários": apenas FAB de adicionar tasks (apenas para gerenciadores)
+    if (isManager) {
+      return Consumer<TaskController>(
+        builder: (context, taskController, child) {
+          final tasks = taskController.tasks;
           return FloatingActionButton(
             onPressed: () => _showCreateOptionsDialog(tasks),
             backgroundColor: AppColors.primary,
             child: const Icon(Icons.add, color: AppColors.textOnPrimary),
           );
-        }
-      },
-    );
+        },
+      );
+    }
+
+    // Outras abas (AGENDA, Acompanhar): nenhum FAB para voluntários
+    return null;
   }
 
   void _showCreateOptionsDialog(List<TaskModel> tasks) {

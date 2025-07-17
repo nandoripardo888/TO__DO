@@ -29,7 +29,7 @@ class EventRepository {
         id: 'temp', // Temporary ID for validation
         name: name.trim(),
         description: description.trim(),
-        tag: 'temp', // Temporary tag for validation
+        tag: 'TEMP01', // Temporary tag for validation (6 characters)
         location: location.trim(),
         createdBy: createdBy,
         requiredSkills: requiredSkills,

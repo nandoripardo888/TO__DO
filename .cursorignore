@@ -44,3 +44,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 # Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+#/macos
+#/android
+#/linux
+#/CodeFlattened_Output
+#/web
+#/windows

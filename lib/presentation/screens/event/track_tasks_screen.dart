@@ -10,6 +10,7 @@ import '../../widgets/common/skill_chip.dart';
 import '../../widgets/task/task_card.dart';
 import '../../widgets/task/microtask_card.dart';
 import '../../widgets/task/task_progress_widget.dart';
+import '../../../data/models/microtask_model.dart';
 
 /// Tela para acompanhamento de tasks (implementação básica)
 class TrackTasksScreen extends StatefulWidget {
@@ -363,16 +364,20 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
     return ListTile(
       dense: true,
       leading: Icon(
-        Icons.check_box_outline_blank,
+        microtask.status == MicrotaskStatus.completed
+            ? Icons.check_box
+            : Icons.check_box_outline_blank,
         size: 16,
-        color: AppColors.textSecondary,
+        color: microtask.status == MicrotaskStatus.completed
+            ? AppColors.success
+            : AppColors.textSecondary,
       ),
       title: Text(
         microtask.title,
         style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
       ),
       subtitle: Text(
-        'Voluntários: ${microtask.assignedTo.length}/${microtask.maxVolunteers}',
+        'Voluntários:  ${microtask.assignedTo.length}/${microtask.maxVolunteers}',
         style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
       ),
       trailing: Text(
