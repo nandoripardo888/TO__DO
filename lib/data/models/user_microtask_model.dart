@@ -218,11 +218,24 @@ class UserMicrotaskModel {
 
   /// Marca como iniciado
   UserMicrotaskModel markAsStarted() {
-    if (status == UserMicrotaskStatus.assigned) {
+    if (status == UserMicrotaskStatus.assigned || status == UserMicrotaskStatus.completed) {
       final now = DateTime.now();
       return copyWith(
         status: UserMicrotaskStatus.inProgress,
-        startedAt: now,
+        startedAt: startedAt ?? now, // Mantém a data original de início se já existir
+        updatedAt: now,
+      );
+    }
+    return this;
+  }
+  
+  /// Marca como atribuído (regressão de Em Andamento para Atribuída)
+  UserMicrotaskModel markAsAssigned() {
+    if (status == UserMicrotaskStatus.inProgress) {
+      final now = DateTime.now();
+      return copyWith(
+        status: UserMicrotaskStatus.assigned,
+        startedAt: null, // Remove a data de início
         updatedAt: now,
       );
     }
@@ -231,13 +244,16 @@ class UserMicrotaskModel {
 
   /// Marca como concluído
   UserMicrotaskModel markAsCompleted({double? actualHours}) {
-    final now = DateTime.now();
-    return copyWith(
-      status: UserMicrotaskStatus.completed,
-      completedAt: now,
-      actualHours: actualHours ?? this.actualHours,
-      updatedAt: now,
-    );
+    if (status == UserMicrotaskStatus.inProgress || status == UserMicrotaskStatus.assigned) {
+      final now = DateTime.now();
+      return copyWith(
+        status: UserMicrotaskStatus.completed,
+        completedAt: now,
+        actualHours: actualHours ?? this.actualHours,
+        updatedAt: now,
+      );
+    }
+    return this;
   }
 
   /// Marca como cancelado

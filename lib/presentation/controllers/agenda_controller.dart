@@ -70,10 +70,14 @@ class AgendaController extends ChangeNotifier {
           .watchUserMicrotasksByEvent(userId: userId, eventId: eventId)
           .listen(
             (userMicrotasks) async {
+              final previousMicrotasks = List<UserMicrotaskModel>.from(_userMicrotasks);
               _userMicrotasks = userMicrotasks;
 
               // Carrega dados das microtasks e tasks relacionadas
               await _loadRelatedData();
+
+              // Detecta se houve mudança de status que requer reordenação
+              _detectStatusChanges(previousMicrotasks, userMicrotasks);
 
               _setState(AgendaControllerState.loaded);
             },
@@ -147,12 +151,38 @@ class AgendaController extends ChangeNotifier {
     _safeNotifyListeners();
   }
 
-  /// Retorna a lista filtrada de user microtasks
+  /// Retorna a lista filtrada e ordenada de user microtasks
+  /// Conforme RN-01.5: ordenação por status e data de atribuição
   List<UserMicrotaskModel> get filteredUserMicrotasks {
+    List<UserMicrotaskModel> filtered;
+    
     if (_statusFilter == null) {
-      return _userMicrotasks;
+      filtered = List.from(_userMicrotasks);
+    } else {
+      filtered = _userMicrotasks.where((um) => um.status == _statusFilter).toList();
     }
-    return _userMicrotasks.where((um) => um.status == _statusFilter).toList();
+    
+    // Ordena por status (assigned → in_progress → completed) e depois por data de atribuição
+    filtered.sort((a, b) {
+      // Primeiro critério: status
+      final statusOrder = {
+        UserMicrotaskStatus.assigned: 1,
+        UserMicrotaskStatus.inProgress: 2,
+        UserMicrotaskStatus.completed: 3,
+      };
+      
+      final aStatusOrder = statusOrder[a.status] ?? 4;
+      final bStatusOrder = statusOrder[b.status] ?? 4;
+      
+      if (aStatusOrder != bStatusOrder) {
+        return aStatusOrder.compareTo(bStatusOrder);
+      }
+      
+      // Segundo critério: data de atribuição (mais recente primeiro)
+      return b.assignedAt.compareTo(a.assignedAt);
+    });
+    
+    return filtered;
   }
 
   /// Recarrega a agenda (reinicia o stream)
@@ -161,6 +191,29 @@ class AgendaController extends ChangeNotifier {
     required String eventId,
   }) async {
     await loadAgenda(userId: userId, eventId: eventId);
+  }
+
+  /// Detecta mudanças de status que requerem reordenação
+  void _detectStatusChanges(
+    List<UserMicrotaskModel> previousMicrotasks,
+    List<UserMicrotaskModel> newMicrotasks,
+  ) {
+    if (previousMicrotasks.isEmpty) return;
+    
+    // Cria um mapa para comparação rápida
+    final previousMap = {
+      for (final um in previousMicrotasks) um.microtaskId: um.status
+    };
+    
+    // Verifica se alguma microtask mudou de status
+    for (final newMicrotask in newMicrotasks) {
+      final previousStatus = previousMap[newMicrotask.microtaskId];
+      if (previousStatus != null && previousStatus != newMicrotask.status) {
+        // Status mudou - a lista será reordenada automaticamente pelo getter filteredUserMicrotasks
+        print('Status da microtask ${newMicrotask.microtaskId} mudou de $previousStatus para ${newMicrotask.status}');
+        break;
+      }
+    }
   }
 
   /// Carrega dados relacionados (microtasks e tasks)

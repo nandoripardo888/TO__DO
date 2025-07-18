@@ -280,6 +280,9 @@ class AssignmentService {
         case UserMicrotaskStatus.inProgress:
           updatedUserMicrotask = userMicrotask.markAsStarted();
           break;
+        case UserMicrotaskStatus.assigned:
+          updatedUserMicrotask = userMicrotask.markAsAssigned();
+          break;
         case UserMicrotaskStatus.completed:
           updatedUserMicrotask = userMicrotask.markAsCompleted(
             actualHours: actualHours,

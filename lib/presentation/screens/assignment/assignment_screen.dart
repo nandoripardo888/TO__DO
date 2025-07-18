@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/volunteer_profile_model.dart';
 import '../../../data/models/microtask_model.dart';
 import '../../../data/models/task_model.dart';
 import '../../controllers/task_controller.dart';
 import '../../widgets/common/loading_widget.dart';
+import '../../widgets/assignment/volunteer_header.dart';
+import '../../widgets/assignment/microtask_assignment_card.dart';
+import '../../widgets/assignment/empty_microtasks_widget.dart';
 
 /// Tela dedicada para atribuição de microtasks a voluntários
 class AssignmentScreen extends StatefulWidget {
@@ -27,18 +29,33 @@ class AssignmentScreen extends StatefulWidget {
   State<AssignmentScreen> createState() => _AssignmentScreenState();
 }
 
-class _AssignmentScreenState extends State<AssignmentScreen> {
+class _AssignmentScreenState extends State<AssignmentScreen> 
+    with TickerProviderStateMixin {
   List<MicrotaskModel> _availableMicrotasks = [];
   List<TaskModel> _tasks = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  late AnimationController _listAnimationController;
+  late Animation<double> _listAnimation;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadMicrotasks();
-    });
+    _listAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _listAnimation = CurvedAnimation(
+      parent: _listAnimationController,
+      curve: Curves.easeInOut,
+    );
+    _loadMicrotasks();
+  }
+
+  @override
+  void dispose() {
+    _listAnimationController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadMicrotasks() async {
@@ -137,7 +154,10 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
       ),
       body: Column(
         children: [
-          _buildHeader(),
+          VolunteerHeader(
+            volunteer: widget.volunteer,
+            volunteerProfile: widget.volunteerProfile,
+          ),
           _buildSearchBar(),
           Expanded(
             child: _isLoading
@@ -149,93 +169,31 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingMd),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingMd,
+        vertical: AppDimensions.paddingSm,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.background,
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: AppColors.primary.withOpacity(0.1),
-            backgroundImage: widget.volunteer.photoUrl != null
-                ? NetworkImage(widget.volunteer.photoUrl!)
-                : null,
-            child: widget.volunteer.photoUrl == null
-                ? Text(
-                    widget.volunteer.name.isNotEmpty
-                        ? widget.volunteer.name[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(width: AppDimensions.spacingMd),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.volunteer.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Selecione uma microtask para atribuir',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                if (widget.volunteerProfile != null &&
-                    widget.volunteerProfile!.skills.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    'Habilidades: ${widget.volunteerProfile!.skills.join(', ')}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingMd),
       child: TextField(
-        onChanged: (value) {
-          setState(() {
-            _searchQuery = value;
-          });
-        },
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           hintText: 'Buscar microtasks...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingMd,
+          prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.symmetric(
             vertical: AppDimensions.paddingSm,
+            horizontal: AppDimensions.paddingMd,
           ),
         ),
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value.trim();
+          });
+        },
       ),
     );
   }
@@ -244,16 +202,33 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     final filteredMicrotasks = _getFilteredMicrotasks();
 
     if (filteredMicrotasks.isEmpty) {
-      return _buildEmptyState();
+      return const EmptyMicrotasksWidget();
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(AppDimensions.paddingSm),
-      itemCount: filteredMicrotasks.length,
-      itemBuilder: (context, index) {
+    return AnimatedList(
+      padding: const EdgeInsets.only(
+        top: AppDimensions.paddingMd,
+        bottom: AppDimensions.paddingLg,
+      ),
+      initialItemCount: filteredMicrotasks.length,
+      itemBuilder: (context, index, animation) {
+        if (index >= filteredMicrotasks.length) {
+          return const SizedBox.shrink();
+        }
+        
         final microtask = filteredMicrotasks[index];
         final task = _getTaskForMicrotask(microtask.taskId);
-        return _buildMicrotaskAssignmentCard(microtask, task);
+        
+        return SlideTransition(
+          position: animation.drive(
+            Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          ),
+          child: FadeTransition(
+            opacity: animation,
+            child: _buildMicrotaskAssignmentCard(microtask, task),
+          ),
+        );
       },
     );
   }
@@ -282,387 +257,114 @@ class _AssignmentScreenState extends State<AssignmentScreen> {
     }
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.assignment_outlined,
-            size: 64,
-            color: AppColors.textSecondary.withOpacity(0.5),
-          ),
-          const SizedBox(height: AppDimensions.spacingLg),
-          const Text(
-            'Nenhuma microtask disponível',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingSm),
-          const Text(
-            'Não há microtasks disponíveis para atribuição no momento.',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildMicrotaskAssignmentCard(
     MicrotaskModel microtask,
     TaskModel? task,
   ) {
-    final isCompatible = _isVolunteerCompatible(microtask);
+    // Verifica compatibilidade do voluntário com a microtask
+    bool isCompatible = true;
+    if (widget.volunteerProfile != null &&
+        microtask.requiredSkills.isNotEmpty) {
+      final volunteerSkills = widget.volunteerProfile!.skills;
+      if (volunteerSkills.isEmpty) {
+        isCompatible = false;
+      } else {
+        isCompatible = microtask.requiredSkills.any(
+          (skill) => volunteerSkills.contains(skill),
+        );
+      }
+    }
+
     final availableSlots =
         microtask.maxVolunteers - microtask.assignedTo.length;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingMd),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header com título e task pai
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        microtask.title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (task != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          'Task: ${task.title}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (isCompatible)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppColors.success.withOpacity(0.3),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.star, size: 12, color: AppColors.success),
-                        const SizedBox(width: 2),
-                        Text(
-                          'Compatível',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: AppColors.success,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-
-            const SizedBox(height: AppDimensions.spacingMd),
-
-            // Descrição
-            Text(
-              microtask.description,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-
-            const SizedBox(height: AppDimensions.spacingMd),
-
-            // Informações da microtask
-            Wrap(
-              spacing: AppDimensions.spacingSm,
-              runSpacing: AppDimensions.spacingSm,
-              children: [
-                _buildInfoChip(
-                  icon: Icons.schedule,
-                  label: microtask.hasSchedule
-                      ? microtask.periodFormatted
-                      : 'Horário flexível',
-                  color: AppColors.secondary,
-                ),
-                _buildInfoChip(
-                  icon: Icons.people,
-                  label: 'Vagas: $availableSlots de ${microtask.maxVolunteers}',
-                  color: _getVacancyColor(
-                    availableSlots,
-                    microtask.maxVolunteers,
-                  ),
-                ),
-                if (microtask.status != MicrotaskStatus.pending)
-                  _buildInfoChip(
-                    icon: Icons.info_outline,
-                    label: _getStatusText(microtask.status),
-                    color: _getStatusColor(microtask.status),
-                  ),
-              ],
-            ),
-
-            // Habilidades necessárias
-            if (microtask.requiredSkills.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingMd),
-              _buildSkillsSection(microtask),
-            ],
-
-            const SizedBox(height: AppDimensions.spacingMd),
-
-            // Botão de atribuição
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: availableSlots > 0
-                    ? () => _assignMicrotask(microtask)
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isCompatible
-                      ? AppColors.success
-                      : AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: Text(
-                  availableSlots > 0
-                      ? (isCompatible ? 'Atribuir (Compatível)' : 'Atribuir')
-                      : 'Sem vagas disponíveis',
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Verifica se o voluntário é compatível com a microtask
-  bool _isVolunteerCompatible(MicrotaskModel microtask) {
-    if (widget.volunteerProfile == null || microtask.requiredSkills.isEmpty) {
-      return false;
-    }
-
-    final volunteerSkills = widget.volunteerProfile!.skills;
-    return microtask.requiredSkills.any(
-      (skill) => volunteerSkills.contains(skill),
-    );
-  }
-
-  // Widget de chip informativo
-  Widget _buildInfoChip({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: color,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+      key: ValueKey('microtask_${microtask.id}'),
+      child: MicrotaskAssignmentCard(
+        microtask: microtask,
+        task: task,
+        isCompatible: isCompatible,
+        availableSlots: availableSlots,
+        maxVolunteers: microtask.maxVolunteers,
+        volunteerProfile: widget.volunteerProfile,
+        onAssign: () => _assignMicrotaskWithAnimation(microtask),
       ),
     );
   }
 
-  // Cor baseada no número de vagas disponíveis
-  Color _getVacancyColor(int available, int total) {
-    final ratio = available / total;
-    if (ratio > 0.5) return AppColors.success;
-    if (ratio > 0.2) return AppColors.warning;
-    return AppColors.error;
-  }
-
-  // Texto do status da microtask
-  String _getStatusText(MicrotaskStatus status) {
-    switch (status) {
-      case MicrotaskStatus.pending:
-        return 'Pendente';
-      case MicrotaskStatus.assigned:
-        return 'Atribuída';
-      case MicrotaskStatus.inProgress:
-        return 'Em andamento';
-      case MicrotaskStatus.completed:
-        return 'Concluída';
-      case MicrotaskStatus.cancelled:
-        return 'Cancelada';
-    }
-  }
-
-  // Cor do status da microtask
-  Color _getStatusColor(MicrotaskStatus status) {
-    switch (status) {
-      case MicrotaskStatus.pending:
-        return AppColors.textSecondary;
-      case MicrotaskStatus.assigned:
-        return AppColors.primary;
-      case MicrotaskStatus.inProgress:
-        return AppColors.warning;
-      case MicrotaskStatus.completed:
-        return AppColors.success;
-      case MicrotaskStatus.cancelled:
-        return AppColors.error;
-    }
-  }
-
-  // Seção de habilidades necessárias
-  Widget _buildSkillsSection(MicrotaskModel microtask) {
-    final volunteerSkills = widget.volunteerProfile?.skills ?? [];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Habilidades necessárias:',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Wrap(
-          spacing: 4,
-          runSpacing: 4,
-          children: microtask.requiredSkills.map((skill) {
-            final hasSkill = volunteerSkills.contains(skill);
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: hasSkill
-                    ? AppColors.success.withOpacity(0.1)
-                    : AppColors.textSecondary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: hasSkill
-                      ? AppColors.success.withOpacity(0.3)
-                      : AppColors.textSecondary.withOpacity(0.3),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (hasSkill)
-                    Icon(
-                      Icons.check_circle,
-                      size: 10,
-                      color: AppColors.success,
-                    ),
-                  if (hasSkill) const SizedBox(width: 2),
-                  Text(
-                    skill,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: hasSkill
-                          ? AppColors.success
-                          : AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  // Atribui a microtask ao voluntário
-  Future<void> _assignMicrotask(MicrotaskModel microtask) async {
-    final taskController = Provider.of<TaskController>(
-      context,
-      listen: false,
-    );
-
-    bool sucesso = false;
+  // Atribui a microtask ao voluntário com animação
+  Future<void> _assignMicrotaskWithAnimation(MicrotaskModel microtask) async {
     try {
-      sucesso = await taskController.assignVolunteerToMicrotask(
+      // Remove a microtask da lista local imediatamente para feedback visual
+      final currentIndex = _availableMicrotasks.indexWhere((m) => m.id == microtask.id);
+      if (currentIndex != -1) {
+        setState(() {
+          _availableMicrotasks.removeAt(currentIndex);
+        });
+        
+        // Pequeno delay para mostrar a animação de remoção
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+
+      final taskController = Provider.of<TaskController>(
+        context,
+        listen: false,
+      );
+
+      // Atribui a microtask
+      await taskController.assignVolunteerToMicrotask(
         microtaskId: microtask.id,
         userId: widget.volunteer.id,
         eventId: widget.eventId,
       );
-    } catch (e) {
+
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Microtask "${microtask.title}" atribuída com sucesso!',
+            ),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(AppDimensions.paddingMd),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+
+        // Volta para a tela anterior após um pequeno delay
+        await Future.delayed(const Duration(milliseconds: 1500));
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      }
+    } catch (e) {
+      // Se houve erro, restaura a microtask na lista
+      if (mounted) {
+        setState(() {
+          _availableMicrotasks = _sortMicrotasksByCompatibility(
+            [..._availableMicrotasks, microtask],
+          );
+        });
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro ao atribuir microtask: $e'),
             backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(AppDimensions.paddingMd),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       }
-      return;
     }
+  }
 
-    if (!sucesso) {
-      // Mostra mensagem de erro do controller, se houver
-      final errorMsg = taskController.errorMessage ?? 'Erro ao atribuir microtask.';
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMsg),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-      return;
-    }
-
-    // Sucesso
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Microtask "${microtask.title}" atribuída com sucesso!',
-          ),
-          backgroundColor: AppColors.success,
-        ),
-      );
-      Navigator.of(context).pop(true);
-    }
+  // Método original mantido para compatibilidade
+  Future<void> _assignMicrotask(MicrotaskModel microtask) async {
+    return _assignMicrotaskWithAnimation(microtask);
   }
 }

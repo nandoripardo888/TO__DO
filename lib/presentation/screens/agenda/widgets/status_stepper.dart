@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_dimensions.dart';
 import '../../../../data/models/user_microtask_model.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../presentation/widgets/dialogs/confirmation_dialog.dart';
 
 /// Componente de Status Stepper Horizontal para controle de status das microtasks
 /// Conforme RN-02.4 e RN-03 do PRD - Design do Status Stepper e Lógica de Interação
@@ -19,8 +20,34 @@ class StatusStepper extends StatefulWidget {
   State<StatusStepper> createState() => _StatusStepperState();
 }
 
-class _StatusStepperState extends State<StatusStepper> {
+class _StatusStepperState extends State<StatusStepper>
+    with TickerProviderStateMixin {
   bool _isLoading = false;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  UserMicrotaskStatus? _animatingStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,23 +104,54 @@ class _StatusStepperState extends State<StatusStepper> {
       child: Column(
         children: [
           GestureDetector(
+            onTapDown: isInteractive && !_isLoading
+                ? (_) => _onTapDown(status)
+                : null,
+            onTapUp: isInteractive && !_isLoading
+                ? (_) => _onTapUp(status)
+                : null,
+            onTapCancel: isInteractive && !_isLoading
+                ? () => _onTapCancel()
+                : null,
             onTap: isInteractive && !_isLoading
                 ? () => _handleStatusTap(status)
                 : null,
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isActive
-                    ? AppColors.success
-                    : AppColors.disabled,
-                border: Border.all(
-                  color: isActive ? AppColors.success : AppColors.disabled,
-                  width: 2,
-                ),
-              ),
-              child: Center(child: _buildStepIcon(status, isActive)),
+            child: AnimatedBuilder(
+              animation: _scaleAnimation,
+              builder: (context, child) {
+                final scale = _animatingStatus == status
+                    ? _scaleAnimation.value
+                    : 1.0;
+                return Transform.scale(
+                  scale: scale,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isActive
+                          ? AppColors.success
+                          : AppColors.disabled,
+                      border: Border.all(
+                        color: isActive ? AppColors.success : AppColors.disabled,
+                        width: 2,
+                      ),
+                      boxShadow: isInteractive && !_isLoading
+                          ? [
+                              BoxShadow(
+                                color: (isActive ? AppColors.success : AppColors.disabled)
+                                    .withOpacity(0.3),
+                                blurRadius: _animatingStatus == status ? 8 : 4,
+                                spreadRadius: _animatingStatus == status ? 2 : 0,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Center(child: _buildStepIcon(status, isActive)),
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXs),
@@ -172,8 +230,8 @@ class _StatusStepperState extends State<StatusStepper> {
     // RN-03.3: Progressão permitida
     if (status == UserMicrotaskStatus.inProgress) {
       return widget.currentStatus == UserMicrotaskStatus.assigned ||
-          widget.currentStatus ==
-              UserMicrotaskStatus.completed; // Permite regressão
+          widget.currentStatus == UserMicrotaskStatus.inProgress ||
+          widget.currentStatus == UserMicrotaskStatus.completed; // Permite regressão
     }
 
     if (status == UserMicrotaskStatus.completed) {
@@ -185,12 +243,33 @@ class _StatusStepperState extends State<StatusStepper> {
     return false;
   }
 
+  /// Manipula o início do toque (onTapDown)
+  void _onTapDown(UserMicrotaskStatus status) {
+    setState(() {
+      _animatingStatus = status;
+    });
+    _animationController.forward();
+  }
+
+  /// Manipula o fim do toque (onTapUp)
+  void _onTapUp(UserMicrotaskStatus status) {
+    _animationController.reverse();
+  }
+
+  /// Manipula o cancelamento do toque
+  void _onTapCancel() {
+    _animationController.reverse();
+    setState(() {
+      _animatingStatus = null;
+    });
+  }
+
   /// Manipula o toque em um status
   /// Implementa as regras RN-03.3, RN-03.4 e RN-03.5
   Future<void> _handleStatusTap(UserMicrotaskStatus tappedStatus) async {
     if (_isLoading) return;
 
-    UserMicrotaskStatus newStatus;
+    UserMicrotaskStatus? newStatus;
 
     // Determina o novo status baseado no status atual e no que foi clicado
     if (tappedStatus == UserMicrotaskStatus.assigned) {
@@ -207,8 +286,27 @@ class _StatusStepperState extends State<StatusStepper> {
       } else if (widget.currentStatus == UserMicrotaskStatus.completed) {
         // Regressão de completed para in_progress
         newStatus = UserMicrotaskStatus.inProgress;
+      } else if (widget.currentStatus == UserMicrotaskStatus.inProgress) {
+        // Regressão de in_progress para assigned
+        // Solicitar confirmação do usuário
+        final bool? confirmed = await ConfirmationDialog.show(
+          context: context,
+          title: 'Voltar para Atribuída',
+          content: 'Tem certeza que deseja voltar esta microtarefa para o status "Atribuída"? O progresso de início será removido.',
+          confirmText: 'Confirmar',
+          cancelText: 'Cancelar',
+          icon: Icons.warning,
+          iconColor: AppColors.warning,
+          confirmButtonColor: AppColors.warning,
+        );
+        
+        if (confirmed != true) {
+          return; // Usuário cancelou a operação
+        }
+        
+        newStatus = UserMicrotaskStatus.assigned;
       } else {
-        return; // Já está em in_progress
+        return;
       }
     } else if (tappedStatus == UserMicrotaskStatus.completed) {
       if (widget.currentStatus == UserMicrotaskStatus.inProgress) {
@@ -216,6 +314,22 @@ class _StatusStepperState extends State<StatusStepper> {
         newStatus = UserMicrotaskStatus.completed;
       } else if (widget.currentStatus == UserMicrotaskStatus.completed) {
         // Desmarcar completed (volta para in_progress)
+        // Solicitar confirmação do usuário
+        final bool? confirmed = await ConfirmationDialog.show(
+          context: context,
+          title: 'Desmarcar Conclusão',
+          content: 'Tem certeza que deseja desmarcar esta microtarefa como concluída? Ela voltará para o status "Em Andamento".',
+          confirmText: 'Desmarcar',
+          cancelText: 'Cancelar',
+          icon: Icons.warning,
+          iconColor: AppColors.warning,
+          confirmButtonColor: AppColors.warning,
+        );
+        
+        if (confirmed != true) {
+          return; // Usuário cancelou a operação
+        }
+        
         newStatus = UserMicrotaskStatus.inProgress;
       } else {
         return; // Não permite pular etapas
@@ -227,10 +341,12 @@ class _StatusStepperState extends State<StatusStepper> {
     // RN-03.6: Feedback visual durante a mudança
     setState(() {
       _isLoading = true;
+      _animatingStatus = null;
     });
+    _animationController.reset();
 
     try {
-      await widget.onStatusChanged(newStatus);
+      await widget.onStatusChanged(newStatus!);
     } finally {
       if (mounted) {
         setState(() {
