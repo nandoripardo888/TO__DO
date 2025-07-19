@@ -7,6 +7,7 @@ import '../../../data/models/task_model.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/event_controller.dart';
 import '../../controllers/task_controller.dart';
+import '../../controllers/agenda_controller.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/error_message_widget.dart';
 import '../../widgets/common/custom_app_bar.dart';
@@ -49,6 +50,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   /// REQ-02: Calcula o número de tabs baseado nas permissões do usuário
   int _getTabCount() {
     if (_event == null) return 3; // Default
+    if (!mounted) return 3; // Default se o widget não estiver montado
 
     final authController = Provider.of<AuthController>(context, listen: false);
     final currentUserId = authController.currentUser?.id;
@@ -64,6 +66,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
   /// REQ-02: Atualiza o TabController quando a Campanha é carregado
   void _updateTabController() {
+    if (!mounted) return;
+
     final newLength = _getTabCount();
     if (_tabController?.length != newLength) {
       _tabController?.dispose();
@@ -73,13 +77,65 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       _tabController?.addListener(() {
         if (mounted) {
           setState(() {}); // Força rebuild quando aba muda
+          _handleTabChange();
         }
       });
     }
   }
 
+  /// Gerencia streams com base na tab ativa
+  void _handleTabChange() {
+    if (_tabController == null || !mounted) return;
+
+    // Verifica se os providers estão disponíveis (só após o MultiProvider ser criado)
+    try {
+      final authController = Provider.of<AuthController>(context, listen: false);
+      final currentUserId = authController.currentUser?.id;
+      final isVolunteer = _event?.isVolunteer(currentUserId ?? '') ?? false;
+
+      // Índice da tab Agenda (pode variar dependendo das permissões)
+      int agendaTabIndex = -1;
+      if (isVolunteer) {
+        agendaTabIndex = 1; // Campanha (0), Agenda (1), Tasks (2)
+      }
+
+      // Índice da tab TrackTasks (sempre a última)
+      final trackTasksTabIndex = _tabController!.length - 1;
+
+      // Gerencia streams da Agenda
+      if (isVolunteer && agendaTabIndex >= 0) {
+        final agendaController = Provider.of<AgendaController>(
+          context,
+          listen: false,
+        );
+        if (_tabController!.index == agendaTabIndex) {
+          // Ativa streams da Agenda
+          agendaController.resumeStreams();
+        } else {
+          // Pausa streams da Agenda
+          agendaController.pauseStreams();
+        }
+      }
+
+      // Gerencia streams do TrackTasks
+      final taskController = Provider.of<TaskController>(context, listen: false);
+      if (_tabController!.index == trackTasksTabIndex) {
+        // Ativa streams do TrackTasks
+        taskController.resumeStreams();
+      } else {
+        // Pausa streams do TrackTasks
+        taskController.pauseStreams();
+      }
+    } catch (e) {
+      // Providers ainda não estão disponíveis, ignora silenciosamente
+      // Isso acontece durante o carregamento inicial
+    }
+  }
+
   Future<void> _loadEventDetails() async {
     try {
+      if (!mounted) return;
+
       setState(() {
         _isLoading = true;
         _errorMessage = null;
@@ -92,6 +148,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       final event = await eventController.loadEvent(widget.eventId);
 
       if (event != null) {
+        if (!mounted) return;
+
         setState(() {
           _event = event;
         });
@@ -112,14 +170,20 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           setState(() {
             _isLoading = false;
           });
+          // Inicializa o gerenciamento de streams após carregar os dados
+          _handleTabChange();
         }
       } else {
+        if (!mounted) return;
+
         setState(() {
           _errorMessage = 'campanha não encontrado';
           _isLoading = false;
         });
       }
     } catch (e) {
+      if (!mounted) return;
+
       setState(() {
         _errorMessage = 'Erro ao carregar campanha: ${e.toString()}';
         _isLoading = false;
@@ -163,23 +227,34 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(),
-      body: _tabController == null
-          ? const LoadingWidget(message: 'Carregando...')
-          : Column(
-              children: [
-                _buildTabBar(),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController!,
-                    children: _buildTabViews(),
+    // Fornece controllers necessários para as tabs
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AgendaController>(
+          create: (context) => AgendaController(),
+        ),
+        ChangeNotifierProvider<TaskController>(
+          create: (context) => TaskController(),
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: _buildAppBar(),
+        body: _tabController == null
+            ? const LoadingWidget(message: 'Carregando...')
+            : Column(
+                children: [
+                  _buildTabBar(),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController!,
+                      children: _buildTabViews(),
+                    ),
                   ),
-                ),
-              ],
-            ),
-      floatingActionButton: _buildFloatingActionButton(),
+                ],
+              ),
+        floatingActionButton: _buildFloatingActionButton(),
+      ),
     );
   }
 
@@ -286,7 +361,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
   /// REQ-02: Nova aba "Perfil" para gerenciamento do perfil de voluntário
 
-
   /// RN-01: Nova aba "AGENDA" para voluntários
   Widget _buildAgendaTab() {
     final authController = Provider.of<AuthController>(context, listen: false);
@@ -302,10 +376,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       );
     }
 
+    // AgendaController já está disponível no contexto superior
     return AgendaScreen(eventId: widget.eventId);
   }
 
   Widget _buildTrackTasksTab() {
+    // TaskController já está disponível no contexto superior
     return TrackTasksScreen(eventId: widget.eventId);
   }
 
@@ -590,8 +666,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return _tabController?.index == 0;
   }
 
-
-
   /// REQ-04: Navega para a tela de edição da Campanha
   void _navigateToEditEvent() {
     if (_event == null) return;
@@ -605,8 +679,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       _loadEventDetails();
     });
   }
-
-
 
   Widget? _buildFloatingActionButton() {
     final authController = Provider.of<AuthController>(context, listen: false);
@@ -651,8 +723,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         return null;
       }
     }
-
-
 
     // Aba "Voluntários": apenas FAB de adicionar tasks (apenas para gerenciadores)
     if (isManager) {
@@ -761,9 +831,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         ),
       ),
     ).then((_) {
-      _loadEventDetails();
+      // Verifica se o widget ainda está montado antes de chamar _loadEventDetails
+      if (mounted) {
+        _loadEventDetails();
+      }
     });
   }
-
-
 }

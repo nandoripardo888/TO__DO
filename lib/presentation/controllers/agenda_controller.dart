@@ -40,6 +40,7 @@ class AgendaController extends ChangeNotifier {
 
   // Filtros
   UserMicrotaskStatus? _statusFilter;
+  String _searchQuery = '';
 
   // Stream subscription para atualizações em tempo real
   StreamSubscription<List<UserMicrotaskModel>>? _userMicrotasksSubscription;
@@ -176,21 +177,44 @@ class AgendaController extends ChangeNotifier {
     _safeNotifyListeners();
   }
 
+  /// Aplica filtro de busca por texto
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    _safeNotifyListeners();
+  }
+
   /// Limpa todos os filtros
   void clearFilters() {
     _statusFilter = null;
+    _searchQuery = '';
     _safeNotifyListeners();
   }
 
   /// Retorna a lista filtrada e ordenada de user microtasks
   /// Conforme RN-01.5: ordenação por status e data de atribuição
   List<UserMicrotaskModel> get filteredUserMicrotasks {
-    List<UserMicrotaskModel> filtered;
+    List<UserMicrotaskModel> filtered = List.from(_userMicrotasks);
 
-    if (_statusFilter == null) {
-      filtered = List.from(_userMicrotasks);
-    } else {
-      filtered = _userMicrotasks
+    // Aplicar filtro de busca por texto
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((um) {
+        final microtask = _microtasksCache[um.microtaskId];
+        final task = microtask != null ? _tasksCache[microtask.taskId] : null;
+        
+        final query = _searchQuery.toLowerCase();
+        final microtaskTitle = microtask?.title.toLowerCase() ?? '';
+        final microtaskDescription = microtask?.description.toLowerCase() ?? '';
+        final taskTitle = task?.title.toLowerCase() ?? '';
+        
+        return microtaskTitle.contains(query) || 
+               microtaskDescription.contains(query) ||
+               taskTitle.contains(query);
+      }).toList();
+    }
+
+    // Aplicar filtro de status
+    if (_statusFilter != null) {
+      filtered = filtered
           .where((um) => um.status == _statusFilter)
           .toList();
     }
@@ -309,6 +333,18 @@ class AgendaController extends ChangeNotifier {
     _errorMessage = null;
     _isLoading = false;
     _safeNotifyListeners();
+  }
+
+  /// Pausa as streams para economizar recursos quando a tela não está visível
+  void pauseStreams() {
+    _userMicrotasksSubscription?.pause();
+    print('AgendaController: streams pausadas');
+  }
+
+  /// Retoma as streams quando a tela fica visível novamente
+  void resumeStreams() {
+    _userMicrotasksSubscription?.resume();
+    print('AgendaController: streams retomadas');
   }
 
   @override

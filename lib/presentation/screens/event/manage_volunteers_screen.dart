@@ -24,7 +24,7 @@ class ManageVolunteersScreen extends StatefulWidget {
   State<ManageVolunteersScreen> createState() => _ManageVolunteersScreenState();
 }
 
-class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
+class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> with AutomaticKeepAliveClientMixin {
   EventModel? _event;
   List<UserModel> _volunteers = [];
   List<VolunteerProfileModel> _volunteerProfiles = [];
@@ -124,7 +124,12 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    
     if (_isLoading) {
       return const LoadingWidget(message: 'Carregando voluntários...');
     }
@@ -138,7 +143,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
       );
     }
 
-    final filteredVolunteers = _getFilteredVolunteers();
+    final filteredProfiles = _getFilteredProfiles();
 
     return Column(
       children: [
@@ -147,9 +152,9 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
 
         // Lista de voluntários
         Expanded(
-          child: filteredVolunteers.isEmpty
+          child: filteredProfiles.isEmpty
               ? _buildEmptyState()
-              : _buildVolunteersList(filteredVolunteers),
+              : _buildVolunteersList(filteredProfiles),
         ),
       ],
     );
@@ -270,7 +275,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
             Text(
               hasActiveFilter
                   ? 'Habilidades (${_selectedSkillsFilter.length})'
-                  : 'Filtrar por Habilidade',
+                  : 'Habilidades',
               style: TextStyle(
                 fontSize: 12,
                 color: hasActiveFilter
@@ -353,12 +358,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
     );
   }
 
-  Widget _buildVolunteersList(List<UserModel> volunteers) {
-    // Agora usamos os perfis diretamente (com dados denormalizados)
-    final profiles = _volunteerProfiles.where((profile) {
-      return _shouldShowVolunteer(profile);
-    }).toList();
-
+  Widget _buildVolunteersList(List<VolunteerProfileModel> profiles) {
     return ListView.builder(
       padding: const EdgeInsets.all(AppDimensions.paddingSm),
       itemCount: profiles.length,
@@ -389,30 +389,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
     );
   }
 
-  /// Verifica se um voluntário deve ser mostrado baseado nos filtros
-  bool _shouldShowVolunteer(VolunteerProfileModel profile) {
-    // Filtro por status
-    if (_filterStatus == 'available') {
-      final assignedCount = _getAssignedMicrotasksCount(profile.userId);
-      if (assignedCount > 0) return false;
-    } else if (_filterStatus == 'assigned') {
-      final assignedCount = _getAssignedMicrotasksCount(profile.userId);
-      if (assignedCount == 0) return false;
-    }
 
-    // Filtro por habilidades
-    if (!_hasRequiredSkills(profile)) return false;
-
-    return true;
-  }
-
-  /// Verifica se o perfil tem as habilidades necessárias (filtro)
-  bool _hasRequiredSkills(VolunteerProfileModel profile) {
-    if (_selectedSkillsFilter.isEmpty) return true;
-    return _selectedSkillsFilter.every(
-      (skill) => profile.skills.contains(skill),
-    );
-  }
 
   /// Exibe um diálogo com as ações disponíveis para um voluntário.
   void _showVolunteerActionsDialog(
@@ -619,24 +596,14 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
     );
   }
 
-  List<UserModel> _getFilteredVolunteers() {
-    // Agora criamos UserModels a partir dos perfis (dados denormalizados)
-    List<UserModel> filtered = _volunteerProfiles.map((profile) {
-      return UserModel(
-        id: profile.userId,
-        name: profile.userName,
-        email: profile.userEmail,
-        photoUrl: profile.userPhotoUrl,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-    }).toList();
+  List<VolunteerProfileModel> _getFilteredProfiles() {
+    List<VolunteerProfileModel> filtered = List.from(_volunteerProfiles);
 
     // Aplicar filtro de busca
     if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((volunteer) {
-        final name = volunteer.name.toLowerCase();
-        final email = volunteer.email.toLowerCase();
+      filtered = filtered.where((profile) {
+        final name = profile.userName.toLowerCase();
+        final email = profile.userEmail.toLowerCase();
         final query = _searchQuery.toLowerCase();
         return name.contains(query) || email.contains(query);
       }).toList();
@@ -645,19 +612,17 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
     // Aplicar filtro de status
     switch (_filterStatus) {
       case 'available':
-        // Filtrar voluntários disponíveis hoje
-        filtered = filtered.where((volunteer) {
-          final profile = _getVolunteerProfile(volunteer.id);
-          if (profile == null) return false;
-
-          final currentDay = _getCurrentDayString();
-          return profile.availableDays.contains(currentDay);
+        // Filtrar voluntários disponíveis (sem microtasks atribuídas)
+        filtered = filtered.where((profile) {
+          final assignedCount = _getAssignedMicrotasksCount(profile.userId);
+          return assignedCount == 0;
         }).toList();
         break;
       case 'assigned':
         // Filtrar voluntários com microtasks atribuídas
-        filtered = filtered.where((volunteer) {
-          return _getAssignedMicrotasksCount(volunteer.id) > 0;
+        filtered = filtered.where((profile) {
+          final assignedCount = _getAssignedMicrotasksCount(profile.userId);
+          return assignedCount > 0;
         }).toList();
         break;
       case 'all':
@@ -668,10 +633,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
 
     // Aplicar filtro por habilidades
     if (_selectedSkillsFilter.isNotEmpty) {
-      filtered = filtered.where((volunteer) {
-        final profile = _getVolunteerProfile(volunteer.id);
-        if (profile == null) return false;
-
+      filtered = filtered.where((profile) {
         // O voluntário deve possuir TODAS as habilidades selecionadas no filtro
         return _selectedSkillsFilter.every(
           (skill) => profile.skills.contains(skill),
@@ -758,9 +720,9 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
                       const SizedBox(height: 2),
                   itemBuilder: (context, index) {
                     final skill = _availableSkills[index];
-                    final isSelected = tempSelectedSkills.contains(skill);
                     return StatefulBuilder(
                       builder: (context, setModalState) {
+                        final isSelected = tempSelectedSkills.contains(skill);
                         return CheckboxListTile(
                           title: Text(skill),
                           value: isSelected,

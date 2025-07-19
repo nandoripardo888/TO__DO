@@ -21,7 +21,7 @@ class AgendaScreen extends StatefulWidget {
 }
 
 class _AgendaScreenState extends State<AgendaScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late AgendaController _agendaController;
   String? _currentUserId;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
@@ -32,7 +32,8 @@ class _AgendaScreenState extends State<AgendaScreen>
   @override
   void initState() {
     super.initState();
-    _agendaController = AgendaController();
+    // Obter o AgendaController fornecido pelo Provider
+    _agendaController = Provider.of<AgendaController>(context, listen: false);
     _reorderAnimationController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
@@ -47,7 +48,7 @@ class _AgendaScreenState extends State<AgendaScreen>
   @override
   void dispose() {
     _reorderAnimationController.dispose();
-    _agendaController.dispose();
+    // Não chamar dispose no _agendaController pois ele é gerenciado pelo Provider
     super.dispose();
   }
 
@@ -56,22 +57,26 @@ class _AgendaScreenState extends State<AgendaScreen>
     _currentUserId = authController.currentUser?.id;
 
     if (_currentUserId != null) {
-      _agendaController.loadAgenda(
-        userId: _currentUserId!,
-        eventId: widget.eventId,
-      );
+      // Adia a chamada para após o build para evitar setState durante build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _agendaController.loadAgenda(
+          userId: _currentUserId!,
+          eventId: widget.eventId,
+        );
+      });
     }
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _agendaController,
-      child: Consumer<AgendaController>(
-        builder: (context, controller, child) {
-          return _buildBody(controller);
-        },
-      ),
+    super.build(context);
+    return Consumer<AgendaController>(
+      builder: (context, controller, child) {
+        return _buildBody(controller);
+      },
     );
   }
 
@@ -95,17 +100,16 @@ class _AgendaScreenState extends State<AgendaScreen>
   Widget _buildLoadedContent(AgendaController controller) {
     final userMicrotasks = controller.filteredUserMicrotasks;
 
-    if (userMicrotasks.isEmpty) {
-      return _buildEmptyState();
-    }
-
     return Column(
       children: [
+        _buildSearchBar(controller),
         _buildFilterBar(controller),
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => _refreshAgenda(controller),
-            child: _buildMicrotasksList(userMicrotasks, controller),
+            child: userMicrotasks.isEmpty
+                ? _buildEmptyState()
+                : _buildMicrotasksList(userMicrotasks, controller),
           ),
         ),
       ],
@@ -138,6 +142,32 @@ class _AgendaScreenState extends State<AgendaScreen>
     );
   }
 
+  Widget _buildSearchBar(AgendaController controller) {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.paddingMd),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: Colors.grey[300]!, width: 1)),
+      ),
+      child: TextField(
+        onChanged: (value) {
+          controller.setSearchQuery(value);
+        },
+        decoration: InputDecoration(
+          hintText: 'Buscar microtask...',
+          prefixIcon: const Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingMd,
+            vertical: AppDimensions.paddingSm,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildFilterBar(AgendaController controller) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingMd),
@@ -147,10 +177,8 @@ class _AgendaScreenState extends State<AgendaScreen>
       ),
       child: Row(
         children: [
-          Icon(Icons.filter_list, color: Colors.grey[600], size: 20),
-          const SizedBox(width: AppDimensions.spacingSm),
           Text(
-            'Filtrar por status:',
+            'Filtrar:',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,

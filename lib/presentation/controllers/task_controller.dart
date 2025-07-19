@@ -590,4 +590,22 @@ class TaskController extends ChangeNotifier {
     clearFilters();
     _setState(TaskControllerState.initial);
   }
+
+  /// Pausa as streams para economizar recursos quando a tela não está visível
+  void pauseStreams() {
+    _tasksStreamSubscription?.pause();
+    for (final subscription in _userMicrotaskStreams.values) {
+      subscription.pause();
+    }
+    print('TaskController: streams pausadas');
+  }
+
+  /// Retoma as streams quando a tela fica visível novamente
+  void resumeStreams() {
+    _tasksStreamSubscription?.resume();
+    for (final subscription in _userMicrotaskStreams.values) {
+      subscription.resume();
+    }
+    print('TaskController: streams retomadas');
+  }
 }
