@@ -8,6 +8,7 @@ import '../../controllers/auth_controller.dart';
 import '../../controllers/event_controller.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
+import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/event/skill_chip.dart';
 
 /// Tela para participar de campanhas existentes via código/tag
@@ -60,8 +61,8 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Participar de campanha'),
+      appBar: const CustomAppBar(
+        title: 'Participar de campanha',
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
       ),

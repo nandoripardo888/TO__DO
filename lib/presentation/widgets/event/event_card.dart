@@ -27,7 +27,7 @@ class EventCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingMd),
+          padding: const EdgeInsets.all(AppDimensions.paddingSm),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -38,41 +38,27 @@ class EventCard extends StatelessWidget {
                     child: Text(
                       event.name,
                       style: const TextStyle(
-                        fontSize: AppDimensions.fontSizeLg,
+                        fontSize: AppDimensions.fontSizeMd,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
                       ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.spacingXs),
                   _buildStatusChip(),
                 ],
               ),
 
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.spacingXs),
 
-              // Descrição
-              if (event.description.isNotEmpty) ...[
-                Text(
-                  event.shortDescription,
-                  style: const TextStyle(
-                    fontSize: AppDimensions.fontSizeMd,
-                    color: AppColors.textSecondary,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: AppDimensions.spacingSm),
-              ],
-
-              // Localização
+              // Localização e participantes em uma linha
               Row(
                 children: [
                   const Icon(
                     Icons.location_on,
-                    size: 16,
+                    size: 14,
                     color: AppColors.textSecondary,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
@@ -87,40 +73,33 @@ class EventCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: AppDimensions.spacingSm),
-
-              // Papel do usuário e participantes
-              Row(
-                children: [
-                  _buildUserRoleChip(),
-                  const Spacer(),
+                  const SizedBox(width: AppDimensions.spacingSm),
                   _buildParticipantsInfo(),
                 ],
               ),
 
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.spacingXs),
 
-              // Tag da Campanha e data
+              // Papel do usuário, tag e data
               Row(
                 children: [
+                  _buildUserRoleChip(),
+                  const SizedBox(width: AppDimensions.spacingSm),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingSm,
-                      vertical: AppDimensions.paddingXs,
+                      horizontal: AppDimensions.paddingXs,
+                      vertical: 2,
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusSm,
+                        AppDimensions.radiusXs,
                       ),
                     ),
                     child: Text(
                       event.tag,
                       style: const TextStyle(
-                        fontSize: AppDimensions.fontSizeSm,
+                        fontSize: AppDimensions.fontSizeXs,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
                       ),
@@ -130,7 +109,7 @@ class EventCard extends StatelessWidget {
                   Text(
                     event.createdTimeAgo,
                     style: const TextStyle(
-                      fontSize: AppDimensions.fontSizeSm,
+                      fontSize: AppDimensions.fontSizeXs,
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -168,17 +147,17 @@ class EventCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingSm,
-        vertical: AppDimensions.paddingXs,
+        horizontal: AppDimensions.paddingXs,
+        vertical: 2,
       ),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXs),
       ),
       child: Text(
         text,
         style: TextStyle(
-          fontSize: AppDimensions.fontSizeSm,
+          fontSize: AppDimensions.fontSizeXs,
           fontWeight: FontWeight.w600,
           color: textColor,
         ),
@@ -222,22 +201,22 @@ class EventCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingSm,
-        vertical: AppDimensions.paddingXs,
+        horizontal: AppDimensions.paddingXs,
+        vertical: 2,
       ),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXs),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: textColor),
-          const SizedBox(width: AppDimensions.spacingXs),
+          Icon(icon, size: 12, color: textColor),
+          const SizedBox(width: 2),
           Text(
             text,
             style: TextStyle(
-              fontSize: AppDimensions.fontSizeSm,
+              fontSize: AppDimensions.fontSizeXs,
               fontWeight: FontWeight.w600,
               color: textColor,
             ),
@@ -251,12 +230,12 @@ class EventCard extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.people, size: 16, color: AppColors.textSecondary),
-        const SizedBox(width: AppDimensions.spacingXs),
+        const Icon(Icons.people, size: 14, color: AppColors.textSecondary),
+        const SizedBox(width: 2),
         Text(
           '${event.totalParticipants}',
           style: const TextStyle(
-            fontSize: AppDimensions.fontSizeSm,
+            fontSize: AppDimensions.fontSizeXs,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,
           ),

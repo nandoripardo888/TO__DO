@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../data/models/event_model.dart';
@@ -89,7 +90,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
     // Verifica se os providers estão disponíveis (só após o MultiProvider ser criado)
     try {
-      final authController = Provider.of<AuthController>(context, listen: false);
+      final authController = Provider.of<AuthController>(
+        context,
+        listen: false,
+      );
       final currentUserId = authController.currentUser?.id;
       final isVolunteer = _event?.isVolunteer(currentUserId ?? '') ?? false;
 
@@ -118,7 +122,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       }
 
       // Gerencia streams do TrackTasks
-      final taskController = Provider.of<TaskController>(context, listen: false);
+      final taskController = Provider.of<TaskController>(
+        context,
+        listen: false,
+      );
       if (_tabController!.index == trackTasksTabIndex) {
         // Ativa streams do TrackTasks
         taskController.resumeStreams();
@@ -233,9 +240,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         ChangeNotifierProvider<AgendaController>(
           create: (context) => AgendaController(),
         ),
-        ChangeNotifierProvider<TaskController>(
-          create: (context) => TaskController(),
-        ),
       ],
       child: Scaffold(
         backgroundColor: AppColors.background,
@@ -276,7 +280,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: _navigateToProfileScreen,
-            tooltip: 'Perfil',
           ),
       ],
     );
@@ -298,7 +301,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     ];
 
     return Container(
-      color: AppColors.primary,
+      decoration: const BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(AppDimensions.radiusLg),
+          bottomRight: Radius.circular(AppDimensions.radiusLg),
+        ),
+      ),
       child: TabBar(
         controller: _tabController!,
         indicatorColor: AppColors.textOnPrimary,
@@ -327,18 +336,40 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   }
 
   Widget _buildEventTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppDimensions.paddingLg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildEventInfoCard(),
-          const SizedBox(height: AppDimensions.spacingLg),
-          _buildEventStatsCard(),
-          const SizedBox(height: AppDimensions.spacingLg),
-          _buildEventCodeCard(),
-        ],
-      ),
+    return Stack(
+      children: [
+        // Arte SVG no canto inferior esquerdo (primeiro para ficar no fundo)
+        Positioned(
+          bottom: 0,
+          left: 0,
+          child: Opacity(
+            opacity: 0.3,
+            child: SvgPicture.asset(
+              'assets/ilustration-brazilian-productivity-app-background-.svg',
+              width: 250,
+              height: 250,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+        // Conteúdo principal
+        SingleChildScrollView(
+          padding: const EdgeInsets.all(AppDimensions.paddingLg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildEventInfoCard(),
+              const SizedBox(height: AppDimensions.spacingLg),
+              _buildEventStatsCard(),
+              const SizedBox(height: AppDimensions.spacingLg),
+              _buildEventCodeCard(),
+              const SizedBox(
+                height: 100,
+              ), // Espaço extra para evitar sobreposição
+            ],
+          ),
+        ),
+      ],
     );
   }
 

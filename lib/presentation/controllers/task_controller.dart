@@ -397,6 +397,46 @@ class TaskController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Aplica filtro de status de task
+  void setStatusFilter(TaskStatus? status) {
+    _statusFilter = status;
+    notifyListeners();
+  }
+
+  /// Aplica filtro de prioridade de task
+  void setPriorityFilter(TaskPriority? priority) {
+    _priorityFilter = priority;
+    notifyListeners();
+  }
+
+  /// Aplica filtro de criador de task
+  void setCreatorFilter(String? creator) {
+    _creatorFilter = creator;
+    notifyListeners();
+  }
+
+  /// Retorna tasks filtradas baseado nos filtros ativos
+  List<TaskModel> getFilteredTasks() {
+    List<TaskModel> filtered = List.from(_tasks);
+
+    // Aplicar filtro de status
+    if (_statusFilter != null) {
+      filtered = filtered.where((task) => task.status == _statusFilter).toList();
+    }
+
+    // Aplicar filtro de prioridade
+    if (_priorityFilter != null) {
+      filtered = filtered.where((task) => task.priority == _priorityFilter).toList();
+    }
+
+    // Aplicar filtro de criador
+    if (_creatorFilter != null && _creatorFilter!.isNotEmpty) {
+      filtered = filtered.where((task) => task.createdBy == _creatorFilter).toList();
+    }
+
+    return filtered;
+  }
+
   /// Busca estatísticas das tasks
   Future<Map<String, dynamic>> getTaskStatistics(String eventId) async {
     try {
@@ -575,22 +615,6 @@ class TaskController extends ChangeNotifier {
     _userMicrotaskStreams.clear();
   }
   
-  @override
-  void dispose() {
-    _cancelAllStreams();
-    super.dispose();
-  }
-
-  /// Limpa todos os dados
-  void clear() {
-    _cancelAllStreams();
-    _tasks.clear();
-    _microtasksByTask.clear();
-    _userMicrotasksByMicrotask.clear();
-    clearFilters();
-    _setState(TaskControllerState.initial);
-  }
-
   /// Pausa as streams para economizar recursos quando a tela não está visível
   void pauseStreams() {
     _tasksStreamSubscription?.pause();
@@ -608,4 +632,21 @@ class TaskController extends ChangeNotifier {
     }
     print('TaskController: streams retomadas');
   }
+
+  @override
+  void dispose() {
+    _cancelAllStreams();
+    super.dispose();
+  }
+
+  /// Limpa todos os dados
+  void clear() {
+    _cancelAllStreams();
+    _tasks.clear();
+    _microtasksByTask.clear();
+    _userMicrotasksByMicrotask.clear();
+    clearFilters();
+    _setState(TaskControllerState.initial);
+  }
+
 }

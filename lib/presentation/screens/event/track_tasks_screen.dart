@@ -10,7 +10,7 @@ import '../../controllers/event_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/custom_app_bar.dart';
-import '../../widgets/common/skill_chip.dart';
+
 import '../../widgets/task/task_card.dart';
 import '../../widgets/task/microtask_card.dart';
 import '../../widgets/task/task_progress_widget.dart';
@@ -42,6 +42,108 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
     super.dispose();
   }
 
+  Widget _buildFilterBar(TaskController controller) {
+    return Row(
+      children: [
+        Text(
+          'Filtros:',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
+        ),
+        const SizedBox(width: AppDimensions.spacingMd),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFilterChip(
+                  controller,
+                  'Todos',
+                  null,
+                  controller.statusFilter == null,
+                  isStatus: true,
+                ),
+                const SizedBox(width: 8),
+                _buildFilterChip(
+                  controller,
+                  'Pendente',
+                  TaskStatus.pending,
+                  controller.statusFilter == TaskStatus.pending,
+                  isStatus: true,
+                ),
+                const SizedBox(width: 8),
+                _buildFilterChip(
+                  controller,
+                  'Em Andamento',
+                  TaskStatus.inProgress,
+                  controller.statusFilter == TaskStatus.inProgress,
+                  isStatus: true,
+                ),
+                const SizedBox(width: 8),
+                _buildFilterChip(
+                  controller,
+                  'Concluída',
+                  TaskStatus.completed,
+                  controller.statusFilter == TaskStatus.completed,
+                  isStatus: true,
+                ),
+                const SizedBox(width: 16),
+                _buildFilterChip(
+                  controller,
+                  'Baixa',
+                  TaskPriority.low,
+                  controller.priorityFilter == TaskPriority.low,
+                  isStatus: false,
+                ),
+                const SizedBox(width: 8),
+                _buildFilterChip(
+                  controller,
+                  'Média',
+                  TaskPriority.medium,
+                  controller.priorityFilter == TaskPriority.medium,
+                  isStatus: false,
+                ),
+                const SizedBox(width: 8),
+                _buildFilterChip(
+                  controller,
+                  'Alta',
+                  TaskPriority.high,
+                  controller.priorityFilter == TaskPriority.high,
+                  isStatus: false,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterChip(
+    TaskController controller,
+    String label,
+    dynamic value,
+    bool isSelected, {
+    required bool isStatus,
+  }) {
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (isStatus) {
+          controller.setStatusFilter(selected ? value as TaskStatus? : null);
+        } else {
+          controller.setPriorityFilter(selected ? value as TaskPriority? : null);
+        }
+      },
+      selectedColor: AppColors.primary.withOpacity(0.2),
+      checkmarkColor: AppColors.primary,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -53,7 +155,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
         }
 
         final allTasks = taskController.tasks;
-        final filteredTasks = _getFilteredTasks(allTasks);
+        final filteredTasks = _getFilteredTasks(allTasks, taskController);
 
         return Column(
           children: [
@@ -68,7 +170,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
                         children: [
                           _buildHeader(allTasks),
                           const SizedBox(height: AppDimensions.spacingLg),
-                          _buildTasksList(allTasks, taskController),
+                          _buildTasksList(filteredTasks, taskController),
                         ],
                       ),
                     ),
@@ -442,10 +544,11 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
     );
   }
 
-  List<TaskModel> _getFilteredTasks(List<TaskModel> tasks) {
-    List<TaskModel> filtered = List.from(tasks);
+  List<TaskModel> _getFilteredTasks(List<TaskModel> tasks, TaskController controller) {
+    // Primeiro aplica os filtros do controller
+    List<TaskModel> filtered = controller.getFilteredTasks();
 
-    // Aplicar filtro de busca
+    // Depois aplica o filtro de busca
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((task) {
         final title = task.title.toLowerCase();
@@ -458,36 +561,42 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
   }
 
   Widget _buildSearchAndFilters() {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingMd),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: Column(
-        children: [
-          // Barra de busca
-          TextField(
-            onChanged: (value) {
-              setStateIfMounted(() {
-                _searchQuery = value;
-              });
-            },
-            decoration: InputDecoration(
-              hintText: 'Buscar tasks...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingMd,
-                vertical: AppDimensions.paddingSm,
-              ),
-            ),
+    return Consumer<TaskController>(
+      builder: (context, controller, child) {
+        return Container(
+          padding: const EdgeInsets.all(AppDimensions.paddingMd),
+          decoration: const BoxDecoration(
+            color: AppColors.background,
+            border: Border(bottom: BorderSide(color: AppColors.border)),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
-        ],
-      ),
+          child: Column(
+            children: [
+              // Barra de busca
+              TextField(
+                onChanged: (value) {
+                  setStateIfMounted(() {
+                    _searchQuery = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: 'Buscar tasks...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingMd,
+                    vertical: AppDimensions.paddingSm,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingMd),
+              // Filtros
+              _buildFilterBar(controller),
+            ],
+          ),
+        );
+      },
     );
   }
 

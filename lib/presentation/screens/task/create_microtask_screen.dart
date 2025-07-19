@@ -98,7 +98,7 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Criar Microtask'),
+      appBar: const RoundedCustomAppBar(title: 'Criar Microtask'),
       body: Consumer2<AuthController, TaskController>(
         builder: (context, authController, taskController, child) {
           if (taskController.isLoading) {

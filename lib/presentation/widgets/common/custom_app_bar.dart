@@ -55,6 +55,75 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           : null),
       actions: actions,
       bottom: bottom,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+    );
+  }
+
+  @override
+  Size get preferredSize => Size.fromHeight(
+        kToolbarHeight + (bottom?.preferredSize.height ?? 0),
+      );
+}
+
+/// AppBar customizada com cantos arredondados para telas específicas
+class RoundedCustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+  final List<Widget>? actions;
+  final Widget? leading;
+  final bool centerTitle;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final double? elevation;
+  final bool automaticallyImplyLeading;
+  final PreferredSizeWidget? bottom;
+  final VoidCallback? onBackPressed;
+  final IconData? backIcon;
+
+  const RoundedCustomAppBar({
+    super.key,
+    required this.title,
+    this.actions,
+    this.leading,
+    this.centerTitle = true,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.elevation,
+    this.automaticallyImplyLeading = true,
+    this.bottom,
+    this.onBackPressed,
+    this.backIcon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: foregroundColor ?? AppColors.textOnPrimary,
+        ),
+      ),
+      centerTitle: centerTitle,
+      backgroundColor: backgroundColor ?? AppColors.primary,
+      foregroundColor: foregroundColor ?? AppColors.textOnPrimary,
+      elevation: elevation ?? 2,
+      automaticallyImplyLeading: automaticallyImplyLeading,
+      leading: leading ?? (automaticallyImplyLeading && Navigator.canPop(context)
+          ? IconButton(
+              icon: Icon(backIcon ?? Icons.arrow_back),
+              onPressed: onBackPressed ?? () => Navigator.pop(context),
+            )
+          : null),
+      actions: actions,
+      bottom: bottom,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(AppDimensions.radiusMd),
+          bottomRight: Radius.circular(AppDimensions.radiusMd),
+        ),
+      ),
     );
   }
 

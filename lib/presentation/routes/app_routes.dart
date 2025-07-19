@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/models/event_model.dart';
+import 'package:flutter/material.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/home/home_screen.dart';
@@ -8,6 +8,8 @@ import '../screens/event/join_event_screen.dart';
 import '../screens/event/event_details_screen.dart';
 import '../screens/task/create_task_screen.dart';
 import '../screens/task/create_microtask_screen.dart';
+import '../widgets/common/custom_app_bar.dart';
+import '../../data/models/event_model.dart';
 
 /// Classe responsável por definir todas as rotas da aplicação
 class AppRoutes {
@@ -192,8 +194,8 @@ class NotFoundScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Página não encontrada')),
+    return const Scaffold(
+      appBar: CustomAppBar(title: 'Página não encontrada'),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

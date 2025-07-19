@@ -5,6 +5,7 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/event_controller.dart';
 import '../../widgets/common/custom_button.dart';
+import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/event/event_card.dart';
 import '../../routes/app_routes.dart';
 
@@ -70,14 +71,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppColors.primary,
-      foregroundColor: AppColors.textOnPrimary,
-      elevation: 0,
-      title: const Text(
-        'ConTask',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
+    return CustomAppBar(
+      title: 'ConTask',
       actions: [
         Consumer<AuthController>(
           builder: (context, authController, child) {
@@ -231,14 +226,20 @@ class _HomeScreenState extends State<HomeScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingLg),
-            CustomButton(
-              text: 'Criar campanha',
-              onPressed: () => _navigateToCreateEvent(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+              child: CustomButton(
+                text: 'Criar campanha',
+                onPressed: () => _navigateToCreateEvent(),
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingSm),
-            CustomButton.outline(
-              text: 'Participar de campanha',
-              onPressed: () => _navigateToJoinEvent(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+              child: CustomButton.outline(
+                text: 'Participar de campanha',
+                onPressed: () => _navigateToJoinEvent(),
+              ),
             ),
           ],
         ),
@@ -254,6 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
           child: EventCard(
             event: event,
+            currentUserId: Provider.of<AuthController>(context, listen: false).currentUser?.id,
             onTap: () => _navigateToEventDetails(event.id),
           ),
         );

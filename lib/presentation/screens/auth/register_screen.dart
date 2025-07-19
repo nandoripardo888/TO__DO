@@ -7,7 +7,7 @@ import '../../../core/utils/validators.dart';
 import '../../controllers/auth_controller.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
-
+import '../../widgets/common/custom_app_bar.dart';
 /// Tela de cadastro conforme especificado no SPEC_GERAL.md
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -44,22 +44,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
+      appBar: const CustomAppBar(
+        title: AppStrings.register,
         backgroundColor: AppColors.background,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          AppStrings.register,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: AppDimensions.fontSizeXl,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
       ),
       body: SafeArea(
         child: Consumer<AuthController>(

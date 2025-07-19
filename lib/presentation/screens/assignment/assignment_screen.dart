@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
-import '../../../data/models/user_model.dart';
-import '../../../data/models/volunteer_profile_model.dart';
 import '../../../data/models/microtask_model.dart';
 import '../../../data/models/task_model.dart';
+import '../../../data/models/user_model.dart';
+import '../../../data/models/volunteer_profile_model.dart';
 import '../../controllers/task_controller.dart';
 import '../../widgets/common/loading_widget.dart';
+import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/assignment/microtask_assignment_card.dart';
 import '../../widgets/assignment/volunteer_header.dart';
 import '../../widgets/assignment/microtask_assignment_card.dart';
 import '../../widgets/assignment/empty_microtasks_widget.dart';
@@ -147,8 +149,8 @@ class _AssignmentScreenState extends State<AssignmentScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Atribuir Microtask'),
+      appBar: const CustomAppBar(
+        title: 'Atribuir Microtask',
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),

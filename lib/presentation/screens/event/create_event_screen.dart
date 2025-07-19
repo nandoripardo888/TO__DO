@@ -7,6 +7,7 @@ import '../../controllers/auth_controller.dart';
 import '../../controllers/event_controller.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
+import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/event/skill_chip.dart';
 
 /// Tela para criação e edição de campanhas
@@ -106,8 +107,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(_isEditMode ? 'Editar campanha' : 'Criar campanha'),
+      appBar: RoundedCustomAppBar(
+        title: _isEditMode ? 'Editar campanha' : 'Criar campanha',
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
       ),

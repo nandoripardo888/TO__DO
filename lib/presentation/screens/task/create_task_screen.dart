@@ -37,7 +37,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Criar Task'),
+      appBar: const RoundedCustomAppBar(title: 'Criar Task'),
       body: Consumer2<AuthController, TaskController>(
         builder: (context, authController, taskController, child) {
           if (taskController.isLoading) {

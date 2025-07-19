@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/constants/app_strings.dart';
@@ -34,48 +35,186 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Consumer<AuthController>(
           builder: (context, authController, child) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.paddingLg),
-              child: Column(
+            if (isLandscape && screenWidth > 800) {
+               // Layout para telas maiores em landscape
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: Row(
+                      children: [
+                        // Ilustração na lateral esquerda (60%)
+                        Expanded(
+                          flex: 6,
+                          child: Container(
+                            padding: const EdgeInsets.only(
+                              left: AppDimensions.paddingLg,
+                              top: AppDimensions.paddingLg,
+                              bottom: AppDimensions.paddingLg,
+                            ),
+                            child: Center(
+                              child: Opacity(
+                                opacity: 0.8,
+                                child: SvgPicture.asset(
+                                  'assets/20250719_1213_Volunteer Aid Collaboration_simple_compose_01k0hq9640ftgv3zp47z8wjzzq.svg',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Componentes de login na direita (40%)
+                        Expanded(
+                          flex: 4,
+                          child: Container(
+                            padding: const EdgeInsets.only(
+                              right: AppDimensions.paddingLg,
+                              top: AppDimensions.paddingLg,
+                              bottom: AppDimensions.paddingLg,
+                            ),
+                            child: Center(
+                              child: SingleChildScrollView(
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 400),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // Logo centralizado
+                                      _buildLogo(),
+                                      
+                                      const SizedBox(height: AppDimensions.spacingXxl),
+                                      
+                                      // Formulário de login
+                                      _buildLoginForm(authController),
+                                      
+                                      const SizedBox(height: AppDimensions.spacingLg),
+                                      
+                                      // Botão "Entrar com Google"
+                                      _buildGoogleSignInButton(authController),
+                                      
+                                      const SizedBox(height: AppDimensions.spacingLg),
+                                      
+                                      // Link "Criar conta"
+                                      _buildCreateAccountLink(),
+                                      
+                                      const SizedBox(height: AppDimensions.spacingMd),
+                                      
+                                      // Link "Esqueci minha senha"
+                                      _buildForgotPasswordLink(authController),
+                                      
+                                      // Mensagem de erro
+                                      if (authController.errorMessage != null) ...[
+                                        const SizedBox(height: AppDimensions.spacingMd),
+                                        _buildErrorMessage(authController.errorMessage!),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+            } else {
+              // Layout para mobile/portrait (layout original com ilustração de fundo)
+              return Stack(
                 children: [
-                  const SizedBox(height: AppDimensions.spacingXxl),
-
-                  // Logo centralizado
-                  _buildLogo(),
-
-                  const SizedBox(height: AppDimensions.spacingXxl),
-
-                  // Formulário de login
-                  _buildLoginForm(authController),
-
-                  const SizedBox(height: AppDimensions.spacingLg),
-
-                  // Botão "Entrar com Google"
-                  _buildGoogleSignInButton(authController),
-
-                  const SizedBox(height: AppDimensions.spacingLg),
-
-                  // Link "Criar conta"
-                  _buildCreateAccountLink(),
-
-                  const SizedBox(height: AppDimensions.spacingMd),
-
-                  // Link "Esqueci minha senha"
-                  _buildForgotPasswordLink(authController),
-
-                  // Mensagem de erro
-                  if (authController.errorMessage != null) ...[
-                    const SizedBox(height: AppDimensions.spacingMd),
-                    _buildErrorMessage(authController.errorMessage!),
-                  ],
+                  // Ilustração de fundo centralizada com efeito de esfumaçamento nas bordas
+                  Center(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 2.4,
+                      height: (MediaQuery.of(context).size.width * 2.4) * (9/16),
+                      child: ShaderMask(
+                         shaderCallback: (Rect bounds) {
+                           return LinearGradient(
+                             begin: Alignment.centerLeft,
+                             end: Alignment.centerRight,
+                             colors: const [
+                               Colors.transparent,
+                               Colors.white,
+                               Colors.white,
+                               Colors.transparent,
+                             ],
+                             stops: const [0.0, 0.2, 0.8, 1.0],
+                           ).createShader(bounds);
+                         },
+                         blendMode: BlendMode.dstIn,
+                         child: ShaderMask(
+                           shaderCallback: (Rect bounds) {
+                             return RadialGradient(
+                               center: Alignment.center,
+                               radius: 0.8,
+                               colors: const [
+                                 Colors.white,
+                                 Colors.white,
+                                 Colors.transparent,
+                               ],
+                               stops: const [0.0, 0.6, 1.0],
+                             ).createShader(bounds);
+                           },
+                           blendMode: BlendMode.dstIn,
+                           child: Opacity(
+                             opacity: 0.3,
+                             child: SvgPicture.asset(
+                               'assets/20250719_1213_Volunteer Aid Collaboration_simple_compose_01k0hq9640ftgv3zp47z8wjzzq.svg',
+                               fit: BoxFit.contain,
+                             ),
+                           ),
+                         ),
+                       ),
+                     ),
+                   ),
+                  // Conteúdo principal
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppDimensions.paddingLg),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: AppDimensions.spacingXxl),
+                        
+                        // Logo centralizado
+                        _buildLogo(),
+                        
+                        const SizedBox(height: AppDimensions.spacingXxl),
+                        
+                        // Formulário de login
+                        _buildLoginForm(authController),
+                        
+                        const SizedBox(height: AppDimensions.spacingLg),
+                        
+                        // Botão "Entrar com Google"
+                        _buildGoogleSignInButton(authController),
+                        
+                        const SizedBox(height: AppDimensions.spacingLg),
+                        
+                        // Link "Criar conta"
+                        _buildCreateAccountLink(),
+                        
+                        const SizedBox(height: AppDimensions.spacingMd),
+                        
+                        // Link "Esqueci minha senha"
+                        _buildForgotPasswordLink(authController),
+                        
+                        // Mensagem de erro
+                        if (authController.errorMessage != null) ...[
+                          const SizedBox(height: AppDimensions.spacingMd),
+                          _buildErrorMessage(authController.errorMessage!),
+                        ],
+                      ],
+                    ),
+                  ),
                 ],
-              ),
-            );
+              );
+            }
           },
         ),
       ),
@@ -100,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
           child: const Icon(
-            Icons.task_alt,
+            Icons.volunteer_activism,
             size: 60,
             color: AppColors.textOnPrimary,
           ),
@@ -178,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const Text(
           AppStrings.dontHaveAccount,
           style: TextStyle(
-            color: AppColors.textSecondary,
+            color: Color.fromARGB(255, 0, 0, 0),
             fontSize: AppDimensions.fontSizeMd,
           ),
         ),

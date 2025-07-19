@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
-import '../../../data/models/volunteer_profile_model.dart';
 import '../../../data/models/event_model.dart';
+import '../../../data/models/volunteer_profile_model.dart';
+import '../../controllers/auth_controller.dart';
 import '../../controllers/event_controller.dart';
-
-import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
+import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/common/loading_widget.dart';
 import '../../widgets/event/skill_chip.dart';
 
 /// Tela de perfil de voluntário baseada exatamente no layout da join_event_screen.dart
@@ -179,28 +180,19 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
 
   /// Constrói o AppBar baseado no modo atual
   PreferredSizeWidget _buildAppBar() {
-    return AppBar(
+    return RoundedCustomAppBar(
+      title: _isEditMode ? 'Editar Perfil' : 'Perfil',
       backgroundColor: AppColors.primary,
       foregroundColor: AppColors.textOnPrimary,
-      title: Text(
-        _isEditMode ? 'Editar Perfil' : 'Perfil',
-        style: const TextStyle(
-          fontSize: AppDimensions.fontSizeLg,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () {
-          if (_isEditMode) {
-            // Se estiver editando, cancela as alterações e volta
-            _cancelChanges();
-          } else {
-            // Se estiver visualizando, volta para a tela anterior
-            Navigator.of(context).pop();
-          }
-        },
-      ),
+      onBackPressed: () {
+        if (_isEditMode) {
+          // Se estiver editando, cancela as alterações e volta
+          _cancelChanges();
+        } else {
+          // Se estiver visualizando, volta para a tela anterior
+          Navigator.of(context).pop();
+        }
+      },
     );
   }
 

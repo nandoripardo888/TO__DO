@@ -50,6 +50,7 @@ dependencies:
   cached_network_image: ^3.2.3
   intl: ^0.18.1
   uuid: ^3.0.7
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   flutter_test:
@@ -74,7 +75,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - assets/ilustration-brazilian-productivity-app-background-.svg
+    - assets/20250719_1213_Volunteer Aid Collaboration_simple_compose_01k0hq9640ftgv3zp47z8wjzzq.svg
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
