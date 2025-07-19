@@ -58,7 +58,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     int count = 2; // Evento + Acompanhar (sempre visíveis)
     if (isVolunteer) count++; // AGENDA (RN-01.2: apenas para voluntários)
     if (isManager) count++; // Voluntários
-    if (isVolunteer) count++; // Meus Dados
+    if (isVolunteer) count++; // Perfil
 
     return count;
   }
@@ -209,12 +209,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     final isVolunteer = _event!.isVolunteer(currentUserId ?? '');
 
     // REQ-02: Constrói lista de tabs dinamicamente baseada nas permissões
-    // RN-01.1: Ordem das tabs: "Evento" → "AGENDA" → "Meus Dados" → "Acompanhar"
+    // RN-01.1: Ordem das tabs: "Evento" → "AGENDA" → "Perfil" → "Acompanhar"
     final tabs = <Widget>[
       const Tab(icon: Icon(Icons.info_outline), text: 'Evento'),
       if (isVolunteer) const Tab(icon: Icon(Icons.assignment), text: 'Agenda'),
       if (isManager) const Tab(icon: Icon(Icons.people), text: 'Voluntários'),
-      if (isVolunteer) const Tab(icon: Icon(Icons.person), text: 'Meus Dados'),
+      if (isVolunteer) const Tab(icon: Icon(Icons.person), text: 'Perfil'),
       const Tab(icon: Icon(Icons.track_changes), text: 'Tasks'),
     ];
 
@@ -281,7 +281,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return ManageVolunteersScreen(eventId: widget.eventId);
   }
 
-  /// REQ-02: Nova aba "Meus Dados" para gerenciamento do perfil de voluntário
+  /// REQ-02: Nova aba "Perfil" para gerenciamento do perfil de voluntário
   Widget _buildMyDataTab() {
     final authController = Provider.of<AuthController>(context, listen: false);
     final currentUserId = authController.currentUser?.id;
@@ -607,7 +607,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return _tabController?.index == 0;
   }
 
-  /// Verifica se a aba atual é a aba "Meus Dados"
+  /// Verifica se a aba atual é a aba "Perfil"
   bool _isCurrentTabMyData() {
     final authController = Provider.of<AuthController>(context, listen: false);
     final currentUserId = authController.currentUser?.id;
@@ -618,7 +618,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
     final currentIndex = _tabController?.index ?? -1;
 
-    // Calcula o índice esperado da aba "Meus Dados"
+    // Calcula o índice esperado da aba "Perfil"
     int expectedIndex = 1; // Após "Evento"
     if (isVolunteer) expectedIndex++; // Se tem "AGENDA", incrementa
     if (isManager) expectedIndex++; // Se tem "Voluntários", incrementa
@@ -673,7 +673,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     final isManager = _event?.isManager(currentUserId ?? '') ?? false;
     final isVolunteer = _event?.isVolunteer(currentUserId ?? '') ?? false;
 
-    // Mostra FAB se for gerenciador OU voluntário (para aba "Meus Dados")
+    // Mostra FAB se for gerenciador OU voluntário (para aba "Perfil")
     if (!isManager && !isVolunteer) return null;
 
     // Aba "Evento": mostra botão de edição + botão de adicionar tasks (apenas para gerenciadores)
@@ -711,7 +711,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       }
     }
 
-    // Aba "Meus Dados": mostra apenas botão de edição do perfil
+    // Aba "Perfil": mostra apenas botão de edição do perfil
     if (_isCurrentTabMyData()) {
       return FloatingActionButton(
         heroTag: "edit_profile_fab",

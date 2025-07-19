@@ -34,13 +34,9 @@ class _StatusStepperState extends State<StatusStepper>
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -56,7 +52,8 @@ class _StatusStepperState extends State<StatusStepper>
         Row(
           children: [
             _buildStep(
-              stepNumber: null, // Não é mais necessário, mas mantido para compatibilidade
+              stepNumber:
+                  null, // Não é mais necessário, mas mantido para compatibilidade
               status: UserMicrotaskStatus.assigned,
               label: 'Atribuída',
               isFirst: true,
@@ -130,20 +127,25 @@ class _StatusStepperState extends State<StatusStepper>
                     height: 32,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isActive
-                          ? AppColors.success
-                          : AppColors.disabled,
+                      color: isActive ? AppColors.success : AppColors.disabled,
                       border: Border.all(
-                        color: isActive ? AppColors.success : AppColors.disabled,
+                        color: isActive
+                            ? AppColors.success
+                            : AppColors.disabled,
                         width: 2,
                       ),
                       boxShadow: isInteractive && !_isLoading
                           ? [
                               BoxShadow(
-                                color: (isActive ? AppColors.success : AppColors.disabled)
-                                    .withOpacity(0.3),
+                                color:
+                                    (isActive
+                                            ? AppColors.success
+                                            : AppColors.disabled)
+                                        .withOpacity(0.3),
                                 blurRadius: _animatingStatus == status ? 8 : 4,
-                                spreadRadius: _animatingStatus == status ? 2 : 0,
+                                spreadRadius: _animatingStatus == status
+                                    ? 2
+                                    : 0,
                               ),
                             ]
                           : null,
@@ -231,7 +233,8 @@ class _StatusStepperState extends State<StatusStepper>
     if (status == UserMicrotaskStatus.inProgress) {
       return widget.currentStatus == UserMicrotaskStatus.assigned ||
           widget.currentStatus == UserMicrotaskStatus.inProgress ||
-          widget.currentStatus == UserMicrotaskStatus.completed; // Permite regressão
+          widget.currentStatus ==
+              UserMicrotaskStatus.completed; // Permite regressão
     }
 
     if (status == UserMicrotaskStatus.completed) {
@@ -275,6 +278,23 @@ class _StatusStepperState extends State<StatusStepper>
     if (tappedStatus == UserMicrotaskStatus.assigned) {
       // Regressão para assigned (apenas de in_progress)
       if (widget.currentStatus == UserMicrotaskStatus.inProgress) {
+        // Solicitar confirmação do usuário
+        final bool? confirmed = await ConfirmationDialog.show(
+          context: context,
+          title: 'Voltar para Atribuída',
+          content:
+              'Tem certeza que deseja voltar esta microtarefa para o status "Atribuída"? O progresso de início será removido.',
+          confirmText: 'Confirmar',
+          cancelText: 'Cancelar',
+          icon: Icons.warning,
+          iconColor: AppColors.warning,
+          confirmButtonColor: AppColors.warning,
+        );
+
+        if (confirmed != true) {
+          return; // Usuário cancelou a operação
+        }
+
         newStatus = UserMicrotaskStatus.assigned;
       } else {
         return; // Não permite outras transições para assigned
@@ -282,8 +302,41 @@ class _StatusStepperState extends State<StatusStepper>
     } else if (tappedStatus == UserMicrotaskStatus.inProgress) {
       if (widget.currentStatus == UserMicrotaskStatus.assigned) {
         // Progressão para in_progress
+        // Solicitar confirmação do usuário
+        final bool? confirmed = await ConfirmationDialog.show(
+          context: context,
+          title: 'Iniciar Microtarefa',
+          content:
+              'Tem certeza que deseja iniciar esta microtarefa? Isso indicará que você começou a trabalhar nela.',
+          confirmText: 'Confirmar',
+          cancelText: 'Cancelar',
+          icon: Icons.play_circle,
+          iconColor: AppColors.success,
+          confirmButtonColor: AppColors.success,
+        );
+
+        if (confirmed != true) {
+          return; // Usuário cancelou a operação
+        }
+
         newStatus = UserMicrotaskStatus.inProgress;
       } else if (widget.currentStatus == UserMicrotaskStatus.completed) {
+        // solicitar confirmação do usuário
+        final bool? confirmed = await ConfirmationDialog.show(
+          context: context,
+          title: 'Voltar para Em Andamento',
+          content:
+              'Tem certeza que deseja voltar esta microtarefa para o status "Em Andamento"?',
+          confirmText: 'Confirmar',
+          cancelText: 'Cancelar',
+          icon: Icons.warning,
+          iconColor: AppColors.warning,
+          confirmButtonColor: AppColors.warning,
+        );
+        if (confirmed != true) {
+          return; // Usuário cancelou a operação
+        }
+
         // Regressão de completed para in_progress
         newStatus = UserMicrotaskStatus.inProgress;
       } else if (widget.currentStatus == UserMicrotaskStatus.inProgress) {
@@ -292,18 +345,19 @@ class _StatusStepperState extends State<StatusStepper>
         final bool? confirmed = await ConfirmationDialog.show(
           context: context,
           title: 'Voltar para Atribuída',
-          content: 'Tem certeza que deseja voltar esta microtarefa para o status "Atribuída"? O progresso de início será removido.',
+          content:
+              'Tem certeza que deseja voltar esta microtarefa para o status "Atribuída"? O progresso de início será removido.',
           confirmText: 'Confirmar',
           cancelText: 'Cancelar',
           icon: Icons.warning,
           iconColor: AppColors.warning,
           confirmButtonColor: AppColors.warning,
         );
-        
+
         if (confirmed != true) {
           return; // Usuário cancelou a operação
         }
-        
+
         newStatus = UserMicrotaskStatus.assigned;
       } else {
         return;
@@ -311,6 +365,23 @@ class _StatusStepperState extends State<StatusStepper>
     } else if (tappedStatus == UserMicrotaskStatus.completed) {
       if (widget.currentStatus == UserMicrotaskStatus.inProgress) {
         // Progressão para completed
+        // Solicitar confirmação do usuário
+        final bool? confirmed = await ConfirmationDialog.show(
+          context: context,
+          title: 'Concluir Microtarefa',
+          content:
+              'Tem certeza que deseja marcar esta microtarefa como concluída?',
+          confirmText: 'Confirmar',
+          cancelText: 'Cancelar',
+          icon: Icons.check_circle,
+          iconColor: AppColors.success,
+          confirmButtonColor: AppColors.success,
+        );
+
+        if (confirmed != true) {
+          return; // Usuário cancelou a operação
+        }
+
         newStatus = UserMicrotaskStatus.completed;
       } else if (widget.currentStatus == UserMicrotaskStatus.completed) {
         // Desmarcar completed (volta para in_progress)
@@ -318,18 +389,19 @@ class _StatusStepperState extends State<StatusStepper>
         final bool? confirmed = await ConfirmationDialog.show(
           context: context,
           title: 'Desmarcar Conclusão',
-          content: 'Tem certeza que deseja desmarcar esta microtarefa como concluída? Ela voltará para o status "Em Andamento".',
+          content:
+              'Tem certeza que deseja desmarcar esta microtarefa como concluída? Ela voltará para o status "Em Andamento".',
           confirmText: 'Desmarcar',
           cancelText: 'Cancelar',
           icon: Icons.warning,
           iconColor: AppColors.warning,
           confirmButtonColor: AppColors.warning,
         );
-        
+
         if (confirmed != true) {
           return; // Usuário cancelou a operação
         }
-        
+
         newStatus = UserMicrotaskStatus.inProgress;
       } else {
         return; // Não permite pular etapas
@@ -346,7 +418,7 @@ class _StatusStepperState extends State<StatusStepper>
     _animationController.reset();
 
     try {
-      await widget.onStatusChanged(newStatus!);
+      await widget.onStatusChanged(newStatus);
     } finally {
       if (mounted) {
         setState(() {

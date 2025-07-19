@@ -45,7 +45,7 @@ Esta funcionalidade irá:
 
 *   **Regras de Negócio:**
 
-    *   **RN-01.1 - Posicionamento:** A aba "AGENDA" deve ser inserida na `TabBar` da tela `event_details_screen.dart`, seguindo a ordem: "Evento" → "AGENDA" → "Meus Dados" → "Acompanhar".
+    *   **RN-01.1 - Posicionamento:** A aba "AGENDA" deve ser inserida na `TabBar` da tela `event_details_screen.dart`, seguindo a ordem: "Evento" → "AGENDA" → "Perfil" → "Acompanhar".
 
     *   **RN-01.2 - Visibilidade:** A aba deve ser visível **apenas** para usuários que estão na lista `volunteers` do evento, seguindo o padrão de tabs dinâmicas estabelecido (RN-02 da especificação geral).
 

@@ -113,13 +113,13 @@ Sistema onde usuários podem criar eventos, gerenciar tarefas hierárquicas (Tas
 - **Tabs de Navegação (Dinâmicas):**
   - **Evento:** Informações gerais, localização, código/tag
   - **Voluntários:** (apenas gerenciadores) - Gerenciar voluntários do evento
-  - **Meus Dados:** (apenas voluntários) - **NOVA TAB** para gerenciar perfil de voluntário
+  - **Perfil:** (apenas voluntários) - **NOVA TAB** para gerenciar perfil de voluntário
   - **Acompanhar:** Visualização de todas as tasks/microtasks
 
 ### 7. **NOVA FUNCIONALIDADE:** Gerenciamento de Perfil de Voluntário
 
 #### 7.1 Tela Visualizar Perfil de Voluntário
-- **Acesso:** Tab "Meus Dados" na tela de detalhes do evento (apenas para voluntários)
+- **Acesso:** Tab "Perfil" na tela de detalhes do evento (apenas para voluntários)
 - **Funcionalidades:**
   - Visualização em modo somente leitura das informações do voluntário
   - Informações do evento (nome, localização)
@@ -127,7 +127,7 @@ Sistema onde usuários podem criar eventos, gerenciar tarefas hierárquicas (Tas
   - Disponibilidade (dias da semana, horários ou integral)
   - Habilidades cadastradas (com destaque para as necessárias ao evento)
   - Recursos disponibilizados
-  - Botão "Editar Meus Dados" para navegação à tela de edição
+  - Botão "Editar Perfil" para navegação à tela de edição
 
 #### 7.2 Tela Editar Perfil de Voluntário
 - **Acesso:** Botão "Editar" na tela de visualização ou AppBar
@@ -320,7 +320,7 @@ lib/
 - **Lógica:**
   - Tab "Evento": sempre visível
   - Tab "Voluntários": apenas para gerenciadores
-  - Tab "Meus Dados": apenas para voluntários (NOVA)
+  - Tab "Perfil": apenas para voluntários (NOVA)
   - Tab "Acompanhar": sempre visível
 - **Implementação:** TabController com length dinâmico baseado em permissões
 

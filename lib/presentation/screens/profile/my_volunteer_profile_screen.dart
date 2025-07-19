@@ -88,10 +88,11 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
 
   Future<void> _loadData() async {
     try {
-      if (mounted) setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-      });
+      if (mounted)
+        setState(() {
+          _isLoading = true;
+          _errorMessage = null;
+        });
 
       final eventController = Provider.of<EventController>(
         context,
@@ -182,7 +183,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
       backgroundColor: AppColors.primary,
       foregroundColor: AppColors.textOnPrimary,
       title: Text(
-        _isEditMode ? 'Editar Meus Dados' : 'Meus Dados',
+        _isEditMode ? 'Editar Perfil' : 'Perfil',
         style: const TextStyle(
           fontSize: AppDimensions.fontSizeLg,
           fontWeight: FontWeight.bold,
@@ -215,7 +216,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
       },
       backgroundColor: AppColors.primary,
       foregroundColor: AppColors.textOnPrimary,
-      tooltip: 'Editar meus dados',
+      tooltip: 'Editar Perfil',
       child: const Icon(Icons.edit),
     );
   }
