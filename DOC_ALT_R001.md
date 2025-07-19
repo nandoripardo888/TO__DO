@@ -11,11 +11,11 @@ O objetivo é duplo:
 
 ### 2\. Justificativa
 
-Atualmente, o fluxo exige que um gerenciador crie a Campanha e, em um segundo momento, use o código da Campanha para se inscrever como voluntário, um passo redundante. Além disso, não há uma maneira direta para um voluntário já inscrito editar suas informações, como mudar sua disponibilidade.
+Atualmente, o fluxo exige que um gerenciador crie a campanha e, em um segundo momento, use o código da campanha para se inscrever como voluntário, um passo redundante. Além disso, não há uma maneira direta para um voluntário já inscrito editar suas informações, como mudar sua disponibilidade.
 
 Essa modificação irá:
 
-*   **Aumentar a eficiência:** Reduz o número de etapas para o gerenciador participar ativamente do seu própria Campanha.
+*   **Aumentar a eficiência:** Reduz o número de etapas para o gerenciador participar ativamente do seu própria campanha.
     
 *   **Melhorar a experiência do usuário (UX):** Oferece um local centralizado e intuitivo para o usuário gerenciar seus próprios dados de voluntariado, dando-lhe mais controle e flexibilidade.
     
@@ -26,18 +26,18 @@ Essa modificação irá:
 
 #### REQ-01: Inscrição Automática do Gerenciador como Voluntário
 
-*   **Descrição:** Ao concluir a criação de um nova Campanha na `create_event_screen.dart`, o sistema deve executar duas ações simultaneamente.
+*   **Descrição:** Ao concluir a criação de um nova campanha na `create_event_screen.dart`, o sistema deve executar duas ações simultaneamente.
     
 *   **Regra de Negócio:**
     
-    1.  O usuário que criou a Campanha (`createdBy`) é adicionado à lista `managers` da collection `events`. (Comportamento atual)
+    1.  O usuário que criou a campanha (`createdBy`) é adicionado à lista `managers` da collection `events`. (Comportamento atual)
         
     2.  **\[NOVO\]** O mesmo usuário (`createdBy`) deve ser **automaticamente adicionado** à lista `volunteers` na mesma collection `events`.
         
     3.  **\[NOVO\]** Um documento correspondente deve ser criado na collection `volunteer_profiles`. Este perfil inicial pode ter valores padrão (ex: disponibilidade a ser preenchida), mas deve ligar `userId` e `eventId`. O ideal é que o usuário seja levado a preencher esses dados logo após a criação.
         
 
-#### REQ-02: Nova Aba "Perfil" na Tela de Detalhes da Campanha
+#### REQ-02: Nova Aba "Perfil" na Tela de Detalhes da campanha
 
 *   **Descrição:** A tela `event_details_screen.dart` deve ser modificada para incluir uma nova aba.
     
@@ -47,7 +47,7 @@ Essa modificação irá:
         
     2.  **\[NOVO\]** Uma nova aba chamada **"Perfil"** (ou "Meu Perfil de Voluntário") deve ser adicionada.
         
-    3.  **Visibilidade:** Esta aba deve ser visível para **qualquer usuário que esteja na lista `volunteers` da Campanha**, incluindo o gerenciador (conforme REQ-01). Se o usuário não for voluntário, a aba não deve ser exibida.
+    3.  **Visibilidade:** Esta aba deve ser visível para **qualquer usuário que esteja na lista `volunteers` da campanha**, incluindo o gerenciador (conforme REQ-01). Se o usuário não for voluntário, a aba não deve ser exibida.
         
 
 #### REQ-03: Tela de Visualização e Edição de Dados de Voluntário
@@ -91,7 +91,7 @@ Essa modificação irá:
     
     *   Modificação da lógica de criação de campanha para registrar o gerenciador como voluntário.
         
-    *   Criação da nova aba "Perfil" na tela de detalhes da Campanha.
+    *   Criação da nova aba "Perfil" na tela de detalhes da campanha.
         
     *   Criação de uma tela para visualizar o perfil de voluntário.
         
@@ -137,11 +137,11 @@ Essa modificação irá:
 
 | ID | Critério | Verificação |
 | --- | --- | --- |
-| AC-01 | Ao criar um nova Campanha, ouserIddo criador está presente tanto no arraymanagersquanto no arrayvolunteersdo documento da Campanha no Firestore. | ☐ |
-| AC-02 | Ao criar um nova Campanha, um documento correspondente é criado na collectionvolunteer_profilescom ouserIdeeventIdcorretos. | ☐ |
-| AC-03 | Na tela de Detalhes da Campanha, a aba "Perfil" aparece para o gerenciador que acabou de criar a Campanha. | ☐ |
-| AC-04 | A aba "Perfil" aparece para qualquer outro usuário que tenha se juntado aa Campanha como voluntário. | ☐ |
-| AC-05 | A aba "Perfil"não aparece para usuários que não são voluntários na Campanha. | ☐ |
+| AC-01 | Ao criar um nova campanha, ouserIddo criador está presente tanto no arraymanagersquanto no arrayvolunteersdo documento da campanha no Firestore. | ☐ |
+| AC-02 | Ao criar um nova campanha, um documento correspondente é criado na collectionvolunteer_profilescom ouserIdeeventIdcorretos. | ☐ |
+| AC-03 | Na tela de Detalhes da campanha, a aba "Perfil" aparece para o gerenciador que acabou de criar a campanha. | ☐ |
+| AC-04 | A aba "Perfil" aparece para qualquer outro usuário que tenha se juntado aa campanha como voluntário. | ☐ |
+| AC-05 | A aba "Perfil"não aparece para usuários que não são voluntários na campanha. | ☐ |
 | AC-06 | Clicar na aba "Perfil" exibe uma tela com as informações atuais de voluntariado do usuário (habilidades, disponibilidade, etc.) em modo de visualização. | ☐ |
 | AC-07 | A tela de visualização possui um botão "Editar". | ☐ |
 | AC-08 | Clicar em "Editar" leva a um formulário com todos os campos pré-preenchidos com os dados atuais. | ☐ |
@@ -151,7 +151,7 @@ Essa modificação irá:
 
 -------------------------------------------------------------------------
 Resumo da Implementação
-✅ REQ-04: FAB de Edição na Tela de Detalhes da Campanha
+✅ REQ-04: FAB de Edição na Tela de Detalhes da campanha
 Implementado com sucesso:
 
 ✅ AC-11: FAB de edição (ícone lápis) posicionado acima do FAB de "+"

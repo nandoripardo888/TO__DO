@@ -1,14 +1,14 @@
 REGRA alteradas
 vamos fazer uns pequenos ajustes:
-1 - para o voluntario na hora de selecionar a habiliidade e os recursos devem listar como opção somente as habilidades necessárias definidas na Campanha, porém deve permitir ele inserir uma nova tbm digitando, como já está atualmente.
+1 - para o voluntario na hora de selecionar a habiliidade e os recursos devem listar como opção somente as habilidades necessárias definidas na campanha, porém deve permitir ele inserir uma nova tbm digitando, como já está atualmente.
 2 - os botões de "Buscar" e "Adicionar" não estão alinhados com a caixa de texto á esquerda.
-3 - quando o usuario já for participante da Campanha, e clicar pra buscar a Campanha, mostre os detalhes da Campanha como já está acontecendo hoje, porém mostre assim como é mostrado em ativo, mas que ele já está participando, e nem mesmo permita ele se cadastrar por favor.
+3 - quando o usuario já for participante da campanha, e clicar pra buscar a campanha, mostre os detalhes da campanha como já está acontecendo hoje, porém mostre assim como é mostrado em ativo, mas que ele já está participando, e nem mesmo permita ele se cadastrar por favor.
 
 
 FASE 3
 faça os seguintes ajustes antes de prosseguirmos os proximos passos da fase 3;
 1- separe os botões estatisticas, pois ficaram colados um no outro.
-2 - ao sair da aplicação e entrar novamente não está encontrando as tasks criadas na Campanha
+2 - ao sair da aplicação e entrar novamente não está encontrando as tasks criadas na campanha
 3 - vamos  substituir a aba tasks para telas de tasks e microtaks separadas, crie um botão flutuante onde dá a opção de adicionar uma task ou uma microtask caso já tenha uma task (somente se já existir uma task caso não exista exibe a mensagem que é preciso criar uma task primeiro) e vamos remover a aba de tasks
-4 - na microtask adicione somente as opções de habilidades e recursos pré definidas na Campanha.
+4 - na microtask adicione somente as opções de habilidades e recursos pré definidas na campanha.
 

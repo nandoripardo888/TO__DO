@@ -21,8 +21,8 @@
 
 ### 4. Widgets Reutilizáveis
 - [x] **EventCard**: Card para exibir campanhas na lista
-- [x] **EventInfoCard**: Card detalhado de informações da Campanha
-- [x] **EventStatsWidget**: Widget de estatísticas da Campanha
+- [x] **EventInfoCard**: Card detalhado de informações da campanha
+- [x] **EventStatsWidget**: Widget de estatísticas da campanha
 - [x] **SkillChip**: Chip para habilidades e recursos
 - [x] **ErrorMessageWidget**: Widget para mensagens de erro
 - [x] **LoadingWidget**: Widget de loading consistente
@@ -41,7 +41,7 @@
 ### 7. Melhorias de UX Implementadas
 - [x] **Alinhamento de botões**: Botões "Buscar" e "Adicionar" alinhados à esquerda com campos de texto
 - [x] **Verificação de participação**: Sistema impede participação dupla e informa status atual
-- [x] **Filtros inteligentes**: Habilidades/recursos da Campanha aparecem como opções prioritárias
+- [x] **Filtros inteligentes**: Habilidades/recursos da campanha aparecem como opções prioritárias
 - [x] **Feedback visual**: Indicadores claros de status de participação
 
 ## 🧪 Plano de Testes
@@ -55,7 +55,7 @@
 3. Selecionar "Criar campanha"
 4. Preencher formulário:
    - Nome: "campanha de Teste"
-   - Descrição: "Descrição da Campanha de teste"
+   - Descrição: "Descrição da campanha de teste"
    - Localização: "São Paulo, SP"
    - Selecionar 2-3 habilidades
    - Selecionar 1-2 recursos
@@ -73,12 +73,12 @@
 **Objetivo**: Validar participação em campanha via código
 
 **Passos**:
-1. Usar código da Campanha criado no Teste 1
+1. Usar código da campanha criado no Teste 1
 2. Na tela home, tocar no FAB
 3. Selecionar "Participar de campanha"
-4. Inserir código da Campanha
+4. Inserir código da campanha
 5. Tocar em "Buscar"
-6. Verificar detalhes da Campanha encontrado
+6. Verificar detalhes da campanha encontrado
 7. Preencher perfil de voluntário:
    - Selecionar dias disponíveis
    - Definir horário (ex: 09:00 - 17:00)
@@ -100,13 +100,13 @@
 **Cenários de Teste**:
 
 #### 3.1 Criar campanha - Campos Obrigatórios
-- Tentar criar campanha sem nome → Erro: "Nome da Campanha é obrigatório"
+- Tentar criar campanha sem nome → Erro: "Nome da campanha é obrigatório"
 - Tentar criar campanha sem localização → Erro: "Localização é obrigatória"
 - Nome com menos de 3 caracteres → Erro: "Nome deve ter pelo menos 3 caracteres"
 - Nome com mais de 100 caracteres → Erro: "Nome deve ter no máximo 100 caracteres"
 
 #### 3.2 Participar de campanha - Validações de Código
-- Campo vazio → Erro: "Código da Campanha é obrigatório"
+- Campo vazio → Erro: "Código da campanha é obrigatório"
 - Código com menos de 6 caracteres → Erro: "Código deve ter exatamente 6 caracteres"
 - Código inexistente → Erro: "campanha não encontrado"
 
@@ -173,7 +173,7 @@
 
 ## 🚀 Próximos Passos (Fase 3)
 
-1. **Detalhes da Campanha**: Tela completa com informações
+1. **Detalhes da campanha**: Tela completa com informações
 2. **Gerenciamento de Voluntários**: Para organizadores
 3. **Sistema de Tarefas**: Criação e atribuição
 4. **Notificações**: Push notifications

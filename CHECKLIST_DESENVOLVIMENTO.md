@@ -83,13 +83,13 @@
   - [x] Lista de cards das campanhas
   - [x] FAB com opções "Criar campanha" e "Participar"
 - [x] **Event Card**
-  - [x] Nome da Campanha
+  - [x] Nome da campanha
   - [x] Papel do usuário (Gerenciador/Voluntário)
   - [x] Número de tarefas pendentes
-  - [x] Status da Campanha
+  - [x] Status da campanha
 
 ### Modelos de campanhas
-- [x] `event_model.dart` - Modelo completo da Campanha
+- [x] `event_model.dart` - Modelo completo da campanha
 - [x] `volunteer_profile_model.dart` - Perfil do voluntário
 
 ### Serviços de campanhas
@@ -109,7 +109,7 @@
 ### Participação em campanhas
 - [x] **Tela Participar de campanha**
   - [x] Campo para inserir código/tag
-  - [x] Busca e exibição da Campanha
+  - [x] Busca e exibição da campanha
   - [x] Formulário de perfil do voluntário
   - [x] Seleção de disponibilidade (dias/horários)
   - [x] Seleção de habilidades e recursos
@@ -117,7 +117,7 @@
 ### Melhorias de UX Implementadas
 - [x] **Alinhamento de botões**: Botões "Buscar" e "Adicionar" alinhados à esquerda
 - [x] **Verificação de participação**: Sistema impede participação dupla
-- [x] **Filtros inteligentes**: Habilidades/recursos da Campanha como opções prioritárias
+- [x] **Filtros inteligentes**: Habilidades/recursos da campanha como opções prioritárias
 - [x] **Feedback visual**: Indicadores claros de status de participação
 
 ---
@@ -139,7 +139,7 @@
 - [x] `microtask_repository.dart` - CRUD de microtasks
 - [x] `task_controller.dart` - Gerenciamento de estado
 
-### Tela Detalhes da Campanha
+### Tela Detalhes da campanha
 - [x] **Sistema de Tabs**
   - [x] Tab "campanha" - Informações gerais + código/tag
   - [x] Tab "Criar Tasks" (apenas gerenciadores)
@@ -188,7 +188,7 @@
 - [ ] `confirmation_dialog.dart` - Dialog de confirmação
 
 ### Widgets Específicos
-- [ ] `event_card.dart` - Card da Campanha
+- [ ] `event_card.dart` - Card da campanha
 - [ ] `task_card.dart` - Card da task
 - [ ] `volunteer_card.dart` - Card do voluntário
 - [ ] `skill_chip.dart` - Chip de habilidade

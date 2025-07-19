@@ -260,7 +260,7 @@ class VolunteerProfileModel {
     return translatedDays.join(', ');
   }
 
-  /// Retorna há quanto tempo o voluntário se juntou aa Campanha
+  /// Retorna há quanto tempo o voluntário se juntou aa campanha
   String get joinedTimeAgo {
     final now = DateTime.now();
     final difference = now.difference(joinedAt);
@@ -403,7 +403,7 @@ class VolunteerProfileModel {
     }
 
     if (eventId.isEmpty) {
-      errors.add('ID da Campanha é obrigatório');
+      errors.add('ID da campanha é obrigatório');
     }
 
     if (!isFullTimeAvailable) {

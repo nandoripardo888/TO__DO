@@ -111,7 +111,7 @@ class MicrotaskService {
           .toList();
     } catch (e) {
       throw DatabaseException(
-        'Erro ao buscar microtasks da Campanha: ${e.toString()}',
+        'Erro ao buscar microtasks da campanha: ${e.toString()}',
       );
     }
   }

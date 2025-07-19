@@ -181,7 +181,7 @@ class UserMicrotaskModel {
     }
 
     if (eventId.isEmpty) {
-      errors.add('ID da Campanha é obrigatório');
+      errors.add('ID da campanha é obrigatório');
     }
 
     if (actualHours != null && actualHours! < 0) {

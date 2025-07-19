@@ -209,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             const Text(
-              'Nenhuma campanha encontrado',
+              'Nenhuma campanha encontrada',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeLg,
                 fontWeight: FontWeight.w600,
@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             const Text(
-              'Crie um nova Campanha ou participe de um existente',
+              'Crie uma nova campanha ou participe de uma existente',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeMd,
                 color: AppColors.textSecondary,
@@ -282,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(
               leading: const Icon(Icons.add_circle, color: AppColors.primary),
               title: const Text('Criar campanha'),
-              subtitle: const Text('Organize um nova Campanha'),
+              subtitle: const Text('Organize um nova campanha'),
               onTap: () {
                 Navigator.of(context).pop(); // Fecha o dialog
                 _navigateToCreateEvent();
@@ -348,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(
               leading: const Icon(Icons.add_circle, color: AppColors.primary),
               title: const Text('Criar campanha'),
-              subtitle: const Text('Organize um nova Campanha'),
+              subtitle: const Text('Organize um nova campanha'),
               onTap: () {
                 Navigator.pop(context);
                 _navigateToCreateEvent();

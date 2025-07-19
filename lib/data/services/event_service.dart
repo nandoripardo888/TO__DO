@@ -14,7 +14,7 @@ class EventService {
   CollectionReference get _volunteerProfilesCollection =>
       _firestore.collection('volunteer_profiles');
 
-  /// Cria um nova Campanha
+  /// Cria um nova campanha
   Future<EventModel> createEvent({
     required String name,
     required String description,
@@ -27,7 +27,7 @@ class EventService {
     String? creatorPhotoUrl,
   }) async {
     try {
-      // Gera um ID único para a Campanha
+      // Gera um ID único para a campanha
       final eventId = _uuid.v4();
 
       // Gera uma tag única
@@ -39,7 +39,7 @@ class EventService {
       // Gera timestamps
       final now = DateTime.now();
 
-      // Cria a Campanha com dados gerados pelo service
+      // Cria a campanha com dados gerados pelo service
       final event = EventModel.create(
         id: eventId,
         name: name,
@@ -58,7 +58,7 @@ class EventService {
       // Salva no Firestore
       await _eventsCollection.doc(eventId).set(event.toFirestore());
 
-      // REQ-01: Cria automaticamente um perfil de voluntário para o criador da Campanha
+      // REQ-01: Cria automaticamente um perfil de voluntário para o criador da campanha
       // com valores padrão que podem ser preenchidos posteriormente
       await createVolunteerProfile(
         userId: createdBy,
@@ -166,7 +166,7 @@ class EventService {
     }
   }
 
-  /// Adiciona um voluntário aa Campanha
+  /// Adiciona um voluntário aa campanha
   Future<EventModel> addVolunteerToEvent(String eventId, String userId) async {
     try {
       final event = await getEventById(eventId);
@@ -176,7 +176,7 @@ class EventService {
 
       // Verifica se o usuário já é participante
       if (event.isParticipant(userId)) {
-        throw ValidationException('Usuário já é participante da Campanha');
+        throw ValidationException('Usuário já é participante da campanha');
       }
 
       final updatedEvent = event.addVolunteer(userId);
@@ -187,7 +187,7 @@ class EventService {
     }
   }
 
-  /// Remove um voluntário da Campanha
+  /// Remove um voluntário da campanha
   Future<EventModel> removeVolunteerFromEvent(
     String eventId,
     String userId,
@@ -199,7 +199,7 @@ class EventService {
       }
 
       if (!event.isVolunteer(userId)) {
-        throw ValidationException('Usuário não é voluntário da Campanha');
+        throw ValidationException('Usuário não é voluntário da campanha');
       }
 
       final updatedEvent = event.removeVolunteer(userId);
@@ -222,7 +222,7 @@ class EventService {
       }
 
       if (!event.isVolunteer(userId)) {
-        throw ValidationException('Usuário não é voluntário da Campanha');
+        throw ValidationException('Usuário não é voluntário da campanha');
       }
 
       final updatedEvent = event.promoteToManager(userId);
@@ -393,7 +393,7 @@ class EventService {
       }
 
       if (!event.isCreator(userId)) {
-        throw UnauthorizedException('Apenas o criador pode deletar a Campanha');
+        throw UnauthorizedException('Apenas o criador pode deletar a campanha');
       }
 
       // Deleta todos os perfis de voluntários relacionados
@@ -402,7 +402,7 @@ class EventService {
         await _volunteerProfilesCollection.doc(profile.id).delete();
       }
 
-      // Deleta a Campanha
+      // Deleta a campanha
       await _eventsCollection.doc(eventId).delete();
     } catch (e) {
       if (e is AppException) rethrow;
@@ -424,7 +424,7 @@ class EventService {
     }
   }
 
-  /// Gera uma tag única para a Campanha
+  /// Gera uma tag única para a campanha
   String _generateUniqueTag() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = DateTime.now().millisecondsSinceEpoch;
@@ -660,7 +660,7 @@ class EventService {
       }
     } catch (e) {
       throw DatabaseException(
-        'Erro ao recalcular contadores da Campanha: ${e.toString()}',
+        'Erro ao recalcular contadores da campanha: ${e.toString()}',
       );
     }
   }

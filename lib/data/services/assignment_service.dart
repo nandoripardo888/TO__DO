@@ -47,7 +47,7 @@ class AssignmentService {
         throw ValidationException('Microtask não encontrada');
       }
 
-      // Busca o perfil do voluntário na Campanha
+      // Busca o perfil do voluntário na campanha
       final volunteerProfile = await _eventService.getVolunteerProfile(
         userId,
         eventId,
@@ -119,7 +119,7 @@ class AssignmentService {
         throw ValidationException('Microtask não encontrada');
       }
 
-      // Busca todos os voluntários da Campanha
+      // Busca todos os voluntários da campanha
       final allVolunteers = await _eventService.getEventVolunteerProfiles(
         eventId,
       );
@@ -175,7 +175,7 @@ class AssignmentService {
         throw ValidationException('Perfil de voluntário não encontrado');
       }
 
-      // Busca todas as microtasks da Campanha
+      // Busca todas as microtasks da campanha
       final allMicrotasks = await _microtaskService.getMicrotasksByEventId(
         eventId,
       );
@@ -404,7 +404,7 @@ class AssignmentService {
       return userMicrotasks;
     } catch (e) {
       throw DatabaseException(
-        'Erro ao buscar microtasks do usuário na Campanha: ${e.toString()}',
+        'Erro ao buscar microtasks do usuário na campanha: ${e.toString()}',
       );
     }
   }

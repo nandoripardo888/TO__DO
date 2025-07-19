@@ -63,10 +63,10 @@ class Validators {
     return null;
   }
 
-  /// Valida nome da Campanha
+  /// Valida nome da campanha
   static String? validateEventName(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Nome da Campanha é obrigatório';
+      return 'Nome da campanha é obrigatório';
     }
 
     if (value.length < AppConstants.eventNameMinLength) {
@@ -80,7 +80,7 @@ class Validators {
     return null;
   }
 
-  /// Valida descrição da Campanha
+  /// Valida descrição da campanha
   static String? validateEventDescription(String? value) {
     if (value != null &&
         value.length > AppConstants.eventDescriptionMaxLength) {
@@ -90,7 +90,7 @@ class Validators {
     return null;
   }
 
-  /// Valida localização da Campanha
+  /// Valida localização da campanha
   static String? validateEventLocation(String? value) {
     if (value != null && value.length > AppConstants.eventLocationMaxLength) {
       return 'Localização deve ter no máximo ${AppConstants.eventLocationMaxLength} caracteres';
@@ -99,10 +99,10 @@ class Validators {
     return null;
   }
 
-  /// Valida código/tag da Campanha
+  /// Valida código/tag da campanha
   static String? validateEventTag(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Código da Campanha é obrigatório';
+      return 'Código da campanha é obrigatório';
     }
 
     final tagRegex = RegExp(AppConstants.eventTagPattern);

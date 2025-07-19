@@ -19,7 +19,7 @@ import 'track_tasks_screen.dart';
 import '../profile/my_volunteer_profile_screen.dart';
 import '../agenda/agenda_screen.dart';
 
-/// Tela de detalhes da Campanha com sistema de tabs
+/// Tela de detalhes da campanha com sistema de tabs
 class EventDetailsScreen extends StatefulWidget {
   final String eventId;
 
@@ -65,7 +65,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return count;
   }
 
-  /// REQ-02: Atualiza o TabController quando a Campanha é carregado
+  /// REQ-02: Atualiza o TabController quando a campanha é carregado
   void _updateTabController() {
     if (!mounted) return;
 
@@ -100,7 +100,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       // Índice da tab Agenda (pode variar dependendo das permissões)
       int agendaTabIndex = -1;
       if (isVolunteer) {
-        agendaTabIndex = 1; // Campanha (0), Agenda (1), Tasks (2)
+        agendaTabIndex = 1; // campanha (0), Agenda (1), Tasks (2)
       }
 
       // Índice da tab TrackTasks (sempre a última)
@@ -164,7 +164,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         // REQ-02: Atualiza o TabController baseado nas permissões
         _updateTabController();
 
-        // Carrega tasks da Campanha
+        // Carrega tasks da campanha
         if (mounted) {
           final taskController = Provider.of<TaskController>(
             context,
@@ -203,7 +203,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: AppColors.background,
-        body: LoadingWidget(message: 'Carreganda Campanha...'),
+        body: LoadingWidget(message: 'Carreganda campanha...'),
       );
     }
 
@@ -211,7 +211,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Detalhes da Campanha'),
+          title: const Text('Detalhes da campanha'),
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textOnPrimary,
         ),
@@ -226,7 +226,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Detalhes da Campanha'),
+          title: const Text('Detalhes da campanha'),
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textOnPrimary,
         ),
@@ -429,7 +429,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                 const Icon(Icons.info_outline, color: AppColors.primary),
                 const SizedBox(width: AppDimensions.spacingSm),
                 const Text(
-                  'Informações da Campanha',
+                  'Informações da campanha',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -569,7 +569,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                 const Icon(Icons.qr_code, color: AppColors.primary),
                 const SizedBox(width: AppDimensions.spacingSm),
                 const Text(
-                  'Código da Campanha',
+                  'Código da campanha',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -609,7 +609,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             const Text(
-              'Compartilhe este código para que outros possam participar da Campanha',
+              'Compartilhe este código para que outros possam participar da campanha',
               style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
@@ -697,16 +697,16 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return _tabController?.index == 0;
   }
 
-  /// REQ-04: Navega para a tela de edição da Campanha
+  /// REQ-04: Navega para a tela de edição da campanha
   void _navigateToEditEvent() {
     if (_event == null) return;
 
     Navigator.pushNamed(
       context,
       '/create-event',
-      arguments: _event, // Passa a Campanha atual como argumento para edição
+      arguments: _event, // Passa a campanha atual como argumento para edição
     ).then((_) {
-      // Recarrega os dados da Campanha após retornar da edição
+      // Recarrega os dados da campanha após retornar da edição
       _loadEventDetails();
     });
   }
@@ -722,7 +722,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
     // Aba "campanha": mostra botão de edição + botão de adicionar tasks (apenas para gerenciadores)
     if (_isCurrentTabEvent()) {
-      // Apenas gerenciadores podem editar a Campanha e criar tasks
+      // Apenas gerenciadores podem editar a campanha e criar tasks
       if (isManager) {
         return Consumer<TaskController>(
           builder: (context, taskController, child) {

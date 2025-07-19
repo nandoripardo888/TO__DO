@@ -71,14 +71,14 @@ class TaskRepository {
   Future<List<TaskModel>> getTasksByEventId(String eventId) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       return await _taskService.getTasksByEventId(eventId);
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao buscar tasks da Campanha: ${e.toString()}',
+        'Erro ao buscar tasks da campanha: ${e.toString()}',
       );
     }
   }
@@ -106,7 +106,7 @@ class TaskRepository {
   ) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       return await _taskService.getTasksByStatus(eventId, status);
@@ -125,7 +125,7 @@ class TaskRepository {
   ) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       return await _taskService.getTasksByPriority(eventId, priority);
@@ -289,14 +289,14 @@ class TaskRepository {
   Future<void> deleteTasksByEventId(String eventId) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       await _taskService.deleteTasksByEventId(eventId);
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao deletar tasks da Campanha: ${e.toString()}',
+        'Erro ao deletar tasks da campanha: ${e.toString()}',
       );
     }
   }
@@ -313,7 +313,7 @@ class TaskRepository {
   /// Stream para escutar mudanças nas tasks de uma campanha
   Stream<List<TaskModel>> watchTasksByEventId(String eventId) {
     if (eventId.isEmpty) {
-      throw ValidationException('ID da Campanha é obrigatório');
+      throw ValidationException('ID da campanha é obrigatório');
     }
 
     return _taskService.watchTasksByEventId(eventId);
@@ -328,7 +328,7 @@ class TaskRepository {
   }) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       return await _taskService.getTasksWithFilters(
@@ -367,7 +367,7 @@ class TaskRepository {
   Future<Map<String, dynamic>> getTaskStatistics(String eventId) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       final tasks = await getTasksByEventId(eventId);

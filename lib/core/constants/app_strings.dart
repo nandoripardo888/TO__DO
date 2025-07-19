@@ -26,16 +26,16 @@ class AppStrings {
   static const String events = 'campanhas';
   static const String createEvent = 'Criar campanha';
   static const String joinEvent = 'Participar de campanha';
-  static const String eventName = 'Nome da Campanha';
-  static const String eventDescription = 'Descrição da Campanha';
-  static const String eventLocation = 'Localização da Campanha';
-  static const String eventCode = 'Código da Campanha';
-  static const String eventTag = 'Tag da Campanha';
+  static const String eventName = 'Nome da campanha';
+  static const String eventDescription = 'Descrição da campanha';
+  static const String eventLocation = 'Localização da campanha';
+  static const String eventCode = 'Código da campanha';
+  static const String eventTag = 'Tag da campanha';
   static const String requiredSkills = 'Habilidades necessárias';
   static const String requiredResources = 'Recursos necessários';
-  static const String eventDetails = 'Detalhes da Campanha';
+  static const String eventDetails = 'Detalhes da campanha';
   static const String eventCreated = 'campanha criado com sucesso!';
-  static const String joinedEvent = 'Você ingressou na Campanha!';
+  static const String joinedEvent = 'Você ingressou na campanha!';
 
   // Tarefas
   static const String tasks = 'Tarefas';
@@ -130,7 +130,7 @@ class AppStrings {
   static const String volunteer = 'Voluntário';
 
   // Placeholders
-  static const String noEventsFound = 'Nenhuma campanha encontrado';
+  static const String noEventsFound = 'Nenhuma campanha encontrada';
   static const String noTasksFound = 'Nenhuma tarefa encontrada';
   static const String noVolunteersFound = 'Nenhum voluntário encontrado';
   static const String loading = 'Carregando...';

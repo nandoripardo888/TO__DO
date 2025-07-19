@@ -35,7 +35,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> with Au
   final List<String> _selectedSkillsFilter =
       []; // Filtro por habilidades selecionadas
   List<String> _availableSkills =
-      []; // Todas as habilidades disponíveis na Campanha
+      []; // Todas as habilidades disponíveis na campanha
 
   @override
   void initState() {
@@ -93,7 +93,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> with Au
         }
       }
 
-      // Adiciona habilidades da Campanha se disponíveis
+      // Adiciona habilidades da campanha se disponíveis
       if (event != null && event.requiredSkills.isNotEmpty) {
         allSkills.addAll(event.requiredSkills);
       }
@@ -324,13 +324,13 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> with Au
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           const Text(
-            'Compartilhe o código da Campanha para que\nvoluntários possam se inscrever.',
+            'Compartilhe o código da campanha para que\nvoluntários possam se inscrever.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppDimensions.spacingLg),
 
-          // Código da Campanha
+          // Código da campanha
           Container(
             padding: const EdgeInsets.all(AppDimensions.paddingMd),
             decoration: BoxDecoration(

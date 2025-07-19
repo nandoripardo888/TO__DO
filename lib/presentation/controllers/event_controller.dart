@@ -64,7 +64,7 @@ class EventController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Cria um nova Campanha
+  /// Cria um nova campanha
   Future<EventModel?> createEvent({
     required String name,
     required String description,
@@ -80,7 +80,7 @@ class EventController extends ChangeNotifier {
     try {
       // Validações básicas
       if (name.trim().isEmpty) {
-        throw ValidationException('Nome da Campanha é obrigatório');
+        throw ValidationException('Nome da campanha é obrigatório');
       }
       if (location.trim().isEmpty) {
         throw ValidationException('Localização é obrigatória');
@@ -98,7 +98,7 @@ class EventController extends ChangeNotifier {
         requiredResources: requiredResources,
       );
 
-      // Adiciona a Campanha à lista de campanhas do usuário
+      // Adiciona a campanha à lista de campanhas do usuário
       _userEvents.insert(0, event);
       _currentEvent = event;
 
@@ -121,7 +121,7 @@ class EventController extends ChangeNotifier {
 
     try {
       if (tag.trim().isEmpty) {
-        throw ValidationException('Código da Campanha é obrigatório');
+        throw ValidationException('Código da campanha é obrigatório');
       }
 
       if (!_eventRepository.isValidTag(tag)) {
@@ -166,7 +166,7 @@ class EventController extends ChangeNotifier {
     try {
       // Validações básicas
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
       if (userId.isEmpty) {
         throw ValidationException('Usuário é obrigatório');
@@ -198,12 +198,12 @@ class EventController extends ChangeNotifier {
         _userEvents.insert(0, updatedEvent);
       }
 
-      // Atualiza a Campanha atual se for o mesmo
+      // Atualiza a campanha atual se for o mesmo
       if (_currentEvent?.id == eventId) {
         _currentEvent = updatedEvent;
       }
 
-      // Atualiza a Campanha pesquisado se for o mesmo
+      // Atualiza a campanha pesquisado se for o mesmo
       if (_searchedEvent?.id == eventId) {
         _searchedEvent = updatedEvent;
       }
@@ -256,7 +256,7 @@ class EventController extends ChangeNotifier {
 
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       final event = await _eventRepository.getEventById(eventId);
@@ -286,7 +286,7 @@ class EventController extends ChangeNotifier {
 
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       // Carrega os perfis dos voluntários
@@ -349,7 +349,7 @@ class EventController extends ChangeNotifier {
   ) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       // Carrega os perfis dos voluntários
@@ -374,7 +374,7 @@ class EventController extends ChangeNotifier {
   ) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       // Verifica se tem dados válidos no cache
@@ -437,13 +437,13 @@ class EventController extends ChangeNotifier {
         managerId,
       );
 
-      // Atualiza a Campanha na lista
+      // Atualiza a campanha na lista
       final index = _userEvents.indexWhere((e) => e.id == eventId);
       if (index >= 0) {
         _userEvents[index] = updatedEvent;
       }
 
-      // Atualiza a Campanha atual se for o mesmo
+      // Atualiza a campanha atual se for o mesmo
       if (_currentEvent?.id == eventId) {
         _currentEvent = updatedEvent;
       }
@@ -476,13 +476,13 @@ class EventController extends ChangeNotifier {
     }
   }
 
-  /// Limpa a Campanha pesquisado
+  /// Limpa a campanha pesquisado
   void clearSearchedEvent() {
     _searchedEvent = null;
     notifyListeners();
   }
 
-  /// Define a Campanha atual
+  /// Define a campanha atual
   void setCurrentEvent(EventModel? event) {
     _currentEvent = event;
     notifyListeners();
@@ -497,7 +497,7 @@ class EventController extends ChangeNotifier {
     try {
       // Validações básicas
       if (event.name.trim().isEmpty) {
-        throw ValidationException('Nome da Campanha é obrigatório');
+        throw ValidationException('Nome da campanha é obrigatório');
       }
       if (event.location.trim().isEmpty) {
         throw ValidationException('Localização é obrigatória');
@@ -505,7 +505,7 @@ class EventController extends ChangeNotifier {
 
       final updatedEvent = await _eventRepository.updateEvent(event);
 
-      // Atualiza a Campanha atual se for o mesmo
+      // Atualiza a campanha atual se for o mesmo
       if (_currentEvent?.id == event.id) {
         _currentEvent = updatedEvent;
       }
@@ -516,7 +516,7 @@ class EventController extends ChangeNotifier {
         _userEvents[eventIndex] = updatedEvent;
       }
 
-      // Atualiza a Campanha pesquisado se for o mesmo
+      // Atualiza a campanha pesquisado se for o mesmo
       if (_searchedEvent?.id == event.id) {
         _searchedEvent = updatedEvent;
       }
@@ -555,7 +555,7 @@ class EventController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Promove um voluntário a gerente da Campanha
+  /// Promove um voluntário a gerente da campanha
   Future<bool> promoteVolunteerToManager({
     required String eventId,
     required String volunteerId,
@@ -573,7 +573,7 @@ class EventController extends ChangeNotifier {
         managerId,
       );
 
-      // Atualiza a Campanha atual se for o mesmo
+      // Atualiza a campanha atual se for o mesmo
       if (_currentEvent?.id == eventId) {
         _currentEvent = updatedEvent;
       }
@@ -726,7 +726,7 @@ class EventController extends ChangeNotifier {
 
       await _eventRepository.recalculateEventVolunteerCounts(eventId);
 
-      // Recarrega os perfis de voluntários da Campanha
+      // Recarrega os perfis de voluntários da campanha
       await loadEventVolunteers(eventId);
 
       _isLoading = false;

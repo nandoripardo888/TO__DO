@@ -100,7 +100,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
         listen: false,
       );
 
-      // Carrega a Campanha
+      // Carrega a campanha
       final event = await eventController.loadEvent(widget.eventId);
       if (event == null) {
         throw Exception('campanha não encontrada');
@@ -239,7 +239,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Informações da Campanha (substitui a busca de campanha)
+            // Informações da campanha (substitui a busca de campanha)
             _buildEventInfoCard(),
 
             const SizedBox(height: AppDimensions.spacingLg),
@@ -320,7 +320,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
     );
   }
 
-  // Informações da Campanha - baseado no _buildEventDetailsSection da join_event_screen.dart
+  // Informações da campanha - baseado no _buildEventDetailsSection da join_event_screen.dart
   Widget _buildEventInfoCard() {
     return Card(
       elevation: AppDimensions.elevationSm,
@@ -350,7 +350,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
 
             const SizedBox(height: AppDimensions.spacingMd),
 
-            // Nome da Campanha
+            // Nome da campanha
             Text(
               _event!.name,
               style: const TextStyle(
@@ -415,7 +415,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
                   return SkillChip(
                     label: skill,
                     isSelected: false,
-                    onTap: null, // Não clicável na visualização da Campanha
+                    onTap: null, // Não clicável na visualização da campanha
                   );
                 }).toList(),
               ),
@@ -440,7 +440,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
                   return SkillChip(
                     label: resource,
                     isSelected: false,
-                    onTap: null, // Não clicável na visualização da Campanha
+                    onTap: null, // Não clicável na visualização da campanha
                   );
                 }).toList(),
               ),
@@ -921,7 +921,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
           const SizedBox(height: AppDimensions.spacingMd),
         ],
 
-        // Habilidades necessárias da Campanha
+        // Habilidades necessárias da campanha
         if (_event!.requiredSkills.isNotEmpty) ...[
           const Text(
             'Habilidades necessárias para esta campanha:',
@@ -1072,7 +1072,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
           const SizedBox(height: AppDimensions.spacingMd),
         ],
 
-        // Recursos necessários da Campanha
+        // Recursos necessários da campanha
         if (_event!.requiredResources.isNotEmpty) ...[
           const Text(
             'Recursos necessários para esta campanha:',

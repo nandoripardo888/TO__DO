@@ -28,7 +28,7 @@ class UserMicrotaskRepository {
         throw ValidationException('ID do usuário é obrigatório');
       }
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       return await _assignmentService.getUserMicrotasksByEvent(
@@ -38,7 +38,7 @@ class UserMicrotaskRepository {
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao buscar microtasks do usuário na Campanha: ${e.toString()}',
+        'Erro ao buscar microtasks do usuário na campanha: ${e.toString()}',
       );
     }
   }
@@ -54,7 +54,7 @@ class UserMicrotaskRepository {
         throw ValidationException('ID do usuário é obrigatório');
       }
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       return _assignmentService.watchUserMicrotasksByEvent(

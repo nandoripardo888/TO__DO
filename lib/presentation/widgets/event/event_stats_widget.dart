@@ -32,7 +32,7 @@ class EventStatsWidget extends StatelessWidget {
                 Icon(Icons.analytics, color: AppColors.primary, size: 24),
                 SizedBox(width: AppDimensions.spacingSm),
                 Text(
-                  'Estatísticas da Campanha',
+                  'Estatísticas da campanha',
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeLg,
                     fontWeight: FontWeight.bold,

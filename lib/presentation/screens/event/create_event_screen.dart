@@ -83,7 +83,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
   }
 
-  /// REQ-05: Pré-preenche os campos com os dados da Campanha para edição
+  /// REQ-05: Pré-preenche os campos com os dados da campanha para edição
   void _populateFieldsForEdit() {
     final event = widget.eventToEdit!;
     _nameController.text = event.name;
@@ -199,14 +199,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         ),
         const SizedBox(height: AppDimensions.spacingMd),
 
-        // Nome da Campanha
+        // Nome da campanha
         CustomTextField(
           controller: _nameController,
-          label: 'Nome da Campanha',
-          hint: 'Digite o nome da Campanha',
+          label: 'Nome da campanha',
+          hint: 'Digite o nome da campanha',
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return 'Nome da Campanha é obrigatório';
+              return 'Nome da campanha é obrigatório';
             }
             if (value.trim().length < 3) {
               return 'Nome deve ter pelo menos 3 caracteres';
@@ -224,7 +224,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         CustomTextField(
           controller: _descriptionController,
           label: 'Descrição',
-          hint: 'Descreva a Campanha (opcional)',
+          hint: 'Descreva a campanha (opcional)',
           maxLines: 3,
           validator: (value) {
             if (value != null && value.length > 500) {
@@ -240,7 +240,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         CustomTextField(
           controller: _locationController,
           label: 'Localização',
-          hint: 'Onde será realizado a Campanha',
+          hint: 'Onde será realizado a campanha',
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return 'Localização é obrigatória';
@@ -578,12 +578,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
 
     if (event != null && mounted) {
-      // Mostra dialog de sucesso com o código da Campanha
+      // Mostra dialog de sucesso com o código da campanha
       _showSuccessDialog(event.tag);
     }
   }
 
-  /// REQ-06: Manipula a atualização da Campanha
+  /// REQ-06: Manipula a atualização da campanha
   Future<void> _handleUpdateEvent(
     AuthController authController,
     EventController eventController,
@@ -606,7 +606,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     // Limpa erros anteriores
     eventController.clearError();
 
-    // Cria a Campanha atualizado
+    // Cria a campanha atualizado
     final updatedEvent = widget.eventToEdit!.copyWith(
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
@@ -642,7 +642,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           children: [
             Icon(Icons.check_circle, color: AppColors.success, size: 28),
             SizedBox(width: AppDimensions.spacingSm),
-            Text('campanha Criado!'),
+            Text('Campanha criada!'),
           ],
         ),
         content: Column(
@@ -655,7 +655,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             const Text(
-              'Código da Campanha:',
+              'Código da campanha:',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeMd,
                 fontWeight: FontWeight.w600,
@@ -685,7 +685,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             const Text(
-              'Compartilhe este código com os voluntários para que eles possam participar da Campanha.',
+              'Compartilhe este código com os voluntários para que eles possam participar da campanha.',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeSm,
                 color: AppColors.textSecondary,

@@ -41,9 +41,9 @@ class ConfirmationDialog extends StatelessWidget {
       title: 'Promover Voluntário',
       content:
           'Tem certeza de que deseja promover "$volunteerName" a gerente?\n\n'
-          'Esta ação concederá permissões de gerenciamento da Campanha ao usuário. '
+          'Esta ação concederá permissões de gerenciamento da campanha ao usuário. '
           'O voluntário poderá criar tasks, gerenciar outros voluntários e '
-          'modificar configurações da Campanha.\n\n'
+          'modificar configurações da campanha.\n\n'
           'Esta ação não pode ser desfeita facilmente.',
       confirmText: 'Confirmar Promoção',
       cancelText: 'Cancelar',

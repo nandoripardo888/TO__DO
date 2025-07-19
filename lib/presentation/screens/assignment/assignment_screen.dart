@@ -67,7 +67,7 @@ class _AssignmentScreenState extends State<AssignmentScreen>
         listen: false,
       );
 
-      // Carrega tasks da Campanha
+      // Carrega tasks da campanha
       await taskController.loadTasksByEventId(widget.eventId);
 
       // Coleta todas as microtasks disponíveis

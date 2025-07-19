@@ -20,11 +20,11 @@
 
 ### 1\. Resumo e Objetivo
 
-Este documento especifica os requisitos para a criação de uma nova aba "AGENDA" na tela de detalhes da Campanha. O objetivo principal é fornecer aos voluntários uma visão pessoal, clara e acionável de todas as microtarefas que lhes foram atribuídas dentro de uma campanha específico. A funcionalidade permitirá que os voluntários atualizem seu progresso individual, e o sistema usará essa informação para automatizar a atualização do status geral das microtarefas e tarefas.
+Este documento especifica os requisitos para a criação de uma nova aba "AGENDA" na tela de detalhes da campanha. O objetivo principal é fornecer aos voluntários uma visão pessoal, clara e acionável de todas as microtarefas que lhes foram atribuídas dentro de uma campanha específico. A funcionalidade permitirá que os voluntários atualizem seu progresso individual, e o sistema usará essa informação para automatizar a atualização do status geral das microtarefas e tarefas.
 
 ### 2\. Justificativa
 
-Atualmente, o voluntário tem uma visão dispersa de suas atribuições, geralmente na tela "Acompanhar Tasks", que mostra todas as tarefas da Campanha. Não há um local centralizado para o voluntário ver apenas _suas_ responsabilidades e gerenciar seu progresso de forma simples.
+Atualmente, o voluntário tem uma visão dispersa de suas atribuições, geralmente na tela "Acompanhar Tasks", que mostra todas as tarefas da campanha. Não há um local centralizado para o voluntário ver apenas _suas_ responsabilidades e gerenciar seu progresso de forma simples.
 
 Esta funcionalidade irá:
 
@@ -41,13 +41,13 @@ Esta funcionalidade irá:
 
 #### REQ-01: Nova Aba "AGENDA"
 
-*   **Descrição:** Uma nova aba chamada **"AGENDA"** deve ser adicionada à tela de detalhes da Campanha para fornecer aos voluntários uma visão personalizada de suas microtarefas.
+*   **Descrição:** Uma nova aba chamada **"AGENDA"** deve ser adicionada à tela de detalhes da campanha para fornecer aos voluntários uma visão personalizada de suas microtarefas.
 
 *   **Regras de Negócio:**
 
     *   **RN-01.1 - Posicionamento:** A aba "AGENDA" deve ser inserida na `TabBar` da tela `event_details_screen.dart`, seguindo a ordem: "campanha" → "AGENDA" → "Perfil" → "Acompanhar".
 
-    *   **RN-01.2 - Visibilidade:** A aba deve ser visível **apenas** para usuários que estão na lista `volunteers` da Campanha, seguindo o padrão de tabs dinâmicas estabelecido (RN-02 da especificação geral).
+    *   **RN-01.2 - Visibilidade:** A aba deve ser visível **apenas** para usuários que estão na lista `volunteers` da campanha, seguindo o padrão de tabs dinâmicas estabelecido (RN-02 da especificação geral).
 
     *   **RN-01.3 - Conteúdo:** A aba deve listar verticalmente todas as microtarefas atribuídas ao usuário logado para aquele campanha específico.
 
@@ -296,7 +296,7 @@ exports.onUserMicrotaskStatusChange = functions.firestore
 
 | ID | Critério | Verificação | Prioridade |
 | --- | --- | --- | --- |
-| **AC-01** | **Visibilidade da Aba** | A aba "AGENDA" está visível na tela de detalhes da Campanha apenas para usuários que estão na lista `volunteers` da Campanha. | Alta |
+| **AC-01** | **Visibilidade da Aba** | A aba "AGENDA" está visível na tela de detalhes da campanha apenas para usuários que estão na lista `volunteers` da campanha. | Alta |
 | **AC-02** | **Conteúdo da Agenda** | A aba "AGENDA" lista todos (e somente) os cards das microtarefas atribuídas ao usuário logado para aquele campanha específico. | Alta |
 | **AC-03** | **Estrutura do Card** | Cada card na agenda exibe: título da microtarefa, tarefa pai ("Pertence a: X"), data/hora (se disponível) e stepper de status horizontal. | Alta |
 | **AC-04** | **Ordenação** | As microtarefas são exibidas ordenadas por status (assigned → in_progress → completed) e depois por data de atribuição. | Média |

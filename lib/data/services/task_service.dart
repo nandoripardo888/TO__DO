@@ -74,7 +74,7 @@ class TaskService {
           .toList();
     } catch (e) {
       throw DatabaseException(
-        'Erro ao buscar tasks da Campanha: ${e.toString()}',
+        'Erro ao buscar tasks da campanha: ${e.toString()}',
       );
     }
   }
@@ -91,9 +91,9 @@ class TaskService {
           .map((doc) => TaskModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('Erro ao buscar tasks da Campanha: ${e.toString()}');
+      print('Erro ao buscar tasks da campanha: ${e.toString()}');
       throw DatabaseException(
-        'Erro ao buscar tasks da Campanha: ${e.toString()}',
+        'Erro ao buscar tasks da campanha: ${e.toString()}',
       );
     }
   }
@@ -333,7 +333,7 @@ class TaskService {
       await batch.commit();
     } catch (e) {
       throw DatabaseException(
-        'Erro ao deletar tasks da Campanha: ${e.toString()}',
+        'Erro ao deletar tasks da campanha: ${e.toString()}',
       );
     }
   }

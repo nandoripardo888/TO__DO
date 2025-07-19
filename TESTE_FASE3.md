@@ -44,11 +44,11 @@ Implementar o sistema completo de tarefas hierárquicas (Tasks → Microtasks) c
 - campanha criado na Fase 2
 
 **Passos**:
-1. Navegar para detalhes da Campanha
+1. Navegar para detalhes da campanha
 2. Acessar tab "Criar Tasks"
 3. Preencher formulário de task:
    - Nome: "Organização do Local"
-   - Descrição: "Preparar e organizar o espaço da Campanha"
+   - Descrição: "Preparar e organizar o espaço da campanha"
    - Prioridade: Alta
 4. Salvar task
 5. Verificar se task aparece na lista
@@ -93,7 +93,7 @@ Implementar o sistema completo de tarefas hierárquicas (Tasks → Microtasks) c
 
 **Pré-requisitos**:
 - Microtasks criadas no Teste 2
-- Pelo menos 5 voluntários na Campanha com habilidades compatíveis
+- Pelo menos 5 voluntários na campanha com habilidades compatíveis
 
 **Passos**:
 1. Navegar para tab "Gerenciar Voluntários"

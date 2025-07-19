@@ -120,14 +120,14 @@ class MicrotaskRepository {
   Future<List<MicrotaskModel>> getMicrotasksByEventId(String eventId) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       return await _microtaskService.getMicrotasksByEventId(eventId);
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao buscar microtasks da Campanha: ${e.toString()}',
+        'Erro ao buscar microtasks da campanha: ${e.toString()}',
       );
     }
   }
@@ -155,7 +155,7 @@ class MicrotaskRepository {
   ) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
 
       return await _microtaskService.getMicrotasksByStatus(eventId, status);
@@ -239,7 +239,7 @@ class MicrotaskRepository {
   }) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
       if (microtaskId.isEmpty) {
         throw ValidationException('ID da microtask é obrigatório');
@@ -264,7 +264,7 @@ class MicrotaskRepository {
   }) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID da Campanha é obrigatório');
+        throw ValidationException('ID da campanha é obrigatório');
       }
       if (userId.isEmpty) {
         throw ValidationException('ID do usuário é obrigatório');
@@ -502,7 +502,7 @@ class MicrotaskRepository {
   /// Stream para escutar mudanças nas microtasks de uma campanha
   Stream<List<MicrotaskModel>> watchMicrotasksByEventId(String eventId) {
     if (eventId.isEmpty) {
-      throw ValidationException('ID da Campanha é obrigatório');
+      throw ValidationException('ID da campanha é obrigatório');
     }
 
     return _microtaskService.watchMicrotasksByEventId(eventId);

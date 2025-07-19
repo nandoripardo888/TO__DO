@@ -346,7 +346,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Tasks da Campanha',
+          'Tasks da campanha',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,

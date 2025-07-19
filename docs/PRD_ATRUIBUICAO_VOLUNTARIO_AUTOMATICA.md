@@ -287,7 +287,7 @@ exports.autoAssignVolunteers \= functions.https.onCall(async (data, context) \=\
   const eventDoc \= await eventRef.get();
 
   if (\!eventDoc.exists) {  
-    throw new functions.https.HttpsError("not-found", "Campanha não encontrada.");  
+    throw new functions.https.HttpsError("not-found", "campanha não encontrada.");  
   }
 
   const eventData \= eventDoc.data();  

@@ -16,7 +16,7 @@ Sistema onde usuários podem criar campanhas, gerenciar tarefas hierárquicas (T
 ### Gerenciador de campanha
 - Cria campanhas com informações detalhadas
 - Define habilidades e recursos necessários
-- Compartilha código/tag da Campanha
+- Compartilha código/tag da campanha
 - Cria e organiza Tasks e Microtasks
 - Atribui voluntários às microtasks
 - Pode promover voluntários a gerenciadores
@@ -83,15 +83,15 @@ Sistema onde usuários podem criar campanhas, gerenciar tarefas hierárquicas (T
     - "Criar campanha"
     - "Participar de campanha"
 - **Event Card:**
-  - Nome da Campanha
+  - Nome da campanha
   - Papel do usuário (Gerenciador/Voluntário)
   - Número de tarefas pendentes
-  - Status da Campanha
+  - Status da campanha
   - Estatísticas da campanha (novo)
 
 ### 4. Tela Criar campanha
 - **Formulário:**
-  - Nome da Campanha (obrigatório)
+  - Nome da campanha (obrigatório)
   - Descrição (texto longo)
   - Localização (campo descritivo)
   - Habilidades necessárias (chips selecionáveis + adicionar nova)
@@ -103,20 +103,20 @@ Sistema onde usuários podem criar campanhas, gerenciar tarefas hierárquicas (T
 - **Componentes:**
   - Campo para inserir código/tag
   - Botão "Buscar campanha" (alinhado à esquerda com o campo)
-  - Exibição dos detalhes da Campanha encontrado
+  - Exibição dos detalhes da campanha encontrado
   - **Verificação de Participação:** Se usuário já é participante, exibe detalhes mas impede nova participação
   - Formulário de perfil do voluntário (apenas se ainda não for participante):
     - Dias disponíveis (checkboxes)
     - Horário disponível (time picker)
-    - **Habilidades:** Lista prioritária das habilidades necessárias da Campanha + opção de adicionar nova
-    - **Recursos:** Lista prioritária dos recursos necessários da Campanha + opção de adicionar novo
+    - **Habilidades:** Lista prioritária das habilidades necessárias da campanha + opção de adicionar nova
+    - **Recursos:** Lista prioritária dos recursos necessários da campanha + opção de adicionar novo
     - Botão "Adicionar" para novas habilidades/recursos (alinhado à esquerda)
   - Botão "Confirmar Participação" (apenas se ainda não for participante)
 
-### 6. Tela Detalhes da Campanha
+### 6. Tela Detalhes da campanha
 - **Tabs de Navegação (Dinâmicas):**
   - **campanha:** Informações gerais, localização, código/tag
-  - **Voluntários:** (apenas gerenciadores) - Gerenciar voluntários da Campanha
+  - **Voluntários:** (apenas gerenciadores) - Gerenciar voluntários da campanha
   - **Perfil:** (apenas voluntários) - **NOVA TAB** para gerenciar perfil de voluntário
   - **Acompanhar:** Visualização de todas as tasks/microtasks
   - **Agenda:** (novo) Visualização das microtasks do voluntário
@@ -298,12 +298,12 @@ lib/
 #### RN-01: Registro Automático de Voluntário para Criador de campanha
 - **Descrição:** Quando um usuário cria uma campanha, ele é automaticamente registrado como voluntário além de gerenciador
 - **Implementação:**
-  - Array `volunteers` da Campanha inclui automaticamente o `createdBy`
+  - Array `volunteers` da campanha inclui automaticamente o `createdBy`
   - Perfil de voluntário é criado automaticamente com valores padrão
   - Valores padrão: horário 09:00-17:00, disponibilidade não integral, listas vazias para skills/resources
 - **Benefício:** Facilita o processo para criadores que também querem participar como voluntários
 
-#### RN-02: Tabs Dinâmicas na Tela de Detalhes da Campanha
+#### RN-02: Tabs Dinâmicas na Tela de Detalhes da campanha
 - **Descrição:** As tabs são exibidas dinamicamente baseadas nas permissões do usuário
 - **Lógica:**
   - Tab "campanha": sempre visível
@@ -405,7 +405,7 @@ lib/
 - Controle de status das microtasks (Tasks herdam status das microtasks)
 - Prevenção de atribuição dupla do mesmo voluntário à mesma microtask
 - Validação de conclusão colaborativa (todos os voluntários devem marcar como concluída)
-- Verificação de participação existente antes de permitir nova inscrição na Campanha
+- Verificação de participação existente antes de permitir nova inscrição na campanha
 
 ## 🗄️ Estrutura do Banco de Dados (Firestore)
 
@@ -425,8 +425,8 @@ lib/
 ```json
 {
   "id": "event_id",
-  "name": "Nome da Campanha",
-  "description": "Descrição da Campanha",
+  "name": "Nome da campanha",
+  "description": "Descrição da campanha",
   "tag": "ABC123",
   "location": "Endereço descritivo",
   "createdBy": "user_id",

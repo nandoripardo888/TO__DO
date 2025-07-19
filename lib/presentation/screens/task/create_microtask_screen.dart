@@ -84,7 +84,7 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
     if (_isLoadingEvent) {
       return const Scaffold(
         backgroundColor: AppColors.background,
-        body: LoadingWidget(message: 'Carreganda Campanha...'),
+        body: LoadingWidget(message: 'Carreganda campanha...'),
       );
     }
 
@@ -477,7 +477,7 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
               border: Border.all(color: AppColors.warning.withOpacity(0.3)),
             ),
             child: const Text(
-              'Nenhuma habilidade definida na Campanha.',
+              'Nenhuma habilidade definida na campanha.',
               style: TextStyle(color: AppColors.warning),
             ),
           )
@@ -544,7 +544,7 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
               border: Border.all(color: AppColors.warning.withOpacity(0.3)),
             ),
             child: const Text(
-              'Nenhum recurso definido na Campanha.',
+              'Nenhum recurso definido na campanha.',
               style: TextStyle(color: AppColors.warning),
             ),
           )

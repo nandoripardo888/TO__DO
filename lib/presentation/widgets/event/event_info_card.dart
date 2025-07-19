@@ -228,7 +228,7 @@ class EventInfoCard extends StatelessWidget {
   Widget _buildFooter() {
     return Row(
       children: [
-        // Tag da Campanha
+        // Tag da campanha
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingMd,

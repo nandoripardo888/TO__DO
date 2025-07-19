@@ -1,13 +1,13 @@
 ### **Adendo ao PRD - Versão 1.1**
 ### 1\. Resumo e Objetivo
 
-Este adendo especifica os requisitos para implementar a funcionalidade de **edição de dados de uma campanha existente**. O objetivo é permitir que os gerenciadores de campanhas modifiquem informações chave da Campanha (como nome, descrição, localização, etc.) após sua criação, oferecendo maior flexibilidade e capacidade de correção.
+Este adendo especifica os requisitos para implementar a funcionalidade de **edição de dados de uma campanha existente**. O objetivo é permitir que os gerenciadores de campanhas modifiquem informações chave da campanha (como nome, descrição, localização, etc.) após sua criação, oferecendo maior flexibilidade e capacidade de correção.
 
 ### 2\. Justificativa
 
 Atualmente, uma vez que uma campanha é criado, seus dados são imutáveis. Na prática, informações podem mudar (ex: alteração de local) ou erros de digitação podem precisar de correção. Implementar a edição de campanhas é crucial para:
 
-*   **Aumentar a Flexibilidade:** Permite que os gerenciadores adaptem a Campanha a novas circunstâncias.
+*   **Aumentar a Flexibilidade:** Permite que os gerenciadores adaptem a campanha a novas circunstâncias.
     
 *   **Melhorar a Integridade dos Dados:** Garante que os voluntários sempre tenham acesso às informações mais atualizadas e corretas.
     
@@ -18,7 +18,7 @@ Atualmente, uma vez que uma campanha é criado, seus dados são imutáveis. Na p
 
 #### REQ-04: Botão Flutuante (FAB) para Edição de campanha
 
-*   **Descrição:** Um novo Botão de Ação Flutuante (Floating Action Button - FAB) deve ser adicionado na tela de detalhes da Campanha.
+*   **Descrição:** Um novo Botão de Ação Flutuante (Floating Action Button - FAB) deve ser adicionado na tela de detalhes da campanha.
     
 *   **Regras de Negócio:**
     
@@ -30,7 +30,7 @@ Atualmente, uma vez que uma campanha é criado, seus dados são imutáveis. Na p
         
         *   Deve estar visível **apenas** quando a aba **"campanha"** da tela `event_details_screen.dart` estiver selecionada.
             
-        *   Deve estar visível **apenas** para usuários que estão na lista `managers` da Campanha.
+        *   Deve estar visível **apenas** para usuários que estão na lista `managers` da campanha.
             
 
 #### REQ-05: Tela de Edição de campanha
@@ -41,7 +41,7 @@ Atualmente, uma vez que uma campanha é criado, seus dados são imutáveis. Na p
     
     1.  **Navegação:** Ao clicar no novo FAB de edição (REQ-04), o usuário deve ser navegado para a tela `create_event_screen.dart` (em modo de edição).
         
-    2.  **Pré-preenchimento:** Todos os campos do formulário (Nome da Campanha, Descrição, Localização, Habilidades necessárias, Recursos necessários) devem ser preenchidos com os dados atuais da Campanha que está sendo editado.
+    2.  **Pré-preenchimento:** Todos os campos do formulário (Nome da campanha, Descrição, Localização, Habilidades necessárias, Recursos necessários) devem ser preenchidos com os dados atuais da campanha que está sendo editado.
         
     3.  **Modificação dos Botões:** A barra de ações no final da tela deve ser diferente do modo de criação:
         
@@ -64,7 +64,7 @@ Atualmente, uma vez que uma campanha é criado, seus dados são imutáveis. Na p
         
         *   Ao ser clicado, o sistema deve validar os campos (as mesmas validações da criação).
             
-        *   Se os dados forem válidos, as informações do documento da Campanha na collection `events` do Firestore devem ser atualizadas com os novos valores.
+        *   Se os dados forem válidos, as informações do documento da campanha na collection `events` do Firestore devem ser atualizadas com os novos valores.
             
         *   Após a atualização bem-sucedida, o usuário deve ser redirecionado de volta para a tela `event_details_screen.dart`, onde os dados atualizados devem ser visíveis.
             
@@ -87,7 +87,7 @@ Atualmente, uma vez que uma campanha é criado, seus dados são imutáveis. Na p
         
     *   `lib/presentation/screens/event/create_event_screen.dart`: Requer uma refatoração significativa para aceitar um `event_model` opcional como argumento. Se o argumento for fornecido, a tela entra em "modo de edição", pré-populando os campos e renderizando os botões "Cancelar" e "Salvar Alterações".
         
-    *   `lib/presentation/controllers/event_controller.dart`: Precisará de um novo método para gerenciar o estado e a lógica de atualização da Campanha, que será chamado pela tela de edição.
+    *   `lib/presentation/controllers/event_controller.dart`: Precisará de um novo método para gerenciar o estado e a lógica de atualização da campanha, que será chamado pela tela de edição.
         
     *   `lib/data/services/event_service.dart`: Um novo método `updateEvent(EventModel event)` deve ser criado para encapsular a lógica de atualização do documento no Firestore.
         
@@ -97,14 +97,14 @@ Atualmente, uma vez que uma campanha é criado, seus dados são imutáveis. Na p
 ### 5\. Critérios de Aceite
 
 | ID | Critério
-| AC-11 | O FAB de edição (ícone de lápis) é exibido acima do FAB de "+" na tela de Detalhes da Campanha.
+| AC-11 | O FAB de edição (ícone de lápis) é exibido acima do FAB de "+" na tela de Detalhes da campanha.
 | AC-12 | O FAB de edição só é visível quando a aba "campanha" está ativa. Ao mudar para outras abas, ele desaparece.
-| AC-13 | O FAB de edição só é visível para usuários que são gerenciadores da Campanha. Voluntários comuns não o veem.
-| AC-14 | Ao clicar no FAB de edição, o usuário navega para a tela de edição e todos os campos estão preenchidos com os dados atuais da Campanha.
+| AC-13 | O FAB de edição só é visível para usuários que são gerenciadores da campanha. Voluntários comuns não o veem.
+| AC-14 | Ao clicar no FAB de edição, o usuário navega para a tela de edição e todos os campos estão preenchidos com os dados atuais da campanha.
 | AC-15 | Na tela de edição, o botão "Criar campanha" não está visível. Em seu lugar, os botões "Cancelar" e "Salvar Alterações" são exibidos.
 | AC-16 | Clicar em "Cancelar" na tela de edição retorna o usuário à tela de detalhes sem salvar nenhuma alteração.
-| AC-17 | Após editar um ou mais campos e clicar em "Salvar Alterações", os dados da Campanha são atualizados no Firestore.
-| AC-18 | Após salvar, o usuário é retornado à tela de detalhes e pode visualizar as informações atualizadas da Campanha.
+| AC-17 | Após editar um ou mais campos e clicar em "Salvar Alterações", os dados da campanha são atualizados no Firestore.
+| AC-18 | Após salvar, o usuário é retornado à tela de detalhes e pode visualizar as informações atualizadas da campanha.
 
 Funcionalidade de Edição de campanhas - IMPLEMENTADA COM SUCESSO
 🔧 Problema Identificado e Resolvido:

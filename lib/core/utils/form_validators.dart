@@ -81,7 +81,7 @@ class FormValidators {
   /// Valida nome de campanha
   static String? eventName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Nome da Campanha é obrigatório';
+      return 'Nome da campanha é obrigatório';
     }
 
     final trimmedValue = value.trim();
@@ -124,7 +124,7 @@ class FormValidators {
   /// Valida tag/código de campanha
   static String? eventTag(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Código da Campanha é obrigatório';
+      return 'Código da campanha é obrigatório';
     }
 
     final trimmedValue = value.trim().toUpperCase();

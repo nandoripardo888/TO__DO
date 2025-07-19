@@ -73,10 +73,10 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Seção de busca da Campanha
+                // Seção de busca da campanha
                 _buildSearchSection(eventController),
 
-                // Exibe detalhes da Campanha encontrado
+                // Exibe detalhes da campanha encontrado
                 if (_hasSearched && eventController.searchedEvent != null) ...[
                   const SizedBox(height: AppDimensions.spacingLg),
                   _buildEventDetailsSection(
@@ -173,7 +173,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
         ),
         const SizedBox(height: AppDimensions.spacingSm),
         const Text(
-          'Digite o código da Campanha que você deseja participar',
+          'Digite o código da campanha que você deseja participar',
           style: TextStyle(
             fontSize: AppDimensions.fontSizeMd,
             color: AppColors.textSecondary,
@@ -187,11 +187,11 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
             Expanded(
               child: CustomTextField(
                 controller: _tagController,
-                label: 'Código da Campanha',
+                label: 'Código da campanha',
                 hint: 'Ex: ABC123',
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Código da Campanha é obrigatório';
+                    return 'Código da campanha é obrigatório';
                   }
                   if (value.trim().length != 6) {
                     return 'Código deve ter exatamente 6 caracteres';
@@ -245,7 +245,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
 
             const SizedBox(height: AppDimensions.spacingMd),
 
-            // Nome da Campanha
+            // Nome da campanha
             Text(
               event.name,
               style: const TextStyle(
@@ -354,7 +354,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           const Text(
-            'Preencha suas informações para participar da Campanha',
+            'Preencha suas informações para participar da campanha',
             style: TextStyle(
               fontSize: AppDimensions.fontSizeMd,
               color: AppColors.textSecondary,
@@ -589,7 +589,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
 
         const SizedBox(height: AppDimensions.spacingMd),
 
-        // Habilidades necessárias da Campanha
+        // Habilidades necessárias da campanha
         Consumer<EventController>(
           builder: (context, eventController, child) {
             final event = eventController.searchedEvent;
@@ -710,7 +710,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
 
         const SizedBox(height: AppDimensions.spacingMd),
 
-        // Recursos necessários da Campanha
+        // Recursos necessários da campanha
         Consumer<EventController>(
           builder: (context, eventController, child) {
             final event = eventController.searchedEvent;
@@ -892,7 +892,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
     }
   }
 
-  // Método para participar da Campanha
+  // Método para participar da campanha
   Future<void> _handleJoinEvent(
     AuthController authController,
     EventController eventController,
@@ -1004,7 +1004,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
             ),
             SizedBox(height: AppDimensions.spacingMd),
             Text(
-              'Você pode acompanhar a Campanha na tela inicial e receber atualizações dos organizadores.',
+              'Você pode acompanhar a campanha na tela inicial e receber atualizações dos organizadores.',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeSm,
                 color: AppColors.textSecondary,
@@ -1025,7 +1025,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
     );
   }
 
-  // Verifica se o usuário já é participante da Campanha
+  // Verifica se o usuário já é participante da campanha
   bool _isUserParticipant(EventModel event, String? userId) {
     if (userId == null) return false;
     return event.isParticipant(userId);
