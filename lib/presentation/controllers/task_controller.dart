@@ -142,7 +142,7 @@ class TaskController extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      final task = await _taskRepository.createTask(
+      await _taskRepository.createTask(
         eventId: eventId,
         title: title,
         description: description,
@@ -150,9 +150,8 @@ class TaskController extends ChangeNotifier {
         createdBy: createdBy,
       );
 
-      // Adiciona à lista local
-      _tasks.add(task);
-      _microtasksByTask[task.id] = [];
+      // Não adiciona à lista local - o stream irá detectar e atualizar automaticamente
+      // Isso evita duplicação visual da task
 
       _setState(TaskControllerState.loaded);
       return true;
@@ -186,7 +185,7 @@ class TaskController extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      final microtask = await _microtaskRepository.createMicrotask(
+      await _microtaskRepository.createMicrotask(
         taskId: taskId,
         eventId: eventId,
         title: title,
@@ -201,12 +200,8 @@ class TaskController extends ChangeNotifier {
         notes: notes,
       );
 
-      // Adiciona à lista local
-      if (_microtasksByTask.containsKey(taskId)) {
-        _microtasksByTask[taskId]!.add(microtask);
-      } else {
-        _microtasksByTask[taskId] = [microtask];
-      }
+      // Não adiciona à lista local - o stream irá detectar e atualizar automaticamente
+      // Isso evita duplicação visual da microtask
 
       // Atualiza contador da task pai
       await _taskRepository.incrementMicrotaskCount(taskId);

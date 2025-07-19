@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
@@ -711,13 +712,26 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
   }
 
-  void _copyEventTag(String tag) {
-    // TODO: Implementar cópia para clipboard
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Código copiado para a área de transferência'),
-        backgroundColor: AppColors.success,
-      ),
-    );
+  void _copyEventTag(String tag) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: tag));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Código copiado para a área de transferência'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao copiar código'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 }
