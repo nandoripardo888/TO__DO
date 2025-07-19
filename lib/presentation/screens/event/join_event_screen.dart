@@ -233,7 +233,7 @@ class _JoinEventScreenState extends State<JoinEventScreen> {
                 const Icon(Icons.event, color: AppColors.primary, size: 28),
                 const SizedBox(width: AppDimensions.spacingSm),
                 const Text(
-                  'campanha Encontrado',
+                  'Campanha encontrada',
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeLg,
                     fontWeight: FontWeight.bold,
