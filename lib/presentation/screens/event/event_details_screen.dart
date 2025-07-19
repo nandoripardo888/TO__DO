@@ -295,7 +295,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     // REQ-02: Constrói lista de tabs dinamicamente baseada nas permissões
     // RN-01.1: Ordem das tabs: "campanha" → "AGENDA" → "Acompanhar"
     final tabs = <Widget>[
-      const Tab(icon: Icon(Icons.info_outline), text: 'campanha'),
+      const Tab(icon: Icon(Icons.info_outline), text: 'Campanha'),
       if (isVolunteer) const Tab(icon: Icon(Icons.assignment), text: 'Agenda'),
       if (isManager) const Tab(icon: Icon(Icons.people), text: 'Voluntários'),
       const Tab(icon: Icon(Icons.track_changes), text: 'Tasks'),
