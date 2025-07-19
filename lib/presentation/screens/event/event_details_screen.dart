@@ -17,7 +17,7 @@ import 'track_tasks_screen.dart';
 import '../profile/my_volunteer_profile_screen.dart';
 import '../agenda/agenda_screen.dart';
 
-/// Tela de detalhes do evento com sistema de tabs
+/// Tela de detalhes da Campanha com sistema de tabs
 class EventDetailsScreen extends StatefulWidget {
   final String eventId;
 
@@ -55,15 +55,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     final isManager = _event!.isManager(currentUserId ?? '');
     final isVolunteer = _event!.isVolunteer(currentUserId ?? '');
 
-    int count = 2; // Evento + Acompanhar (sempre visíveis)
+    int count = 2; // campanha + Acompanhar (sempre visíveis)
     if (isVolunteer) count++; // AGENDA (RN-01.2: apenas para voluntários)
     if (isManager) count++; // Voluntários
-    if (isVolunteer) count++; // Perfil
 
     return count;
   }
 
-  /// REQ-02: Atualiza o TabController quando o evento é carregado
+  /// REQ-02: Atualiza o TabController quando a Campanha é carregado
   void _updateTabController() {
     final newLength = _getTabCount();
     if (_tabController?.length != newLength) {
@@ -100,7 +99,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         // REQ-02: Atualiza o TabController baseado nas permissões
         _updateTabController();
 
-        // Carrega tasks do evento
+        // Carrega tasks da Campanha
         if (mounted) {
           final taskController = Provider.of<TaskController>(
             context,
@@ -116,13 +115,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         }
       } else {
         setState(() {
-          _errorMessage = 'Evento não encontrado';
+          _errorMessage = 'campanha não encontrado';
           _isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Erro ao carregar evento: ${e.toString()}';
+        _errorMessage = 'Erro ao carregar campanha: ${e.toString()}';
         _isLoading = false;
       });
     }
@@ -133,7 +132,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: AppColors.background,
-        body: LoadingWidget(message: 'Carregando evento...'),
+        body: LoadingWidget(message: 'Carreganda Campanha...'),
       );
     }
 
@@ -141,7 +140,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Detalhes do Evento'),
+          title: const Text('Detalhes da Campanha'),
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textOnPrimary,
         ),
@@ -156,11 +155,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Detalhes do Evento'),
+          title: const Text('Detalhes da Campanha'),
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textOnPrimary,
         ),
-        body: const Center(child: Text('Evento não encontrado')),
+        body: const Center(child: Text('campanha não encontrado')),
       );
     }
 
@@ -185,6 +184,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final currentUserId = authController.currentUser?.id;
+    final isVolunteer = _event?.isVolunteer(currentUserId ?? '') ?? false;
+    final isManager = _event?.isManager(currentUserId ?? '') ?? false;
+
     return CustomAppBar(
       title: _event!.name,
       actions: [
@@ -193,11 +197,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           onPressed: _loadEventDetails,
           tooltip: 'Atualizar',
         ),
-        IconButton(
-          icon: const Icon(Icons.share),
-          onPressed: () => _shareEvent(),
-          tooltip: 'Compartilhar',
-        ),
+        if (isVolunteer || isManager)
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: _navigateToProfileScreen,
+            tooltip: 'Perfil',
+          ),
       ],
     );
   }
@@ -209,12 +214,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     final isVolunteer = _event!.isVolunteer(currentUserId ?? '');
 
     // REQ-02: Constrói lista de tabs dinamicamente baseada nas permissões
-    // RN-01.1: Ordem das tabs: "Evento" → "AGENDA" → "Perfil" → "Acompanhar"
+    // RN-01.1: Ordem das tabs: "campanha" → "AGENDA" → "Acompanhar"
     final tabs = <Widget>[
-      const Tab(icon: Icon(Icons.info_outline), text: 'Evento'),
+      const Tab(icon: Icon(Icons.info_outline), text: 'campanha'),
       if (isVolunteer) const Tab(icon: Icon(Icons.assignment), text: 'Agenda'),
       if (isManager) const Tab(icon: Icon(Icons.people), text: 'Voluntários'),
-      if (isVolunteer) const Tab(icon: Icon(Icons.person), text: 'Perfil'),
       const Tab(icon: Icon(Icons.track_changes), text: 'Tasks'),
     ];
 
@@ -241,7 +245,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       _buildEventTab(),
       if (isVolunteer) _buildAgendaTab(),
       if (isManager) _buildManageVolunteersTab(),
-      if (isVolunteer) _buildMyDataTab(),
       _buildTrackTasksTab(),
     ];
 
@@ -282,27 +285,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   }
 
   /// REQ-02: Nova aba "Perfil" para gerenciamento do perfil de voluntário
-  Widget _buildMyDataTab() {
-    final authController = Provider.of<AuthController>(context, listen: false);
-    final currentUserId = authController.currentUser?.id;
 
-    if (currentUserId == null) {
-      return const Center(
-        child: Text(
-          'Usuário não encontrado',
-          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
-        ),
-      );
-    }
-
-    // REQ-03: Usa a nova tela unificada de perfil de voluntário
-    return MyVolunteerProfileScreen(
-      eventId: widget.eventId,
-      userId: currentUserId,
-      isEditMode: false,
-      showAppBar: false, // Não mostra app bar quando usado dentro da aba
-    );
-  }
 
   /// RN-01: Nova aba "AGENDA" para voluntários
   Widget _buildAgendaTab() {
@@ -339,7 +322,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                 const Icon(Icons.info_outline, color: AppColors.primary),
                 const SizedBox(width: AppDimensions.spacingSm),
                 const Text(
-                  'Informações do Evento',
+                  'Informações da Campanha',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -479,7 +462,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                 const Icon(Icons.qr_code, color: AppColors.primary),
                 const SizedBox(width: AppDimensions.spacingSm),
                 const Text(
-                  'Código do Evento',
+                  'Código da Campanha',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -519,7 +502,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             const Text(
-              'Compartilhe este código para que outros possam participar do evento',
+              'Compartilhe este código para que outros possam participar da Campanha',
               style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
@@ -602,70 +585,28 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
-  /// Verifica se a aba atual é a aba "Evento" (sempre índice 0)
+  /// Verifica se a aba atual é a aba "campanha" (sempre índice 0)
   bool _isCurrentTabEvent() {
     return _tabController?.index == 0;
   }
 
-  /// Verifica se a aba atual é a aba "Perfil"
-  bool _isCurrentTabMyData() {
-    final authController = Provider.of<AuthController>(context, listen: false);
-    final currentUserId = authController.currentUser?.id;
-    final isManager = _event?.isManager(currentUserId ?? '') ?? false;
-    final isVolunteer = _event?.isVolunteer(currentUserId ?? '') ?? false;
 
-    if (!isVolunteer) return false; // Aba só existe para voluntários
 
-    final currentIndex = _tabController?.index ?? -1;
-
-    // Calcula o índice esperado da aba "Perfil"
-    int expectedIndex = 1; // Após "Evento"
-    if (isVolunteer) expectedIndex++; // Se tem "AGENDA", incrementa
-    if (isManager) expectedIndex++; // Se tem "Voluntários", incrementa
-
-    return currentIndex == expectedIndex;
-  }
-
-  /// REQ-04: Navega para a tela de edição do evento
+  /// REQ-04: Navega para a tela de edição da Campanha
   void _navigateToEditEvent() {
     if (_event == null) return;
 
     Navigator.pushNamed(
       context,
       '/create-event',
-      arguments: _event, // Passa o evento atual como argumento para edição
+      arguments: _event, // Passa a Campanha atual como argumento para edição
     ).then((_) {
-      // Recarrega os dados do evento após retornar da edição
+      // Recarrega os dados da Campanha após retornar da edição
       _loadEventDetails();
     });
   }
 
-  /// Navega para a tela de edição do perfil do voluntário
-  void _navigateToEditProfile() {
-    if (_event == null) return;
 
-    final authController = Provider.of<AuthController>(context, listen: false);
-    final currentUserId = authController.currentUser?.id;
-
-    if (currentUserId == null) return;
-
-    // Navega para a tela de perfil em modo de edição
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MyVolunteerProfileScreen(
-          eventId: _event!.id,
-          userId: currentUserId,
-          isEditMode: true, // Inicia diretamente no modo de edição
-          showAppBar:
-              true, // Mostra app bar quando navegando para tela separada
-        ),
-      ),
-    ).then((_) {
-      // Recarrega os dados do evento após retornar da edição
-      _loadEventDetails();
-    });
-  }
 
   Widget? _buildFloatingActionButton() {
     final authController = Provider.of<AuthController>(context, listen: false);
@@ -676,9 +617,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     // Mostra FAB se for gerenciador OU voluntário (para aba "Perfil")
     if (!isManager && !isVolunteer) return null;
 
-    // Aba "Evento": mostra botão de edição + botão de adicionar tasks (apenas para gerenciadores)
+    // Aba "campanha": mostra botão de edição + botão de adicionar tasks (apenas para gerenciadores)
     if (_isCurrentTabEvent()) {
-      // Apenas gerenciadores podem editar o evento e criar tasks
+      // Apenas gerenciadores podem editar a Campanha e criar tasks
       if (isManager) {
         return Consumer<TaskController>(
           builder: (context, taskController, child) {
@@ -706,20 +647,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           },
         );
       } else {
-        // Voluntários não veem nenhum FAB na aba "Evento"
+        // Voluntários não veem nenhum FAB na aba "campanha"
         return null;
       }
     }
 
-    // Aba "Perfil": mostra apenas botão de edição do perfil
-    if (_isCurrentTabMyData()) {
-      return FloatingActionButton(
-        heroTag: "edit_profile_fab",
-        onPressed: _navigateToEditProfile,
-        backgroundColor: AppColors.secondary,
-        child: const Icon(Icons.edit, color: AppColors.textOnPrimary),
-      );
-    }
+
 
     // Aba "Voluntários": apenas FAB de adicionar tasks (apenas para gerenciadores)
     if (isManager) {
@@ -811,17 +744,26 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     );
   }
 
-  void _shareEvent() {
-    // TODO: Implementar compartilhamento do evento
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Compartilhar evento: ${_event!.name} (${_event!.tag})'),
-        backgroundColor: AppColors.warning,
-        action: SnackBarAction(
-          label: 'Copiar Código',
-          onPressed: () => _copyToClipboard(_event!.tag),
+  void _navigateToProfileScreen() {
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final currentUserId = authController.currentUser?.id;
+
+    if (currentUserId == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MyVolunteerProfileScreen(
+          eventId: _event!.id,
+          userId: currentUserId,
+          isEditMode: false,
+          showAppBar: true,
         ),
       ),
-    );
+    ).then((_) {
+      _loadEventDetails();
+    });
   }
+
+
 }

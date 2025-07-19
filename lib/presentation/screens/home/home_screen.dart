@@ -9,7 +9,7 @@ import '../../widgets/event/event_card.dart';
 import '../../routes/app_routes.dart';
 
 /// Tela home principal do aplicativo
-/// Exibe lista de eventos do usuário e opções para criar/participar de eventos
+/// Exibe lista de campanhas do usuário e opções para criar/participar de campanhas
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -58,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Seção de boas-vindas
                 _buildWelcomeSection(user.displayName),
 
-                // Lista de eventos
+                // Lista de campanhas
                 Expanded(child: _buildEventsList(eventController)),
               ],
             ),
@@ -161,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
-            'Gerencie seus eventos e tarefas',
+            'Gerencie suas campanhas e tarefas',
             style: TextStyle(
               fontSize: AppDimensions.fontSizeMd,
               color: AppColors.textOnPrimary.withValues(alpha: 0.9),
@@ -214,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             const Text(
-              'Nenhum evento encontrado',
+              'Nenhuma campanha encontrado',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeLg,
                 fontWeight: FontWeight.w600,
@@ -223,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             const Text(
-              'Crie um novo evento ou participe de um existente',
+              'Crie um nova Campanha ou participe de um existente',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeMd,
                 color: AppColors.textSecondary,
@@ -232,12 +232,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             CustomButton(
-              text: 'Criar Evento',
+              text: 'Criar campanha',
               onPressed: () => _navigateToCreateEvent(),
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             CustomButton.outline(
-              text: 'Participar de Evento',
+              text: 'Participar de campanha',
               onPressed: () => _navigateToJoinEvent(),
             ),
           ],
@@ -279,8 +279,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.add_circle, color: AppColors.primary),
-              title: const Text('Criar Evento'),
-              subtitle: const Text('Organize um novo evento'),
+              title: const Text('Criar campanha'),
+              subtitle: const Text('Organize um nova Campanha'),
               onTap: () {
                 Navigator.of(context).pop(); // Fecha o dialog
                 _navigateToCreateEvent();
@@ -288,8 +288,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.group_add, color: AppColors.secondary),
-              title: const Text('Participar de Evento'),
-              subtitle: const Text('Entre em um evento existente'),
+              title: const Text('Participar de campanha'),
+              subtitle: const Text('Entre em uma campanha existente'),
               onTap: () {
                 Navigator.of(context).pop(); // Fecha o dialog
                 _navigateToJoinEvent();
@@ -345,8 +345,8 @@ class _HomeScreenState extends State<HomeScreen> {
             // Opções
             ListTile(
               leading: const Icon(Icons.add_circle, color: AppColors.primary),
-              title: const Text('Criar Evento'),
-              subtitle: const Text('Organize um novo evento'),
+              title: const Text('Criar campanha'),
+              subtitle: const Text('Organize um nova Campanha'),
               onTap: () {
                 Navigator.pop(context);
                 _navigateToCreateEvent();
@@ -354,8 +354,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.group_add, color: AppColors.secondary),
-              title: const Text('Participar de Evento'),
-              subtitle: const Text('Entre em um evento existente'),
+              title: const Text('Participar de campanha'),
+              subtitle: const Text('Entre em uma campanha existente'),
               onTap: () {
                 Navigator.pop(context);
                 _navigateToJoinEvent();

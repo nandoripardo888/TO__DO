@@ -4,7 +4,7 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../data/models/event_model.dart';
 import 'skill_chip.dart';
 
-/// Widget de card para exibir informações detalhadas de um evento
+/// Widget de card para exibir informações detalhadas de uma campanha
 class EventInfoCard extends StatelessWidget {
   final EventModel event;
   final String? currentUserId;
@@ -40,38 +40,38 @@ class EventInfoCard extends StatelessWidget {
             children: [
               // Header com nome e status
               _buildHeader(),
-              
+
               const SizedBox(height: AppDimensions.spacingMd),
-              
+
               // Descrição
               if (event.description.isNotEmpty) ...[
                 _buildDescription(),
                 const SizedBox(height: AppDimensions.spacingMd),
               ],
-              
+
               // Localização
               _buildLocation(),
-              
+
               const SizedBox(height: AppDimensions.spacingMd),
-              
+
               // Papel do usuário e participantes
               if (showParticipants) ...[
                 _buildParticipantsInfo(),
                 const SizedBox(height: AppDimensions.spacingMd),
               ],
-              
+
               // Habilidades necessárias
               if (showRequirements && event.requiredSkills.isNotEmpty) ...[
                 _buildRequiredSkills(),
                 const SizedBox(height: AppDimensions.spacingMd),
               ],
-              
+
               // Recursos necessários
               if (showRequirements && event.requiredResources.isNotEmpty) ...[
                 _buildRequiredResources(),
                 const SizedBox(height: AppDimensions.spacingMd),
               ],
-              
+
               // Footer com tag e data
               _buildFooter(),
             ],
@@ -103,8 +103,10 @@ class EventInfoCard extends StatelessWidget {
   }
 
   Widget _buildDescription() {
-    final description = showFullDescription ? event.description : event.shortDescription;
-    
+    final description = showFullDescription
+        ? event.description
+        : event.shortDescription;
+
     return Text(
       description,
       style: const TextStyle(
@@ -120,11 +122,7 @@ class EventInfoCard extends StatelessWidget {
   Widget _buildLocation() {
     return Row(
       children: [
-        const Icon(
-          Icons.location_on,
-          size: 18,
-          color: AppColors.textSecondary,
-        ),
+        const Icon(Icons.location_on, size: 18, color: AppColors.textSecondary),
         const SizedBox(width: AppDimensions.spacingXs),
         Expanded(
           child: Text(
@@ -145,20 +143,13 @@ class EventInfoCard extends StatelessWidget {
     return Row(
       children: [
         // Papel do usuário
-        if (currentUserId != null) ...[
-          _buildUserRoleChip(),
-          const Spacer(),
-        ],
-        
+        if (currentUserId != null) ...[_buildUserRoleChip(), const Spacer()],
+
         // Número de participantes
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.people,
-              size: 18,
-              color: AppColors.textSecondary,
-            ),
+            const Icon(Icons.people, size: 18, color: AppColors.textSecondary),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               '${event.totalParticipants} participante${event.totalParticipants != 1 ? 's' : ''}',
@@ -237,7 +228,7 @@ class EventInfoCard extends StatelessWidget {
   Widget _buildFooter() {
     return Row(
       children: [
-        // Tag do evento
+        // Tag da Campanha
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingMd,
@@ -251,11 +242,7 @@ class EventInfoCard extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.tag,
-                size: 16,
-                color: AppColors.primary,
-              ),
+              const Icon(Icons.tag, size: 16, color: AppColors.primary),
               const SizedBox(width: AppDimensions.spacingXs),
               Text(
                 event.tag,
@@ -269,9 +256,9 @@ class EventInfoCard extends StatelessWidget {
             ],
           ),
         ),
-        
+
         const Spacer(),
-        
+
         // Data de criação
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -339,11 +326,7 @@ class EventInfoCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color: textColor,
-          ),
+          Icon(icon, size: 16, color: textColor),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
@@ -409,11 +392,7 @@ class EventInfoCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color: textColor,
-          ),
+          Icon(icon, size: 16, color: textColor),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,

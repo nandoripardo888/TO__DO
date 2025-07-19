@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../data/models/task_model.dart';
 import '../../data/models/microtask_model.dart';
@@ -30,6 +31,10 @@ class TaskController extends ChangeNotifier {
   List<TaskModel> _tasks = [];
   final Map<String, List<MicrotaskModel>> _microtasksByTask = {};
   final Map<String, List<UserMicrotaskModel>> _userMicrotasksByMicrotask = {};
+  
+  // Stream subscriptions para atualizações em tempo real
+  StreamSubscription<List<TaskModel>>? _tasksStreamSubscription;
+  final Map<String, StreamSubscription<List<UserMicrotaskModel>>> _userMicrotaskStreams = {};
 
   // Filtros
   TaskStatus? _statusFilter;
@@ -53,19 +58,33 @@ class TaskController extends ChangeNotifier {
   String? get creatorFilter => _creatorFilter;
   MicrotaskStatus? get microtaskStatusFilter => _microtaskStatusFilter;
 
-  /// Carrega todas as tasks de um evento
+  /// Carrega todas as tasks de uma campanha com stream de atualização automática
   Future<void> loadTasksByEventId(String eventId) async {
     try {
       _setLoading(true);
       _clearError();
+      
+      // Cancela streams anteriores se existirem
+      await _cancelAllStreams();
 
-      final tasks = await _taskRepository.getTasksByEventId(eventId);
-      _tasks = tasks;
-
-      // Carrega microtasks para cada task
-      await _loadMicrotasksForTasks();
-
-      _setState(TaskControllerState.loaded);
+      // Inicia stream das tasks
+      _tasksStreamSubscription = _taskRepository.watchTasksByEventId(eventId).listen(
+        (tasks) async {
+          _tasks = tasks;
+          
+          // Carrega microtasks para cada task
+          await _loadMicrotasksForTasks();
+          
+          // Inicia streams de user_microtasks para atualização automática do progresso
+          await _setupUserMicrotaskStreams(eventId);
+          
+          _setState(TaskControllerState.loaded);
+        },
+        onError: (error) {
+          print('Erro no stream de tasks: ${error.toString()}');
+          _setError('Erro ao carregar tasks: ${error.toString()}');
+        },
+      );
     } on AppException catch (e) {
       _setError(e.message);
     } catch (e) {
@@ -194,7 +213,9 @@ class TaskController extends ChangeNotifier {
       await _refreshTask(taskId);
 
       // Se a task estava como 'completed', muda para 'in_progress'
-      final task = _tasks.where((t) => t.id == taskId).isNotEmpty ? _tasks.firstWhere((t) => t.id == taskId) : null;
+      final task = _tasks.where((t) => t.id == taskId).isNotEmpty
+          ? _tasks.firstWhere((t) => t.id == taskId)
+          : null;
       if (task != null && task.status == TaskStatus.completed) {
         await _taskRepository.updateTaskStatus(taskId, TaskStatus.inProgress);
         await _refreshTask(taskId);
@@ -302,6 +323,7 @@ class TaskController extends ChangeNotifier {
   }
 
   /// Atualiza o status individual de um usuário em uma microtask
+  /// Utiliza Cloud Functions para garantir validação e propagação automática
   Future<bool> updateUserMicrotaskStatus({
     required String userId,
     required String microtaskId,
@@ -313,47 +335,28 @@ class TaskController extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      final updatedUserMicrotask = await _microtaskRepository
-          .updateUserMicrotaskStatus(
+      // Usa Cloud Functions para operações críticas de atualização de status
+      final success = await _microtaskRepository
+          .updateUserMicrotaskStatusWithCloudFunction(
             userId: userId,
             microtaskId: microtaskId,
             status: status,
-            actualHours: actualHours,
-            notes: notes,
           );
 
-      // Atualiza na lista local
-      if (_userMicrotasksByMicrotask.containsKey(microtaskId)) {
-        final index = _userMicrotasksByMicrotask[microtaskId]!.indexWhere(
-          (um) => um.userId == userId,
-        );
-        if (index != -1) {
-          _userMicrotasksByMicrotask[microtaskId]![index] =
-              updatedUserMicrotask;
-        }
+      if (!success) {
+        _setError('Falha ao atualizar status da microtask');
+        return false;
       }
 
-      // Recarrega a microtask para pegar status atualizado
+      // Recarrega dados locais após atualização via Cloud Functions
+      await _loadUserMicrotasksForMicrotask(microtaskId);
+      
       final microtask = await _microtaskRepository.getMicrotaskById(
         microtaskId,
       );
       if (microtask != null) {
         _updateMicrotaskInList(microtask);
-        // Se a microtask foi concluída, incrementa o contador na task pai
-        if (status == UserMicrotaskStatus.completed) {
-          final taskId = microtask.taskId;
-          await _taskRepository.incrementCompletedMicrotasks(taskId);
-          await _refreshTask(taskId);
-        } else {
-          // Se estava concluída antes e agora não está mais, decrementa o contador
-          final userMicrotasks = await _microtaskRepository.getUserMicrotasksByMicrotaskId(microtaskId);
-          final userMicrotask = userMicrotasks.where((um) => um.userId == userId).isNotEmpty ? userMicrotasks.firstWhere((um) => um.userId == userId) : null;
-          if (userMicrotask != null && userMicrotask.status == UserMicrotaskStatus.completed) {
-            final taskId = microtask.taskId;
-            await _taskRepository.decrementCompletedMicrotasks(taskId);
-            await _refreshTask(taskId);
-          }
-        }
+        await _refreshTask(microtask.taskId);
       }
 
       _setState(TaskControllerState.loaded);
@@ -477,8 +480,110 @@ class TaskController extends ChangeNotifier {
     _errorMessage = null;
   }
 
+  /// Configura streams de user_microtasks para atualização automática do progresso
+  Future<void> _setupUserMicrotaskStreams(String eventId) async {
+    // Cancela streams anteriores de user_microtasks
+    await _cancelUserMicrotaskStreams();
+    
+    // Para cada microtask, cria um stream que escuta mudanças nas user_microtasks
+    for (final taskId in _microtasksByTask.keys) {
+      final microtasks = _microtasksByTask[taskId] ?? [];
+      
+      for (final microtask in microtasks) {
+        // Cria um stream composto que escuta todas as user_microtasks desta microtask
+        final streamKey = '${taskId}_${microtask.id}';
+        
+        _userMicrotaskStreams[streamKey] = _createUserMicrotaskStream(microtask.id)
+            .listen(
+          (userMicrotasks) async {
+            // Atualiza cache local
+            _userMicrotasksByMicrotask[microtask.id] = userMicrotasks;
+            
+            // Recalcula e atualiza o progresso da task automaticamente
+            await _updateTaskProgressFromMicrotasks(taskId);
+            
+            // Notifica listeners sobre a mudança
+            notifyListeners();
+          },
+          onError: (error) {
+            print('Erro no stream de user_microtasks para microtask ${microtask.id}: $error');
+          },
+        );
+      }
+    }
+  }
+  
+  /// Cria um stream que escuta mudanças nas user_microtasks de uma microtask específica
+  Stream<List<UserMicrotaskModel>> _createUserMicrotaskStream(String microtaskId) {
+    return _microtaskRepository.getUserMicrotasksByMicrotaskIdStream(microtaskId);
+  }
+  
+  /// Atualiza o progresso de uma task baseado no status das suas microtasks
+  Future<void> _updateTaskProgressFromMicrotasks(String taskId) async {
+    try {
+      final microtasks = _microtasksByTask[taskId] ?? [];
+      if (microtasks.isEmpty) return;
+      
+      int totalMicrotasks = microtasks.length;
+      int completedMicrotasks = 0;
+      
+      // Conta microtasks concluídas baseado nas user_microtasks
+      for (final microtask in microtasks) {
+        final userMicrotasks = _userMicrotasksByMicrotask[microtask.id] ?? [];
+        
+        // Uma microtask é considerada concluída se todos os usuários atribuídos completaram
+        if (userMicrotasks.isNotEmpty) {
+          final allCompleted = userMicrotasks.every((um) => um.status == UserMicrotaskStatus.completed);
+          if (allCompleted) {
+            completedMicrotasks++;
+          }
+        }
+      }
+      
+      // Atualiza os contadores da task se necessário
+      final currentTask = _tasks.firstWhere((t) => t.id == taskId);
+      if (currentTask.microtaskCount != totalMicrotasks || 
+          currentTask.completedMicrotasks != completedMicrotasks) {
+        
+        await _taskRepository.updateMicrotaskCounters(
+          taskId: taskId,
+          microtaskCount: totalMicrotasks,
+          completedMicrotasks: completedMicrotasks,
+        );
+        
+        // Atualiza a task local
+        await _refreshTask(taskId);
+      }
+    } catch (e) {
+      print('Erro ao atualizar progresso da task $taskId: $e');
+    }
+  }
+  
+  /// Cancela todos os streams ativos
+  Future<void> _cancelAllStreams() async {
+    await _tasksStreamSubscription?.cancel();
+    _tasksStreamSubscription = null;
+    
+    await _cancelUserMicrotaskStreams();
+  }
+  
+  /// Cancela apenas os streams de user_microtasks
+  Future<void> _cancelUserMicrotaskStreams() async {
+    for (final subscription in _userMicrotaskStreams.values) {
+      await subscription.cancel();
+    }
+    _userMicrotaskStreams.clear();
+  }
+  
+  @override
+  void dispose() {
+    _cancelAllStreams();
+    super.dispose();
+  }
+
   /// Limpa todos os dados
   void clear() {
+    _cancelAllStreams();
     _tasks.clear();
     _microtasksByTask.clear();
     _userMicrotasksByMicrotask.clear();

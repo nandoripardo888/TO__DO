@@ -99,10 +99,10 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
         listen: false,
       );
 
-      // Carrega o evento
+      // Carrega a Campanha
       final event = await eventController.loadEvent(widget.eventId);
       if (event == null) {
-        throw Exception('Evento não encontrado');
+        throw Exception('campanha não encontrada');
       }
 
       // Carrega o perfil do voluntário
@@ -247,7 +247,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Informações do evento (substitui a busca de evento)
+            // Informações da Campanha (substitui a busca de campanha)
             _buildEventInfoCard(),
 
             const SizedBox(height: AppDimensions.spacingLg),
@@ -328,7 +328,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
     );
   }
 
-  // Informações do evento - baseado no _buildEventDetailsSection da join_event_screen.dart
+  // Informações da Campanha - baseado no _buildEventDetailsSection da join_event_screen.dart
   Widget _buildEventInfoCard() {
     return Card(
       elevation: AppDimensions.elevationSm,
@@ -346,7 +346,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
                 const Icon(Icons.event, color: AppColors.primary, size: 28),
                 const SizedBox(width: AppDimensions.spacingSm),
                 const Text(
-                  'Evento',
+                  'campanha',
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeLg,
                     fontWeight: FontWeight.bold,
@@ -358,7 +358,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
 
             const SizedBox(height: AppDimensions.spacingMd),
 
-            // Nome do evento
+            // Nome da Campanha
             Text(
               _event!.name,
               style: const TextStyle(
@@ -423,7 +423,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
                   return SkillChip(
                     label: skill,
                     isSelected: false,
-                    onTap: null, // Não clicável na visualização do evento
+                    onTap: null, // Não clicável na visualização da Campanha
                   );
                 }).toList(),
               ),
@@ -448,7 +448,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
                   return SkillChip(
                     label: resource,
                     isSelected: false,
-                    onTap: null, // Não clicável na visualização do evento
+                    onTap: null, // Não clicável na visualização da Campanha
                   );
                 }).toList(),
               ),
@@ -478,7 +478,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
         Text(
           _isEditMode
               ? 'Atualize suas informações de voluntário'
-              : 'Suas informações de voluntário para este evento',
+              : 'Suas informações de voluntário para esta campanha',
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeMd,
             color: AppColors.textSecondary,
@@ -895,7 +895,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
         Text(
           _isEditMode
               ? 'Adicione ou remova suas habilidades'
-              : 'Suas habilidades para este evento',
+              : 'Suas habilidades para esta campanha',
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeMd,
             color: AppColors.textSecondary,
@@ -929,10 +929,10 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
           const SizedBox(height: AppDimensions.spacingMd),
         ],
 
-        // Habilidades necessárias do evento
+        // Habilidades necessárias da Campanha
         if (_event!.requiredSkills.isNotEmpty) ...[
           const Text(
-            'Habilidades necessárias para este evento:',
+            'Habilidades necessárias para esta campanha:',
             style: TextStyle(
               fontSize: AppDimensions.fontSizeSm,
               fontWeight: FontWeight.w500,
@@ -1046,7 +1046,7 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
         Text(
           _isEditMode
               ? 'Adicione ou remova seus recursos'
-              : 'Seus recursos para este evento',
+              : 'Seus recursos para esta campanha',
           style: const TextStyle(
             fontSize: AppDimensions.fontSizeMd,
             color: AppColors.textSecondary,
@@ -1080,10 +1080,10 @@ class _MyVolunteerProfileScreenState extends State<MyVolunteerProfileScreen> {
           const SizedBox(height: AppDimensions.spacingMd),
         ],
 
-        // Recursos necessários do evento
+        // Recursos necessários da Campanha
         if (_event!.requiredResources.isNotEmpty) ...[
           const Text(
-            'Recursos necessários para este evento:',
+            'Recursos necessários para esta campanha:',
             style: TextStyle(
               fontSize: AppDimensions.fontSizeSm,
               fontWeight: FontWeight.w500,

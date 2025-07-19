@@ -20,7 +20,7 @@ class AgendaScreen extends StatefulWidget {
   State<AgendaScreen> createState() => _AgendaScreenState();
 }
 
-class _AgendaScreenState extends State<AgendaScreen> 
+class _AgendaScreenState extends State<AgendaScreen>
     with TickerProviderStateMixin {
   late AgendaController _agendaController;
   String? _currentUserId;
@@ -129,7 +129,7 @@ class _AgendaScreenState extends State<AgendaScreen>
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
-            'Você ainda não possui microtasks\natribuídas neste evento.',
+            'Você ainda não possui microtasks\natribuídas nesta campanha.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
@@ -237,7 +237,7 @@ class _AgendaScreenState extends State<AgendaScreen>
         if (index >= userMicrotasks.length) {
           return const SizedBox.shrink();
         }
-        
+
         final userMicrotask = userMicrotasks[index];
         final microtask = controller.getMicrotaskById(
           userMicrotask.microtaskId,
@@ -249,15 +249,19 @@ class _AgendaScreenState extends State<AgendaScreen>
         // Animação combinada: deslizamento horizontal + fade + escala
         return SlideTransition(
           position: animation.drive(
-            Tween(begin: const Offset(-1.0, 0.0), end: Offset.zero)
-              .chain(CurveTween(curve: Curves.easeOutCubic)),
+            Tween(
+              begin: const Offset(-1.0, 0.0),
+              end: Offset.zero,
+            ).chain(CurveTween(curve: Curves.easeOutCubic)),
           ),
           child: FadeTransition(
             opacity: animation,
             child: ScaleTransition(
               scale: animation.drive(
-                Tween(begin: 0.9, end: 1.0)
-                  .chain(CurveTween(curve: Curves.easeOutCubic)),
+                Tween(
+                  begin: 0.9,
+                  end: 1.0,
+                ).chain(CurveTween(curve: Curves.easeOutCubic)),
               ),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
@@ -267,8 +271,11 @@ class _AgendaScreenState extends State<AgendaScreen>
                     userMicrotask: userMicrotask,
                     microtask: microtask,
                     task: task,
-                    onStatusChanged: (newStatus) =>
-                        _handleStatusChange(controller, userMicrotask, newStatus),
+                    onStatusChanged: (newStatus) => _handleStatusChange(
+                      controller,
+                      userMicrotask,
+                      newStatus,
+                    ),
                   ),
                 ),
               ),
@@ -302,30 +309,26 @@ class _AgendaScreenState extends State<AgendaScreen>
       for (int i = 0; i < _previousMicrotasks.length; i++) {
         oldPositions[_previousMicrotasks[i].microtaskId] = i;
       }
-      
+
       bool hasReordering = false;
       List<Map<String, dynamic>> moves = [];
-      
+
       // Detecta movimentos específicos
       for (int i = 0; i < newMicrotasks.length; i++) {
         final String id = newMicrotasks[i].microtaskId;
         final int? oldPos = oldPositions[id];
-        
+
         if (oldPos != null && oldPos != i) {
           hasReordering = true;
-          moves.add({
-            'id': id,
-            'from': oldPos,
-            'to': i,
-          });
+          moves.add({'id': id, 'from': oldPos, 'to': i});
         }
       }
-      
+
       if (hasReordering) {
         _animateReordering(moves);
       }
     }
-    
+
     _previousMicrotasks = List.from(newMicrotasks);
   }
 
@@ -334,33 +337,37 @@ class _AgendaScreenState extends State<AgendaScreen>
     // Primeiro, reseta e inicia a animação geral
     _reorderAnimationController.reset();
     _reorderAnimationController.forward();
-    
+
     // Para cada item que mudou de posição, recria o item na lista animada
     for (final move in moves) {
       final String id = move['id'];
       final int from = move['from'];
       final int to = move['to'];
-      
+
       // Encontra o índice atual na lista filtrada
-      final currentIndex = _agendaController.filteredUserMicrotasks
-          .indexWhere((um) => um.microtaskId == id);
-      
+      final currentIndex = _agendaController.filteredUserMicrotasks.indexWhere(
+        (um) => um.microtaskId == id,
+      );
+
       if (currentIndex >= 0) {
         // Obtém os dados necessários para recriar o item
-        final userMicrotask = _agendaController.filteredUserMicrotasks[currentIndex];
-        final microtask = _agendaController.getMicrotaskById(userMicrotask.microtaskId);
+        final userMicrotask =
+            _agendaController.filteredUserMicrotasks[currentIndex];
+        final microtask = _agendaController.getMicrotaskById(
+          userMicrotask.microtaskId,
+        );
         final task = microtask != null
             ? _agendaController.getTaskById(microtask.taskId)
             : null;
-        
+
         // Força a reconstrução do item com animação
         if (_listKey.currentState != null) {
           // Determina a direção do movimento (para cima ou para baixo)
           final bool movingUp = to < from;
-          final Offset beginOffset = movingUp 
-              ? const Offset(0.0, -1.0)  // Move para cima
-              : const Offset(0.0, 1.0);  // Move para baixo
-          
+          final Offset beginOffset = movingUp
+              ? const Offset(0.0, -1.0) // Move para cima
+              : const Offset(0.0, 1.0); // Move para baixo
+
           // Recria o item com animação
           _listKey.currentState!.insertItem(
             currentIndex,
@@ -376,6 +383,13 @@ class _AgendaScreenState extends State<AgendaScreen>
     UserMicrotaskModel userMicrotask,
     UserMicrotaskStatus newStatus,
   ) async {
+    print('🎯 [AGENDA_SCREEN] Iniciando mudança de status:');
+    print('   - userMicrotask.userId: ${userMicrotask.userId}');
+    print('   - userMicrotask.microtaskId: ${userMicrotask.microtaskId}');
+    print('   - status atual: ${userMicrotask.status.name}');
+    print('   - novo status: ${newStatus.name}');
+    print('   - timestamp: ${DateTime.now().toIso8601String()}');
+    
     // Atualiza o status no backend
     final success = await controller.updateUserMicrotaskStatus(
       userId: userMicrotask.userId,
@@ -384,12 +398,52 @@ class _AgendaScreenState extends State<AgendaScreen>
     );
 
     if (!success && mounted) {
+      print('❌ [AGENDA_SCREEN] Falha na atualização - exibindo SnackBar de erro');
+      print('   - controller.errorMessage: ${controller.errorMessage}');
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(controller.errorMessage ?? 'Erro ao atualizar status'),
+          content: Text('Falha ao atualizar status: ${controller.errorMessage ?? "Erro desconhecido"}'),
           backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'Detalhes',
+            textColor: Colors.white,
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Erro Detalhado'),
+                  content: Text(
+                    'Erro: ${controller.errorMessage}\n\n'
+                    'Microtask ID: ${userMicrotask.microtaskId}\n'
+                    'User ID: ${userMicrotask.userId}\n'
+                    'Status desejado: ${newStatus.name}\n\n'
+                    'Verifique o console para logs detalhados.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       );
+    } else if (success) {
+      print('✅ [AGENDA_SCREEN] Status atualizado com sucesso');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Status atualizado com sucesso!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 }

@@ -4,7 +4,7 @@ import '../services/event_service.dart';
 import '../repositories/user_repository.dart';
 import '../../core/exceptions/app_exceptions.dart';
 
-/// Repositório responsável por gerenciar dados de eventos
+/// Repositório responsável por gerenciar dados de campanhas
 /// Atua como uma camada de abstração entre os controllers e os services
 class EventRepository {
   final EventService _eventService;
@@ -14,7 +14,7 @@ class EventRepository {
     : _eventService = eventService ?? EventService(),
       _userRepository = userRepository ?? UserRepository();
 
-  /// Cria um novo evento
+  /// Cria um nova Campanha
   Future<EventModel> createEvent({
     required String name,
     required String description,
@@ -66,29 +66,29 @@ class EventRepository {
       );
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao criar evento: ${e.toString()}');
+      throw RepositoryException('Erro ao criar campanha: ${e.toString()}');
     }
   }
 
-  /// Busca um evento por ID
+  /// Busca uma campanha por ID
   Future<EventModel?> getEventById(String eventId) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
+        throw ValidationException('ID da Campanha é obrigatório');
       }
 
       return await _eventService.getEventById(eventId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao buscar evento: ${e.toString()}');
+      throw RepositoryException('Erro ao buscar campanha: ${e.toString()}');
     }
   }
 
-  /// Busca um evento por tag/código
+  /// Busca uma campanha por tag/código
   Future<EventModel?> getEventByTag(String tag) async {
     try {
       if (tag.isEmpty) {
-        throw ValidationException('Tag do evento é obrigatória');
+        throw ValidationException('Tag da Campanha é obrigatória');
       }
 
       // Normaliza a tag (maiúscula, sem espaços)
@@ -102,12 +102,12 @@ class EventRepository {
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao buscar evento por tag: ${e.toString()}',
+        'Erro ao buscar campanha por tag: ${e.toString()}',
       );
     }
   }
 
-  /// Busca todos os eventos do usuário
+  /// Busca todos as campanhas do usuário
   Future<List<EventModel>> getUserEvents(String userId) async {
     try {
       if (userId.isEmpty) {
@@ -118,22 +118,22 @@ class EventRepository {
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao buscar eventos do usuário: ${e.toString()}',
+        'Erro ao buscar campanhas do usuário: ${e.toString()}',
       );
     }
   }
 
-  /// Atualiza um evento
+  /// Atualiza uma campanha
   Future<EventModel> updateEvent(EventModel event) async {
     try {
       return await _eventService.updateEvent(event);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao atualizar evento: ${e.toString()}');
+      throw RepositoryException('Erro ao atualizar campanha: ${e.toString()}');
     }
   }
 
-  /// Adiciona um voluntário ao evento
+  /// Adiciona um voluntário aa Campanha
   Future<EventModel> joinEvent({
     required String eventId,
     required String userId,
@@ -146,10 +146,10 @@ class EventRepository {
     try {
       // Basic parameter validation (detailed validation should be in models/controllers)
       if (eventId.isEmpty || userId.isEmpty) {
-        throw ValidationException('IDs do evento e usuário são obrigatórios');
+        throw ValidationException('IDs da Campanha e usuário são obrigatórios');
       }
 
-      // Adiciona o voluntário ao evento
+      // Adiciona o voluntário aa Campanha
       final updatedEvent = await _eventService.addVolunteerToEvent(
         eventId,
         userId,
@@ -179,19 +179,19 @@ class EventRepository {
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao participar do evento: ${e.toString()}',
+        'Erro ao participar da Campanha: ${e.toString()}',
       );
     }
   }
 
-  /// Remove um voluntário do evento
+  /// Remove um voluntário da Campanha
   Future<EventModel> leaveEvent(String eventId, String userId) async {
     try {
       if (eventId.isEmpty || userId.isEmpty) {
-        throw ValidationException('IDs do evento e usuário são obrigatórios');
+        throw ValidationException('IDs da Campanha e usuário são obrigatórios');
       }
 
-      // Remove o voluntário do evento
+      // Remove o voluntário da Campanha
       final updatedEvent = await _eventService.removeVolunteerFromEvent(
         eventId,
         userId,
@@ -207,7 +207,7 @@ class EventRepository {
       return updatedEvent;
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao sair do evento: ${e.toString()}');
+      throw RepositoryException('Erro ao sair da Campanha: ${e.toString()}');
     }
   }
 
@@ -219,7 +219,7 @@ class EventRepository {
   ) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
+        throw ValidationException('ID da Campanha é obrigatório');
       }
       if (userId.isEmpty) {
         throw ValidationException('ID do usuário é obrigatório');
@@ -231,7 +231,7 @@ class EventRepository {
       // Verifica se quem está promovendo é gerenciador
       final event = await getEventById(eventId);
       if (event == null) {
-        throw NotFoundException('Evento não encontrado');
+        throw NotFoundException('campanha não encontrado');
       }
 
       if (!event.isManager(managerId)) {
@@ -247,7 +247,7 @@ class EventRepository {
     }
   }
 
-  /// Busca o perfil de um voluntário em um evento
+  /// Busca o perfil de um voluntário em uma campanha
   Future<VolunteerProfileModel?> getVolunteerProfile(
     String userId,
     String eventId,
@@ -257,7 +257,7 @@ class EventRepository {
         throw ValidationException('ID do usuário é obrigatório');
       }
       if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
+        throw ValidationException('ID da Campanha é obrigatório');
       }
 
       return await _eventService.getVolunteerProfile(userId, eventId);
@@ -269,18 +269,18 @@ class EventRepository {
     }
   }
 
-  /// Busca todos os perfis de voluntários de um evento
+  /// Busca todos os perfis de voluntários de uma campanha
   Future<List<VolunteerProfileModel>> getEventVolunteers(String eventId) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
+        throw ValidationException('ID da Campanha é obrigatório');
       }
 
       return await _eventService.getEventVolunteerProfiles(eventId);
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao buscar voluntários do evento: ${e.toString()}',
+        'Erro ao buscar voluntários da Campanha: ${e.toString()}',
       );
     }
   }
@@ -329,11 +329,11 @@ class EventRepository {
     }
   }
 
-  /// Deleta um evento
+  /// Deleta uma campanha
   Future<void> deleteEvent(String eventId, String userId) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
+        throw ValidationException('ID da Campanha é obrigatório');
       }
       if (userId.isEmpty) {
         throw ValidationException('ID do usuário é obrigatório');
@@ -342,11 +342,11 @@ class EventRepository {
       await _eventService.deleteEvent(eventId, userId);
     } catch (e) {
       if (e is AppException) rethrow;
-      throw RepositoryException('Erro ao deletar evento: ${e.toString()}');
+      throw RepositoryException('Erro ao deletar campanha: ${e.toString()}');
     }
   }
 
-  /// Verifica se um usuário pode gerenciar um evento
+  /// Verifica se um usuário pode gerenciar uma campanha
   Future<bool> canManageEvent(String eventId, String userId) async {
     try {
       final event = await getEventById(eventId);
@@ -358,7 +358,7 @@ class EventRepository {
     }
   }
 
-  /// Verifica se um usuário é participante de um evento
+  /// Verifica se um usuário é participante de uma campanha
   Future<bool> isParticipant(String eventId, String userId) async {
     try {
       final event = await getEventById(eventId);
@@ -370,31 +370,31 @@ class EventRepository {
     }
   }
 
-  /// Stream para escutar mudanças em um evento
+  /// Stream para escutar mudanças em uma campanha
   Stream<EventModel?> watchEvent(String eventId) {
     return _eventService.watchEvent(eventId);
   }
 
-  /// Stream para escutar mudanças nos eventos do usuário
+  /// Stream para escutar mudanças nas campanhas do usuário
   Stream<List<EventModel>> watchUserEvents(String userId) {
     return _eventService.watchUserEvents(userId);
   }
 
-  /// Busca eventos compatíveis com as habilidades de um voluntário
+  /// Busca campanhas compatíveis com as habilidades de um voluntário
   Future<List<EventModel>> getCompatibleEvents(String userId) async {
     try {
-      // Por enquanto, retorna todos os eventos do usuário
+      // Por enquanto, retorna todos as campanhas do usuário
       // Pode ser expandido para incluir lógica de compatibilidade
       return await getUserEvents(userId);
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao buscar eventos compatíveis: ${e.toString()}',
+        'Erro ao buscar campanhas compatíveis: ${e.toString()}',
       );
     }
   }
 
-  /// Valida se uma tag de evento é válida
+  /// Valida se uma tag de campanha é válida
   bool isValidTag(String tag) {
     if (tag.isEmpty) return false;
     if (tag.length != 6) return false;
@@ -404,7 +404,7 @@ class EventRepository {
     return regex.hasMatch(tag.toUpperCase());
   }
 
-  /// Normaliza uma tag de evento
+  /// Normaliza uma tag de campanha
   String normalizeTag(String tag) {
     return tag.trim().toUpperCase();
   }
@@ -436,14 +436,14 @@ class EventRepository {
     }
   }
 
-  /// Recalcula os contadores para todos os voluntários de um evento
+  /// Recalcula os contadores para todos os voluntários de uma campanha
   Future<void> recalculateEventVolunteerCounts(String eventId) async {
     try {
       await _eventService.recalculateEventVolunteerCounts(eventId);
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao recalcular contadores do evento: ${e.toString()}',
+        'Erro ao recalcular contadores da Campanha: ${e.toString()}',
       );
     }
   }

@@ -3,7 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../data/models/event_model.dart';
 
-/// Widget para exibir estatísticas de um evento
+/// Widget para exibir estatísticas de uma campanha
 class EventStatsWidget extends StatelessWidget {
   final EventModel event;
   final bool showDetailed;
@@ -29,14 +29,10 @@ class EventStatsWidget extends StatelessWidget {
             // Título
             const Row(
               children: [
-                Icon(
-                  Icons.analytics,
-                  color: AppColors.primary,
-                  size: 24,
-                ),
+                Icon(Icons.analytics, color: AppColors.primary, size: 24),
                 SizedBox(width: AppDimensions.spacingSm),
                 Text(
-                  'Estatísticas do Evento',
+                  'Estatísticas da Campanha',
                   style: TextStyle(
                     fontSize: AppDimensions.fontSizeLg,
                     fontWeight: FontWeight.bold,
@@ -45,17 +41,17 @@ class EventStatsWidget extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: AppDimensions.spacingLg),
-            
+
             // Estatísticas básicas
             _buildBasicStats(),
-            
+
             if (showDetailed) ...[
               const SizedBox(height: AppDimensions.spacingLg),
               const Divider(),
               const SizedBox(height: AppDimensions.spacingLg),
-              
+
               // Estatísticas detalhadas
               _buildDetailedStats(),
             ],
@@ -109,9 +105,9 @@ class EventStatsWidget extends StatelessWidget {
           items: event.requiredSkills,
           color: AppColors.info,
         ),
-        
+
         const SizedBox(height: AppDimensions.spacingLg),
-        
+
         // Recursos necessários
         _buildRequirementStats(
           title: 'Recursos Necessários',
@@ -119,9 +115,9 @@ class EventStatsWidget extends StatelessWidget {
           items: event.requiredResources,
           color: AppColors.warning,
         ),
-        
+
         const SizedBox(height: AppDimensions.spacingLg),
-        
+
         // Informações temporais
         _buildTemporalInfo(),
       ],
@@ -143,11 +139,7 @@ class EventStatsWidget extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 28,
-          ),
+          Icon(icon, color: color, size: 28),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
             value,
@@ -182,11 +174,7 @@ class EventStatsWidget extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
+            Icon(icon, color: color, size: 20),
             const SizedBox(width: AppDimensions.spacingSm),
             Text(
               title,
@@ -217,9 +205,9 @@ class EventStatsWidget extends StatelessWidget {
             ),
           ],
         ),
-        
+
         const SizedBox(height: AppDimensions.spacingSm),
-        
+
         if (items.isEmpty)
           Text(
             'Nenhum item especificado',
@@ -271,11 +259,7 @@ class EventStatsWidget extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(
-                Icons.schedule,
-                color: AppColors.textSecondary,
-                size: 20,
-              ),
+              Icon(Icons.schedule, color: AppColors.textSecondary, size: 20),
               SizedBox(width: AppDimensions.spacingSm),
               Text(
                 'Informações Temporais',
@@ -287,9 +271,9 @@ class EventStatsWidget extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: AppDimensions.spacingMd),
-          
+
           // Data de criação
           _buildTemporalItem(
             icon: Icons.add_circle,
@@ -297,9 +281,9 @@ class EventStatsWidget extends StatelessWidget {
             value: _formatDate(event.createdAt),
             subtitle: event.createdTimeAgo,
           ),
-          
+
           const SizedBox(height: AppDimensions.spacingSm),
-          
+
           // Data de atualização
           if (event.createdAt != event.updatedAt)
             _buildTemporalItem(
@@ -308,10 +292,10 @@ class EventStatsWidget extends StatelessWidget {
               value: _formatDate(event.updatedAt),
               subtitle: event.updatedTimeAgo,
             ),
-          
+
           const SizedBox(height: AppDimensions.spacingSm),
-          
-          // Indicador de evento novo
+
+          // Indicador de campanha nova
           if (event.isNewEvent)
             Container(
               padding: const EdgeInsets.symmetric(
@@ -321,19 +305,17 @@ class EventStatsWidget extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.success.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: AppColors.success.withValues(alpha: 0.3),
+                ),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.new_releases,
-                    size: 16,
-                    color: AppColors.success,
-                  ),
+                  Icon(Icons.new_releases, size: 16, color: AppColors.success),
                   SizedBox(width: AppDimensions.spacingXs),
                   Text(
-                    'Evento Novo',
+                    'campanha Nova',
                     style: TextStyle(
                       fontSize: AppDimensions.fontSizeSm,
                       fontWeight: FontWeight.w600,
@@ -356,11 +338,7 @@ class EventStatsWidget extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: AppColors.textSecondary,
-        ),
+        Icon(icon, size: 16, color: AppColors.textSecondary),
         const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
           child: Column(

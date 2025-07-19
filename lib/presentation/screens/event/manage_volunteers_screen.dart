@@ -35,7 +35,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
   final List<String> _selectedSkillsFilter =
       []; // Filtro por habilidades selecionadas
   List<String> _availableSkills =
-      []; // Todas as habilidades disponíveis no evento
+      []; // Todas as habilidades disponíveis na Campanha
 
   @override
   void initState() {
@@ -54,7 +54,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
         listen: false,
       );
 
-      // Carrega evento
+      // Carrega campanha
       final event = await eventController.loadEvent(widget.eventId);
 
       // Carrega tasks e microtasks
@@ -93,7 +93,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
         }
       }
 
-      // Adiciona habilidades do evento se disponíveis
+      // Adiciona habilidades da Campanha se disponíveis
       if (event != null && event.requiredSkills.isNotEmpty) {
         allSkills.addAll(event.requiredSkills);
       }
@@ -132,7 +132,7 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
     if (_event == null) {
       return const Center(
         child: Text(
-          'Erro ao carregar evento',
+          'Erro ao carregar campanha',
           style: TextStyle(fontSize: 16, color: AppColors.error),
         ),
       );
@@ -319,13 +319,13 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           const Text(
-            'Compartilhe o código do evento para que\nvoluntários possam se inscrever.',
+            'Compartilhe o código da Campanha para que\nvoluntários possam se inscrever.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppDimensions.spacingLg),
 
-          // Código do evento
+          // Código da Campanha
           Container(
             padding: const EdgeInsets.all(AppDimensions.paddingMd),
             decoration: BoxDecoration(
@@ -754,7 +754,8 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: _availableSkills.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 2),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 2),
                   itemBuilder: (context, index) {
                     final skill = _availableSkills[index];
                     final isSelected = tempSelectedSkills.contains(skill);
@@ -774,7 +775,10 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> {
                           },
                           activeColor: AppColors.primary,
                           dense: true,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0,
+                            horizontal: 8,
+                          ),
                           visualDensity: VisualDensity.compact,
                         );
                       },

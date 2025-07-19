@@ -52,7 +52,7 @@ class AgendaController extends ChangeNotifier {
       List.unmodifiable(_userMicrotasks);
   UserMicrotaskStatus? get statusFilter => _statusFilter;
 
-  /// Carrega a agenda do voluntário para um evento específico com atualizações em tempo real
+  /// Carrega a agenda do voluntário para uma campanha específico com atualizações em tempo real
   /// Conforme RN-01.4 e RN-01.5 do PRD
   Future<void> loadAgenda({
     required String userId,
@@ -70,7 +70,9 @@ class AgendaController extends ChangeNotifier {
           .watchUserMicrotasksByEvent(userId: userId, eventId: eventId)
           .listen(
             (userMicrotasks) async {
-              final previousMicrotasks = List<UserMicrotaskModel>.from(_userMicrotasks);
+              final previousMicrotasks = List<UserMicrotaskModel>.from(
+                _userMicrotasks,
+              );
               _userMicrotasks = userMicrotasks;
 
               // Carrega dados das microtasks e tasks relacionadas
@@ -97,6 +99,7 @@ class AgendaController extends ChangeNotifier {
 
   /// Atualiza o status de uma microtask do usuário
   /// Conforme RN-03 do PRD - Lógica de Interação do Usuário na Agenda
+  /// Utiliza Cloud Functions para garantir validação e propagação automática
   Future<bool> updateUserMicrotaskStatus({
     required String userId,
     required String microtaskId,
@@ -108,24 +111,52 @@ class AgendaController extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      await _userMicrotaskRepository.updateUserMicrotaskStatus(
-        userId: userId,
-        microtaskId: microtaskId,
-        status: status,
-        actualHours: actualHours,
-        notes: notes,
-      );
+      // Log detalhado do início da operação
+      print('🔄 [AGENDA] Iniciando atualização de status:');
+      print('   - userId: $userId');
+      print('   - microtaskId: $microtaskId');
+      print('   - status: ${status.name}');
+      print('   - timestamp: ${DateTime.now().toIso8601String()}');
 
+      // Usa Cloud Functions para operações críticas de atualização de status
+      final success = await _userMicrotaskRepository
+          .updateUserMicrotaskStatusWithCloudFunction(
+            userId: userId,
+            microtaskId: microtaskId,
+            status: status,
+          );
+
+      if (!success) {
+        print(
+          '❌ [AGENDA] Falha na atualização - Cloud Function retornou false',
+        );
+        _setError('Falha ao atualizar status da microtask');
+        return false;
+      }
+
+      print('✅ [AGENDA] Status atualizado com sucesso via Cloud Functions');
       // O stream automaticamente atualizará a lista
       return true;
     } on AppException catch (e) {
+      print('❌ [AGENDA] AppException capturada:');
+      print('   - Tipo: ${e.runtimeType}');
+      print('   - Mensagem: ${e.message}');
+      if (e is NetworkException) {
+        print('   - Código: ${e.code}');
+        print('   - Exceção original: ${e.originalException}');
+      }
       _setError(e.message);
       return false;
-    } catch (e) {
-      _setError('Erro inesperado ao atualizar status');
+    } catch (e, stackTrace) {
+      print('❌ [AGENDA] Erro inesperado capturado:');
+      print('   - Tipo: ${e.runtimeType}');
+      print('   - Mensagem: $e');
+      print('   - Stack trace: $stackTrace');
+      _setError('Erro inesperado ao atualizar status: $e');
       return false;
     } finally {
       _setLoading(false);
+      print('🏁 [AGENDA] Finalizando operação de atualização de status');
     }
   }
 
@@ -155,13 +186,15 @@ class AgendaController extends ChangeNotifier {
   /// Conforme RN-01.5: ordenação por status e data de atribuição
   List<UserMicrotaskModel> get filteredUserMicrotasks {
     List<UserMicrotaskModel> filtered;
-    
+
     if (_statusFilter == null) {
       filtered = List.from(_userMicrotasks);
     } else {
-      filtered = _userMicrotasks.where((um) => um.status == _statusFilter).toList();
+      filtered = _userMicrotasks
+          .where((um) => um.status == _statusFilter)
+          .toList();
     }
-    
+
     // Ordena por status (assigned → in_progress → completed) e depois por data de atribuição
     filtered.sort((a, b) {
       // Primeiro critério: status
@@ -170,18 +203,18 @@ class AgendaController extends ChangeNotifier {
         UserMicrotaskStatus.inProgress: 2,
         UserMicrotaskStatus.completed: 3,
       };
-      
+
       final aStatusOrder = statusOrder[a.status] ?? 4;
       final bStatusOrder = statusOrder[b.status] ?? 4;
-      
+
       if (aStatusOrder != bStatusOrder) {
         return aStatusOrder.compareTo(bStatusOrder);
       }
-      
+
       // Segundo critério: data de atribuição (mais recente primeiro)
       return b.assignedAt.compareTo(a.assignedAt);
     });
-    
+
     return filtered;
   }
 
@@ -199,18 +232,20 @@ class AgendaController extends ChangeNotifier {
     List<UserMicrotaskModel> newMicrotasks,
   ) {
     if (previousMicrotasks.isEmpty) return;
-    
+
     // Cria um mapa para comparação rápida
     final previousMap = {
-      for (final um in previousMicrotasks) um.microtaskId: um.status
+      for (final um in previousMicrotasks) um.microtaskId: um.status,
     };
-    
+
     // Verifica se alguma microtask mudou de status
     for (final newMicrotask in newMicrotasks) {
       final previousStatus = previousMap[newMicrotask.microtaskId];
       if (previousStatus != null && previousStatus != newMicrotask.status) {
         // Status mudou - a lista será reordenada automaticamente pelo getter filteredUserMicrotasks
-        print('Status da microtask ${newMicrotask.microtaskId} mudou de $previousStatus para ${newMicrotask.status}');
+        print(
+          'Status da microtask ${newMicrotask.microtaskId} mudou de $previousStatus para ${newMicrotask.status}',
+        );
         break;
       }
     }

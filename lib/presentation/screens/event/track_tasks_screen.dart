@@ -83,7 +83,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           const Text(
-            'Ainda não há tasks criadas para este evento.\n\nVá para a aba "Criar Tasks" para começar a organizar o trabalho.',
+            'Ainda não há tasks criadas para esta campanha.\n\nVá para a aba "Criar Tasks" para começar a organizar o trabalho.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -219,7 +219,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Tasks do Evento',
+          'Tasks da Campanha',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,

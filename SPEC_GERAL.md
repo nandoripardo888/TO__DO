@@ -1,36 +1,39 @@
-# Especificação do Projeto - Task Manager para Eventos
+# Especificação do Projeto - Task Manager para campanhas
 
 ## 📋 Visão Geral do Projeto
 
 **Plataforma:** Flutter
-**Objetivo:** Aplicativo para gerenciamento de tarefas em eventos com sistema de voluntariado
+**Objetivo:** Aplicativo para gerenciamento de tarefas em campanhas com sistema de voluntariado
 **Banco de Dados:** Firebase Firestore
 **Autenticação:** Firebase Auth (Google Sign-In)
 
 ## 🎯 Conceito Principal
 
-Sistema onde usuários podem criar eventos, gerenciar tarefas hierárquicas (Tasks → Microtasks) e coordenar voluntários para execução das atividades através de um sistema de tags/códigos únicos.
+Sistema onde usuários podem criar campanhas, gerenciar tarefas hierárquicas (Tasks → Microtasks) e coordenar voluntários para execução das atividades através de um sistema de tags/códigos únicos.
 
 ## 👥 Personas e Fluxos
 
-### Gerenciador de Evento
-- Cria eventos com informações detalhadas
+### Gerenciador de campanha
+- Cria campanhas com informações detalhadas
 - Define habilidades e recursos necessários
-- Compartilha código/tag do evento
+- Compartilha código/tag da Campanha
 - Cria e organiza Tasks e Microtasks
 - Atribui voluntários às microtasks
 - Pode promover voluntários a gerenciadores
+- Se torna um voluntario automaticamente
+- Pode alterar dados da campanha
 
 ### Voluntário
-- Ingressa em eventos via código/tag
+- Ingressa em campanhas via código/tag
 - Define disponibilidade (dias, horários)
 - Especifica habilidades e recursos próprios
 - Recebe e executa microtasks atribuídas
+- Acompanha agenda de tarefas
 
 ## 🔄 Fluxo Principal
 
-1. **Criação de Evento**
-   - Usuário cria evento → torna-se gerenciador **E voluntário automaticamente**
+1. **Criação de campanha**
+   - Usuário cria campanha → torna-se gerenciador **E voluntário automaticamente**
    - Sistema gera código/tag único
    - Define: nome, descrição, localização, habilidades necessárias, recursos necessários
    - **NOVO:** Criador é automaticamente inscrito como voluntário com perfil padrão
@@ -75,100 +78,77 @@ Sistema onde usuários podem criar eventos, gerenciar tarefas hierárquicas (Tas
 ### 3. Tela Home
 - **Layout:**
   - AppBar com nome do usuário e foto
-  - Lista de cards dos eventos vinculados
+  - Lista de cards das campanhas vinculados
   - FAB (Floating Action Button) com opções:
-    - "Criar Evento"
-    - "Participar de Evento"
+    - "Criar campanha"
+    - "Participar de campanha"
 - **Event Card:**
-  - Nome do evento
+  - Nome da Campanha
   - Papel do usuário (Gerenciador/Voluntário)
   - Número de tarefas pendentes
-  - Status do evento
+  - Status da Campanha
+  - Estatísticas da campanha (novo)
 
-### 4. Tela Criar Evento
+### 4. Tela Criar campanha
 - **Formulário:**
-  - Nome do evento (obrigatório)
+  - Nome da Campanha (obrigatório)
   - Descrição (texto longo)
   - Localização (campo descritivo)
   - Habilidades necessárias (chips selecionáveis + adicionar nova)
   - Recursos necessários (chips selecionáveis + adicionar novo)
-  - Botão "Criar Evento"
+  - Botão "Criar campanha"
 - **Pós-criação:** Exibe código/tag gerado
 
-### 5. Tela Participar de Evento
+### 5. Tela Participar de campanha
 - **Componentes:**
   - Campo para inserir código/tag
-  - Botão "Buscar Evento" (alinhado à esquerda com o campo)
-  - Exibição dos detalhes do evento encontrado
+  - Botão "Buscar campanha" (alinhado à esquerda com o campo)
+  - Exibição dos detalhes da Campanha encontrado
   - **Verificação de Participação:** Se usuário já é participante, exibe detalhes mas impede nova participação
   - Formulário de perfil do voluntário (apenas se ainda não for participante):
     - Dias disponíveis (checkboxes)
     - Horário disponível (time picker)
-    - **Habilidades:** Lista prioritária das habilidades necessárias do evento + opção de adicionar nova
-    - **Recursos:** Lista prioritária dos recursos necessários do evento + opção de adicionar novo
+    - **Habilidades:** Lista prioritária das habilidades necessárias da Campanha + opção de adicionar nova
+    - **Recursos:** Lista prioritária dos recursos necessários da Campanha + opção de adicionar novo
     - Botão "Adicionar" para novas habilidades/recursos (alinhado à esquerda)
   - Botão "Confirmar Participação" (apenas se ainda não for participante)
 
-### 6. Tela Detalhes do Evento
+### 6. Tela Detalhes da Campanha
 - **Tabs de Navegação (Dinâmicas):**
-  - **Evento:** Informações gerais, localização, código/tag
-  - **Voluntários:** (apenas gerenciadores) - Gerenciar voluntários do evento
+  - **campanha:** Informações gerais, localização, código/tag
+  - **Voluntários:** (apenas gerenciadores) - Gerenciar voluntários da Campanha
   - **Perfil:** (apenas voluntários) - **NOVA TAB** para gerenciar perfil de voluntário
   - **Acompanhar:** Visualização de todas as tasks/microtasks
+  - **Agenda:** (novo) Visualização das microtasks do voluntário
 
-### 7. **NOVA FUNCIONALIDADE:** Gerenciamento de Perfil de Voluntário
-
-#### 7.1 Tela Visualizar Perfil de Voluntário
-- **Acesso:** Tab "Perfil" na tela de detalhes do evento (apenas para voluntários)
+### 7. Tela de Agenda (Nova)
 - **Funcionalidades:**
-  - Visualização em modo somente leitura das informações do voluntário
-  - Informações do evento (nome, localização)
-  - Informações pessoais (nome, e-mail, data de participação)
-  - Disponibilidade (dias da semana, horários ou integral)
-  - Habilidades cadastradas (com destaque para as necessárias ao evento)
-  - Recursos disponibilizados
-  - Botão "Editar Perfil" para navegação à tela de edição
+  - Visualização das microtasks atribuídas ao voluntário
+  - Organização por data/hora
+  - Status visual de cada microtask
+  - Stepper de progresso
+  - Cards com detalhes da microtask
 
-#### 7.2 Tela Editar Perfil de Voluntário
-- **Acesso:** Botão "Editar" na tela de visualização ou AppBar
-- **Funcionalidades:**
-  - **Seção Disponibilidade:**
-    - Checkbox para "Disponibilidade integral"
-    - Se não integral: seleção de dias da semana (checkboxes)
-    - Se não integral: seleção de horário de início e fim (time pickers)
-  - **Seção Habilidades:**
-    - Chips selecionáveis para habilidades necessárias ao evento (prioritárias)
-    - Visualização de outras habilidades já cadastradas
-    - Campo de texto para adicionar novas habilidades
-  - **Seção Recursos:**
-    - Chips selecionáveis para recursos necessários ao evento (prioritários)
-    - Visualização de outros recursos já cadastrados
-    - Campo de texto para adicionar novos recursos
-  - **Validações:**
-    - Pelo menos um dia deve ser selecionado (se não integral)
-    - Horário de início deve ser anterior ao de fim
-  - **Ações:**
-    - Botão "Salvar" no AppBar
-    - Botão "Salvar Alterações" no final da tela
-    - Feedback visual durante salvamento
-    - Retorno automático à tela de visualização após sucesso
-
-### 8. Tela Criar Tasks
+### 8. Tela de Criação de Tasks
 - **Seção Criar Task:**
   - Nome da task
   - Descrição
   - Prioridade (Alta/Média/Baixa)
-- **Seção Criar Microtask:**
+  - Indicador de progresso
+
+### 9. Tela de Criação de Microtasks
+- **Formulário:**
   - Selecionar task pai
   - Nome da microtask
   - Descrição detalhada
   - Habilidades necessárias
   - Recursos necessários
-  - Tempo estimado
+  - Data e hora inicial
+  - Data e hora final
   - Prioridade
   - **Número máximo de voluntários** (campo maxVolunteers)
 
-### 8. Tela Gerenciar Voluntários
+### 10. Tela Gerenciar Voluntários
 - **Lista de Voluntários:**
   - Cards com foto, nome, habilidades
   - Indicador de disponibilidade
@@ -181,7 +161,7 @@ Sistema onde usuários podem criar eventos, gerenciar tarefas hierárquicas (Tas
   - Confirmação de atribuição adicional à microtask
   - Opção de remover voluntários da microtask
 
-### 9. Tela Acompanhar Tasks
+### 11. Tela Acompanhar Tasks
 - **Visualização Hierárquica:**
   - Tasks expandíveis (containers das microtasks)
   - Microtasks com status visual e **lista de voluntários atribuídos**
@@ -208,56 +188,40 @@ lib/
 │   │   ├── validators.dart
 │   │   ├── date_helpers.dart
 │   │   ├── string_helpers.dart
-│   │   └── permission_helpers.dart
+│   │   ├── form_validators.dart
+│   │   └── error_handler.dart
 │   ├── theme/
 │   │   └── app_theme.dart
 │   └── exceptions/
 │       └── app_exceptions.dart
 ├── data/
 │   ├── models/
-│   │   ├── user/
-│   │   │   └── user_model.dart
-│   │   ├── event/
-│   │   │   └── event_model.dart
-│   │   ├── task/
-│   │   │   ├── task_model.dart
-│   │   │   └── microtask_model.dart
-│   │   ├── volunteer/
-│   │   │   ├── volunteer_profile_model.dart
-│   │   │   └── user_microtask_model.dart
-│   │   └── ... (outros models)
+│   │   ├── user_model.dart
+│   │   ├── event_model.dart
+│   │   ├── task_model.dart
+│   │   ├── microtask_model.dart
+│   │   ├── volunteer_profile_model.dart
+│   │   └── user_microtask_model.dart
 │   ├── repositories/
-│   │   ├── user/
-│   │   │   └── user_repository.dart
-│   │   ├── event/
-│   │   │   └── event_repository.dart
-│   │   ├── task/
-│   │   │   ├── task_repository.dart
-│   │   │   └── microtask_repository.dart
-│   │   ├── volunteer/
-│   │   │   └── volunteer_repository.dart
-│   │   └── ... (outros repositórios)
+│   │   ├── auth_repository.dart
+│   │   ├── event_repository.dart
+│   │   ├── task_repository.dart
+│   │   ├── microtask_repository.dart
+│   │   ├── user_repository.dart
+│   │   └── user_microtask_repository.dart
 │   └── services/
-│       ├── auth/
-│       │   └── auth_service.dart
-│       ├── event/
-│       │   └── event_service.dart
-│       ├── task/
-│       │   ├── task_service.dart
-│       │   └── microtask_service.dart
-│       ├── volunteer/
-│       │   └── assignment_service.dart
-│       ├── firebase/
-│       │   └── firebase_service.dart
-│       ├── storage/
-│       │   └── storage_service.dart
-│       └── ... (outros services)
+│       ├── auth_service.dart
+│       ├── event_service.dart
+│       ├── task_service.dart
+│       ├── microtask_service.dart
+│       ├── user_service.dart
+│       └── assignment_service.dart
 ├── presentation/
-│   ├── controllers/ (usando GetX ou Provider)
+│   ├── controllers/
 │   │   ├── auth_controller.dart
 │   │   ├── event_controller.dart
 │   │   ├── task_controller.dart
-│   │   └── volunteer_controller.dart
+│   │   └── agenda_controller.dart
 │   ├── screens/
 │   │   ├── auth/
 │   │   │   ├── login_screen.dart
@@ -271,9 +235,18 @@ lib/
 │   │   │   ├── create_tasks_screen.dart
 │   │   │   ├── manage_volunteers_screen.dart
 │   │   │   └── track_tasks_screen.dart
+│   │   ├── task/
+│   │   │   ├── create_task_screen.dart
+│   │   │   └── create_microtask_screen.dart
+│   │   ├── agenda/
+│   │   │   ├── agenda_screen.dart
+│   │   │   └── widgets/
+│   │   │       ├── microtask_agenda_card.dart
+│   │   │       └── status_stepper.dart
+│   │   ├── assignment/
+│   │   │   └── assignment_screen.dart
 │   │   └── profile/
-│   │       ├── view_volunteer_profile_screen.dart  // NOVA TELA
-│   │       └── edit_volunteer_profile_screen.dart  // NOVA TELA
+│   │       └── my_volunteer_profile_screen.dart
 │   ├── widgets/
 │   │   ├── common/
 │   │   │   ├── custom_button.dart
@@ -281,14 +254,29 @@ lib/
 │   │   │   ├── custom_app_bar.dart
 │   │   │   ├── loading_widget.dart
 │   │   │   ├── error_widget.dart
-│   │   │   └── confirmation_dialog.dart
+│   │   │   ├── error_message_widget.dart
+│   │   │   ├── confirmation_dialog.dart
+│   │   │   └── skill_chip.dart
 │   │   ├── event/
 │   │   │   ├── event_card.dart
 │   │   │   ├── task_card.dart
-│   │   │   └── event_info_card.dart
-│   │   └── volunteer/
-│   │       ├── volunteer_card.dart
-│   │       └── skill_chip.dart
+│   │   │   ├── event_info_card.dart
+│   │   │   ├── event_stats_widget.dart
+│   │   │   └── skill_chip.dart
+│   │   ├── task/
+│   │   │   ├── task_card.dart
+│   │   │   ├── microtask_card.dart
+│   │   │   └── task_progress_widget.dart
+│   │   ├── volunteer/
+│   │   │   ├── volunteer_card.dart
+│   │   │   └── volunteer_list_widget.dart
+│   │   ├── assignment/
+│   │   │   ├── volunteer_header.dart
+│   │   │   ├── microtask_assignment_card.dart
+│   │   │   └── empty_microtasks_widget.dart
+│   │   └── dialogs/
+│   │       ├── confirmation_dialog.dart
+│   │       └── assignment_dialog.dart
 │   └── routes/
 │       └── app_routes.dart
 └── main.dart
@@ -296,7 +284,7 @@ lib/
 
 ### Boas práticas para organização de models, repositories e services
 
-- **Separação por domínio:** Crie subpastas para cada domínio (usuário, evento, tarefa, voluntário) dentro de models, repositories e services.
+- **Separação por domínio:** Crie subpastas para cada domínio (usuário, campanha, tarefa, voluntário) dentro de models, repositories e services.
 - **Responsabilidade única:** Cada arquivo deve ter apenas uma classe principal.
 - **Nada de lógica de UI:** Models, repositórios e services não devem importar nada de Flutter UI.
 - **Services:** Responsáveis por interagir diretamente com Firebase, APIs externas, armazenamento, etc.
@@ -307,57 +295,117 @@ lib/
 
 ### Regras de Negócio Principais
 
-#### RN-01: Registro Automático de Voluntário para Criador de Evento
-- **Descrição:** Quando um usuário cria um evento, ele é automaticamente registrado como voluntário além de gerenciador
+#### RN-01: Registro Automático de Voluntário para Criador de campanha
+- **Descrição:** Quando um usuário cria uma campanha, ele é automaticamente registrado como voluntário além de gerenciador
 - **Implementação:**
-  - Array `volunteers` do evento inclui automaticamente o `createdBy`
+  - Array `volunteers` da Campanha inclui automaticamente o `createdBy`
   - Perfil de voluntário é criado automaticamente com valores padrão
   - Valores padrão: horário 09:00-17:00, disponibilidade não integral, listas vazias para skills/resources
 - **Benefício:** Facilita o processo para criadores que também querem participar como voluntários
 
-#### RN-02: Tabs Dinâmicas na Tela de Detalhes do Evento
+#### RN-02: Tabs Dinâmicas na Tela de Detalhes da Campanha
 - **Descrição:** As tabs são exibidas dinamicamente baseadas nas permissões do usuário
 - **Lógica:**
-  - Tab "Evento": sempre visível
+  - Tab "campanha": sempre visível
   - Tab "Voluntários": apenas para gerenciadores
-  - Tab "Perfil": apenas para voluntários (NOVA)
+  - Tab "Perfil": apenas para voluntários
   - Tab "Acompanhar": sempre visível
+  - Tab "Agenda": sempre visível para voluntários
 - **Implementação:** TabController com length dinâmico baseado em permissões
 
-#### RN-03: Gerenciamento de Perfil de Voluntário
-- **Descrição:** Voluntários podem visualizar e editar suas informações específicas do evento
+#### RN-03: Gerenciamento de Disponibilidade e Horários
+- **Descrição:** Sistema inteligente para gerenciar disponibilidade dos voluntários e horários das microtasks
+- **Regras de Disponibilidade:**
+  1. **Disponibilidade Padrão:**
+     - Ao criar campanha: 09:00-17:00, dias úteis, não integral
+     - Ao entrar na campanha: obrigatório definir disponibilidade
+  2. **Alterações de Disponibilidade:**
+     - Permitida a qualquer momento na aba Perfil
+     - Requer validação de conflitos com microtasks já atribuídas
+  3. **Disponibilidade Integral:**
+     - Sobrepõe configurações específicas de dias/horários
+     - Não pode ser desativada se houver microtasks atribuídas fora do horário específico
+
+- **Regras de Horários das Microtasks:**
+  1. **Criação de Microtask:**
+     - Período mínimo de 30 minutos
+     - Não pode iniciar no passado
+     - Deve respeitar horário comercial (06:00-22:00)
+  2. **Atribuição de Voluntários:**
+     - Verificação automática de disponibilidade
+     - Bloqueio de atribuições com conflito de horário
+     - Sugestão de voluntários disponíveis
+  3. **Conflitos e Ajustes:**
+     - Notificação de conflitos ao alterar disponibilidade
+     - Opção de remover atribuições conflitantes
+     - Sistema de waitlist para substituições
+
+#### RN-04: Sistema de Agenda
+- **Descrição:** Voluntários podem visualizar e gerenciar suas microtasks atribuídas
 - **Funcionalidades:**
-  - Visualização completa do perfil em modo somente leitura
-  - Edição de disponibilidade (dias, horários, integral)
-  - Gerenciamento de habilidades (prioritárias do evento + personalizadas)
-  - Gerenciamento de recursos (prioritários do evento + personalizados)
-  - Validações de consistência (horários, dias mínimos)
+  - Visualização de microtasks por data/hora
+  - Status visual de progresso
+  - Atualização de status da microtask
+  - Notificações de novas atribuições
+  - Filtros por período (dia, semana, mês)
+  - Alertas de conflitos de horário
 
 ### Melhorias de UX/UI
 
-#### UI-01: Interface Responsiva para Perfil de Voluntário
-- Cards organizados por seção (evento, pessoal, disponibilidade, skills, recursos)
-- Chips diferenciados para habilidades/recursos prioritários vs. personalizados
-- Feedback visual durante operações (loading, salvamento)
-- Navegação intuitiva entre visualização e edição
+#### UI-01: Interface Responsiva
+- Cards organizados por seção
+- Chips diferenciados para habilidades/recursos
+- Feedback visual durante operações
+- Navegação intuitiva
 
 #### UI-02: Validações e Feedback
-- Validação em tempo real para campos obrigatórios
+- Validação em tempo real
 - Mensagens de erro contextuais
-- Confirmação visual de operações bem-sucedidas
-- Estados de loading durante operações assíncronas
+- Confirmação visual de operações
+- Estados de loading
 
 ### Considerações Técnicas
 
 #### TC-01: Consistência de Dados
-- Sincronização entre collections `events` e `volunteer_profiles`
+- Sincronização entre collections
 - Manutenção de integridade referencial
-- Tratamento de casos edge (usuário removido, evento deletado)
+- Tratamento de casos edge
 
 #### TC-02: Performance
-- Carregamento otimizado de dados do usuário
-- Cache local para informações frequentemente acessadas
-- Queries eficientes no Firestore
+- Carregamento otimizado
+- Cache local
+- Queries eficientes
+
+### Validações Principais
+
+#### Validações de Disponibilidade e Horários
+- **Disponibilidade do Voluntário:**
+  - Mínimo de 1 dia selecionado quando não integral
+  - Horário de início anterior ao horário de fim
+  - Horário comercial respeitado (06:00-22:00)
+  - Validação de conflitos ao alterar disponibilidade
+
+- **Horários das Microtasks:**
+  - Data/hora de início anterior à data/hora de fim
+  - Duração mínima de 30 minutos
+  - Não permitir início no passado
+  - Verificação de conflitos com outras microtasks
+  - Respeitar horário comercial (06:00-22:00)
+
+- **Atribuições:**
+  - Verificação de disponibilidade do voluntário no período
+  - Controle de capacidade máxima por microtask
+  - Prevenção de conflitos de horário
+  - Bloqueio de atribuições incompatíveis
+
+#### Outras Validações
+- Códigos de campanha únicos
+- Verificação de permissões por role
+- Validação de compatibilidade antes da atribuição de microtasks
+- Controle de status das microtasks (Tasks herdam status das microtasks)
+- Prevenção de atribuição dupla do mesmo voluntário à mesma microtask
+- Validação de conclusão colaborativa (todos os voluntários devem marcar como concluída)
+- Verificação de participação existente antes de permitir nova inscrição na Campanha
 
 ## 🗄️ Estrutura do Banco de Dados (Firestore)
 
@@ -377,13 +425,13 @@ lib/
 ```json
 {
   "id": "event_id",
-  "name": "Nome do Evento",
-  "description": "Descrição do evento",
+  "name": "Nome da Campanha",
+  "description": "Descrição da Campanha",
   "tag": "ABC123",
   "location": "Endereço descritivo",
   "createdBy": "user_id",
   "managers": ["user_id1", "user_id2"],
-  "volunteers": ["user_id1", "user_id3", "user_id4"], // NOTA: createdBy é automaticamente incluído
+  "volunteers": ["user_id1", "user_id3", "user_id4"],
   "requiredSkills": ["skill1", "skill2"],
   "requiredResources": ["resource1", "resource2"],
   "status": "active|completed|cancelled",
@@ -421,8 +469,8 @@ lib/
   "maxVolunteers": 5,
   "requiredSkills": ["skill1"],
   "requiredResources": ["resource1"],
-  "startDateTime": "timestamp", // Data e hora inicial específica (dd/mm/yyyy HH:MM)
-  "endDateTime": "timestamp", // Data e hora final específica (dd/mm/yyyy HH:MM)
+  "startDateTime": "timestamp",
+  "endDateTime": "timestamp",
   "priority": "high|medium|low",
   "status": "pending|assigned|in_progress|completed|cancelled",
   "createdBy": "user_id",
@@ -438,11 +486,9 @@ lib/
 ### Collection: volunteer_profiles
 ```json
 {
-  // Dados denormalizados do usuário
   "userName": "Nome do Usuário",
   "userEmail": "email@exemplo.com",
   "userPhotoUrl": "url_da_foto",
-  // Dados do perfil
   "assignedMicrotasksCount": 0,
   "id": "volunteer_profile_id",
   "userId": "user_id",
@@ -452,12 +498,13 @@ lib/
     "start": "09:00",
     "end": "18:00"
   },
-  "isFullTimeAvailable": false, // Disponibilidade integral (qualquer horário)
+  "isFullTimeAvailable": false,
   "skills": ["skill1", "skill2"],
   "resources": ["resource1", "resource2"],
   "joinedAt": "timestamp"
 }
 ```
+
 ### Collection: user_microtasks
 ```json
 {
@@ -483,7 +530,7 @@ lib/
 - **Dart** (linguagem principal)
 
 ### Gerenciamento de Estado
-- **Provider** ou **GetX** (a definir)
+- **GetX** (definido)
 
 ### Backend & Serviços
 - **Firebase Auth** (autenticação)
@@ -500,7 +547,7 @@ dependencies:
   cloud_firestore: ^4.8.5
   firebase_storage: ^11.2.6
   google_sign_in: ^6.1.4
-  provider: ^6.0.5  # ou get: ^4.6.5
+  get: ^4.6.5
   cached_network_image: ^3.2.3
   intl: ^0.18.1
   uuid: ^3.0.7
@@ -510,164 +557,68 @@ dependencies:
 
 ### Sistema de Atribuição Inteligente
 - Compatibilidade automática entre habilidades necessárias e disponíveis
-- Verificação de disponibilidade de horários específicos (dd/mm/yyyy HH:MM)
-- Suporte a disponibilidade integral (voluntários disponíveis a qualquer momento)
-- Sugestão de voluntários mais adequados **para microtasks específicas**
-- Tasks servem apenas como agrupadores organizacionais
-- **Controle de capacidade máxima por microtask**
-- Algoritmo de distribuição equilibrada entre voluntários
+- Verificação de disponibilidade de horários específicos
+- Suporte a disponibilidade integral
+- Sugestão de voluntários mais adequados
+- Tasks como agrupadores organizacionais
+- Controle de capacidade máxima por microtask
+- Algoritmo de distribuição equilibrada
 
 ### Gerenciamento de Códigos/Tags
-- Geração automática de códigos únicos alfanuméricos
+- Geração automática de códigos únicos
 - Validação de códigos existentes
 - Expiração opcional de códigos
 
 ### Sistema de Status
-- **Eventos:** active, completed, cancelled
+- **campanhas:** active, completed, cancelled
 - **Tasks:** pending, in_progress, completed
 - **Microtasks:** pending, assigned, in_progress, completed, cancelled
 
-### Sistema de Data/Hora Específica para Microtasks
-- **Definição precisa de horários**: Cada microtask possui data/hora inicial e final específicas (formato dd/mm/yyyy HH:MM)
-- **Substituição do sistema de horas estimadas**: Ao invés de estimar duração, define-se período exato de execução
-- **Validação de períodos**: Sistema impede criação de microtasks com data/hora inicial posterior à final
-- **Compatibilidade com disponibilidade**: Verifica se voluntários estão disponíveis no período da microtask
+### Sistema de Disponibilidade e Horários
 
-### Sistema de Disponibilidade Integral para Voluntários
-- **Opção de disponibilidade total**: Voluntários podem marcar disponibilidade integral (qualquer horário)
-- **Flexibilidade máxima**: Voluntários com disponibilidade integral podem ser atribuídos a qualquer microtask
-- **Interface simplificada**: Quando marcada disponibilidade integral, campos específicos de dias/horários são ocultados
-- **Validação inteligente**: Sistema aceita tanto disponibilidade específica quanto integral
+#### Disponibilidade dos Voluntários
+- **Configuração Inicial:**
+  - Durante o cadastro na campanha
+  - Pode ser atualizada a qualquer momento na aba Perfil
 
-### Sistema de Participação Inteligente
-- **Verificação de participação existente** antes de permitir nova inscrição
-- **Exibição de status de participação** no resultado da busca
-- **Filtragem de habilidades/recursos** baseada nas necessidades do evento
-- **Alinhamento de interface** para melhor experiência do usuário
+- **Tipos de Disponibilidade:**
+  1. **Disponibilidade Integral (isFullTimeAvailable)**
+     - Voluntário disponível em qualquer horário
+     - Ignora configurações específicas de dias e horários
+     - Ideal para voluntários com agenda flexível
 
-## 🚀 Fases de Desenvolvimento
+  2. **Disponibilidade Específica**
+     - **Dias da Semana (availableDays)**
+       - Array com dias disponíveis: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+       - Mínimo de 1 dia selecionado
+     - **Horários (availableHours)**
+       - Horário de início (start): formato "HH:mm" (24h)
+       - Horário de fim (end): formato "HH:mm" (24h)
+       - Validação: início deve ser anterior ao fim
 
-### ✅ Fase 1: Autenticação e Estrutura Base
-- Sistema de login/cadastro
-- Configuração Firebase
-- Estrutura de pastas
-- Tema e componentes básicos
+#### Definição de Horários das Microtasks
+- **Período Específico:**
+  - Data e hora de início (startDateTime): timestamp preciso
+  - Data e hora de fim (endDateTime): timestamp preciso
+  - Formato visual: DD/MM/YYYY HH:mm
 
-### ✅ Fase 2: Gerenciamento de Eventos
-- Criação de eventos
-- Sistema de tags/códigos
-- Ingresso de voluntários
-- **Melhorias de UX:** Alinhamento de botões, verificação de participação, filtros de habilidades
+- **Validações:**
+  - Início deve ser anterior ao fim
+  - Duração mínima de 30 minutos
+  - Não pode conflitar com outras microtasks do mesmo voluntário
 
-### 🚧 Fase 3: Sistema de Tarefas (EM DESENVOLVIMENTO)
-- Criação de tasks e microtasks
-- Atribuição manual de voluntários
-- Acompanhamento de progresso
+- **Compatibilidade com Voluntários:**
+  - Sistema verifica disponibilidade dos voluntários no período
+  - Para voluntários com disponibilidade específica:
+    1. Verifica se o dia da semana está na lista de availableDays
+    2. Verifica se o horário está dentro do intervalo de availableHours
+  - Para voluntários com isFullTimeAvailable = true:
+    - Automaticamente considerados disponíveis
 
-### Fase 4: Funcionalidades Avançadas
-- Sistema de atribuição inteligente
-- Perfis detalhados de voluntários
-- Relatórios e estatísticas
-
-## 📝 Considerações Importantes
-
-### Exclusões da Versão 1.0
-- Sistema de notificações push
-- Testes automatizados
-- Chat/mensagens entre usuários
-- Sistema de avaliações/feedback
-
-### Regras de Negócio
-- Apenas gerenciadores podem criar tasks/microtasks
-- Voluntários podem ser promovidos a gerenciadores
-- **Voluntários são atribuídos exclusivamente às microtasks** (Tasks são apenas organizadores)
-- Microtasks só podem ser atribuídas a voluntários com habilidades compatíveis
-- **Cada microtask pode ter múltiplos voluntários** (definido pelo campo maxVolunteers)
-- O progresso da Task é calculado automaticamente baseado nas microtasks concluídas
-- Eventos podem ter múltiplos gerenciadores
-- **Microtask é considerada concluída quando todos os voluntários atribuídos marcam como concluída**
-
-### Validações Principais
-- Códigos de evento únicos
-- Verificação de permissões por role
-- Validação de compatibilidade antes da atribuição de microtasks
-- Controle de status das microtasks (Tasks herdam status das microtasks)
-- Verificação de disponibilidade do voluntário antes da atribuição
-- **Controle de capacidade máxima por microtask**
-- **Prevenção de atribuição dupla do mesmo voluntário à mesma microtask**
-- Validação de conclusão colaborativa (todos os voluntários devem marcar como concluída)
-- **Verificação de participação existente** antes de permitir nova inscrição no evento
-
-### Melhorias de UX Implementadas
-- **Alinhamento de botões:** Botões "Buscar" e "Adicionar" alinhados à esquerda com campos de texto
-- **Verificação de participação:** Sistema impede participação dupla e informa status atual
-- **Filtros inteligentes:** Habilidades/recursos do evento aparecem como opções prioritárias
-- **Feedback visual:** Indicadores claros de status de participação
-
-## 🚀 Melhorias Futuras Recomendadas
-
-### Funcionalidades Avançadas de Perfil de Voluntário
-
-#### FUT-01: Histórico de Participação
-- Dashboard com estatísticas de participação do voluntário
-- Histórico de eventos participados
-- Métricas de desempenho (microtasks completadas, horas contribuídas)
-- Sistema de badges/conquistas baseado em participação
-
-#### FUT-02: Preferências e Configurações
-- Configuração de notificações personalizadas
-- Preferências de tipos de eventos
-- Configuração de disponibilidade padrão
-- Sincronização com calendário externo
-
-#### FUT-03: Sistema de Avaliação e Feedback
-- Avaliação mútua entre voluntários e gerenciadores
-- Sistema de reputação baseado em participação
-- Feedback específico por microtask completada
-- Relatórios de desempenho para gerenciadores
-
-### Melhorias de UX/UI
-
-#### UX-01: Interface Mais Intuitiva
-- Wizard de configuração inicial para novos voluntários
-- Onboarding interativo explicando funcionalidades
-- Tooltips contextuais para campos complexos
-- Modo escuro/claro configurável
-
-#### UX-02: Funcionalidades Colaborativas
-- Chat integrado entre voluntários do evento
-- Fórum de discussão por evento
-- Sistema de mentoria (voluntários experientes ajudam novatos)
-- Compartilhamento de recursos entre voluntários
-
-### Otimizações Técnicas
-
-#### OPT-01: Performance e Escalabilidade
-- Implementação de paginação para listas grandes
-- Cache inteligente com invalidação automática
-- Otimização de queries Firestore
-- Implementação de offline-first para funcionalidades críticas
-
-#### OPT-02: Segurança e Privacidade
-- Criptografia de dados sensíveis
-- Auditoria de ações críticas
-- Controle granular de privacidade
-- Compliance com LGPD/GDPR
-
-### Integrações Externas
-
-#### INT-01: Serviços de Terceiros
-- Integração com Google Calendar/Outlook
-- Importação de contatos para convites
-- Integração com redes sociais para compartilhamento
-- APIs de geolocalização para eventos presenciais
-
-#### INT-02: Ferramentas de Produtividade
-- Exportação de relatórios em PDF/Excel
-- Integração com ferramentas de gestão de projetos
-- API pública para integrações customizadas
-- Webhooks para notificações externas
-
----
-
-**Observação:** Esta especificação serve como base para desenvolvimento. Detalhes de implementação e ajustes podem ser refinados durante o processo de desenvolvimento. As melhorias implementadas seguem as preferências do usuário para gerenciamento de tarefas, participação em eventos voluntários e otimização de dados.
+### Sistema de Agenda
+- Visualização de microtasks por data/hora
+- Status visual de progresso
+- Notificações de novas atribuições
+- Atualização de status da microtask
+- Filtros por período (dia, semana, mês)
+- Visualização de conflitos de horário

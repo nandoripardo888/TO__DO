@@ -3,6 +3,7 @@ import '../models/user_microtask_model.dart';
 import '../models/volunteer_profile_model.dart';
 import '../services/microtask_service.dart';
 import '../services/assignment_service.dart';
+import '../services/cloud_functions_service.dart';
 import '../../core/exceptions/app_exceptions.dart';
 
 /// Repositório responsável por gerenciar dados de microtasks
@@ -10,12 +11,16 @@ import '../../core/exceptions/app_exceptions.dart';
 class MicrotaskRepository {
   final MicrotaskService _microtaskService;
   final AssignmentService _assignmentService;
+  final CloudFunctionsService _cloudFunctionsService;
 
   MicrotaskRepository({
     MicrotaskService? microtaskService,
     AssignmentService? assignmentService,
+    CloudFunctionsService? cloudFunctionsService,
   }) : _microtaskService = microtaskService ?? MicrotaskService(),
-       _assignmentService = assignmentService ?? AssignmentService();
+       _assignmentService = assignmentService ?? AssignmentService(),
+       _cloudFunctionsService =
+           cloudFunctionsService ?? CloudFunctionsService();
 
   /// Cria uma nova microtask
   Future<MicrotaskModel> createMicrotask({
@@ -111,18 +116,18 @@ class MicrotaskRepository {
     }
   }
 
-  /// Busca todas as microtasks de um evento
+  /// Busca todas as microtasks de uma campanha
   Future<List<MicrotaskModel>> getMicrotasksByEventId(String eventId) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
+        throw ValidationException('ID da Campanha é obrigatório');
       }
 
       return await _microtaskService.getMicrotasksByEventId(eventId);
     } catch (e) {
       if (e is AppException) rethrow;
       throw RepositoryException(
-        'Erro ao buscar microtasks do evento: ${e.toString()}',
+        'Erro ao buscar microtasks da Campanha: ${e.toString()}',
       );
     }
   }
@@ -150,7 +155,7 @@ class MicrotaskRepository {
   ) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
+        throw ValidationException('ID da Campanha é obrigatório');
       }
 
       return await _microtaskService.getMicrotasksByStatus(eventId, status);
@@ -187,7 +192,7 @@ class MicrotaskRepository {
     try {
       if (microtaskId.isEmpty || userId.isEmpty || eventId.isEmpty) {
         throw ValidationException(
-          'IDs da microtask, usuário e evento são obrigatórios',
+          'IDs da microtask, usuário e campanha são obrigatórios',
         );
       }
 
@@ -234,7 +239,7 @@ class MicrotaskRepository {
   }) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
+        throw ValidationException('ID da Campanha é obrigatório');
       }
       if (microtaskId.isEmpty) {
         throw ValidationException('ID da microtask é obrigatório');
@@ -259,7 +264,7 @@ class MicrotaskRepository {
   }) async {
     try {
       if (eventId.isEmpty) {
-        throw ValidationException('ID do evento é obrigatório');
+        throw ValidationException('ID da Campanha é obrigatório');
       }
       if (userId.isEmpty) {
         throw ValidationException('ID do usuário é obrigatório');
@@ -322,6 +327,8 @@ class MicrotaskRepository {
   }
 
   /// Atualiza o status individual de um usuário em uma microtask
+  /// DEPRECATED: Use updateUserMicrotaskStatusWithCloudFunction para operações críticas
+  @Deprecated('Use updateUserMicrotaskStatusWithCloudFunction instead')
   Future<UserMicrotaskModel> updateUserMicrotaskStatus({
     required String userId,
     required String microtaskId,
@@ -348,6 +355,60 @@ class MicrotaskRepository {
       if (e is AppException) rethrow;
       throw RepositoryException(
         'Erro ao atualizar status do usuário: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Atualiza o status individual de um usuário em uma microtask usando Cloud Functions
+  /// Recomendado para operações críticas que exigem validação e propagação automática
+  Future<bool> updateUserMicrotaskStatusWithCloudFunction({
+    required String userId,
+    required String microtaskId,
+    required UserMicrotaskStatus status,
+  }) async {
+    try {
+      print('📦 [REPOSITORY] Validando parâmetros:');
+      print('   - userId: "$userId" (isEmpty: ${userId.isEmpty})');
+      print(
+        '   - microtaskId: "$microtaskId" (isEmpty: ${microtaskId.isEmpty})',
+      );
+      print('   - status: ${status.name}');
+
+      if (userId.isEmpty) {
+        print('❌ [REPOSITORY] Validação falhou: ID do usuário é obrigatório');
+        throw ValidationException('ID do usuário é obrigatório');
+      }
+      if (microtaskId.isEmpty) {
+        print('❌ [REPOSITORY] Validação falhou: ID da microtask é obrigatório');
+        throw ValidationException('ID da microtask é obrigatório');
+      }
+
+      print(
+        '✅ [REPOSITORY] Validação passou, chamando CloudFunctionsService...',
+      );
+
+      final result = await _cloudFunctionsService.updateMicrotaskStatus(
+        userId: userId,
+        microtaskId: microtaskId,
+        newStatus: status.name,
+      );
+
+      print('📡 [REPOSITORY] Resposta do CloudFunctionsService: $result');
+      return result;
+    } catch (e, stackTrace) {
+      print('❌ [REPOSITORY] Erro capturado:');
+      print('   - Tipo: ${e.runtimeType}');
+      print('   - Mensagem: $e');
+      print('   - Stack trace: $stackTrace');
+
+      if (e is AppException) {
+        print('🔄 [REPOSITORY] Repassando AppException...');
+        rethrow;
+      }
+
+      print('🔄 [REPOSITORY] Convertendo para RepositoryException...');
+      throw RepositoryException(
+        'Erro ao atualizar status do usuário via Cloud Functions: ${e.toString()}',
       );
     }
   }
@@ -438,13 +499,24 @@ class MicrotaskRepository {
     return _microtaskService.watchMicrotasksByTaskId(taskId);
   }
 
-  /// Stream para escutar mudanças nas microtasks de um evento
+  /// Stream para escutar mudanças nas microtasks de uma campanha
   Stream<List<MicrotaskModel>> watchMicrotasksByEventId(String eventId) {
     if (eventId.isEmpty) {
-      throw ValidationException('ID do evento é obrigatório');
+      throw ValidationException('ID da Campanha é obrigatório');
     }
 
     return _microtaskService.watchMicrotasksByEventId(eventId);
+  }
+
+  /// Stream para escutar mudanças nas relações usuário-microtask de uma microtask específica
+  Stream<List<UserMicrotaskModel>> getUserMicrotasksByMicrotaskIdStream(
+    String microtaskId,
+  ) {
+    if (microtaskId.isEmpty) {
+      throw ValidationException('ID da microtask é obrigatório');
+    }
+
+    return _assignmentService.watchUserMicrotasksByMicrotaskId(microtaskId);
   }
 
   /// Valida se os dados de uma microtask são válidos

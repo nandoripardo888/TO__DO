@@ -47,7 +47,7 @@ class AssignmentService {
         throw ValidationException('Microtask não encontrada');
       }
 
-      // Busca o perfil do voluntário no evento
+      // Busca o perfil do voluntário na Campanha
       final volunteerProfile = await _eventService.getVolunteerProfile(
         userId,
         eventId,
@@ -119,7 +119,7 @@ class AssignmentService {
         throw ValidationException('Microtask não encontrada');
       }
 
-      // Busca todos os voluntários do evento
+      // Busca todos os voluntários da Campanha
       final allVolunteers = await _eventService.getEventVolunteerProfiles(
         eventId,
       );
@@ -175,7 +175,7 @@ class AssignmentService {
         throw ValidationException('Perfil de voluntário não encontrado');
       }
 
-      // Busca todas as microtasks do evento
+      // Busca todas as microtasks da Campanha
       final allMicrotasks = await _microtaskService.getMicrotasksByEventId(
         eventId,
       );
@@ -258,6 +258,9 @@ class AssignmentService {
   }
 
   /// Atualiza o status individual de um usuário em uma microtask
+  /// DEPRECATED: Use Cloud Functions para operações críticas de atualização de status
+  /// Este método mantido apenas para compatibilidade com código legado
+  @Deprecated('Use CloudFunctionsService.updateMicrotaskStatus instead')
   Future<UserMicrotaskModel> updateUserMicrotaskStatus({
     required String userId,
     required String microtaskId,
@@ -358,7 +361,7 @@ class AssignmentService {
     }
   }
 
-  /// Busca todas as microtasks de um usuário em um evento específico
+  /// Busca todas as microtasks de um usuário em uma campanha específico
   /// Ordenadas por status (assigned → in_progress → completed) e depois por assignedAt
   /// Conforme RN-01.4 e RN-01.5 do PRD
   Future<List<UserMicrotaskModel>> getUserMicrotasksByEvent({
@@ -401,12 +404,12 @@ class AssignmentService {
       return userMicrotasks;
     } catch (e) {
       throw DatabaseException(
-        'Erro ao buscar microtasks do usuário no evento: ${e.toString()}',
+        'Erro ao buscar microtasks do usuário na Campanha: ${e.toString()}',
       );
     }
   }
 
-  /// Stream para escutar mudanças nas microtasks de um usuário em um evento
+  /// Stream para escutar mudanças nas microtasks de um usuário em uma campanha
   /// Para atualizações em tempo real da agenda
   Stream<List<UserMicrotaskModel>> watchUserMicrotasksByEvent({
     required String userId,
@@ -443,6 +446,22 @@ class AssignmentService {
           });
 
           return userMicrotasks;
+        });
+  }
+
+  /// Stream para escutar mudanças nas relações usuário-microtask de uma microtask específica
+  /// Para atualizações em tempo real do progresso das tasks
+  Stream<List<UserMicrotaskModel>> watchUserMicrotasksByMicrotaskId(
+    String microtaskId,
+  ) {
+    return _userMicrotasksCollection
+        .where('microtaskId', isEqualTo: microtaskId)
+        .orderBy('assignedAt', descending: false)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => UserMicrotaskModel.fromFirestore(doc))
+              .toList();
         });
   }
 

@@ -181,7 +181,7 @@ class UserMicrotaskModel {
     }
 
     if (eventId.isEmpty) {
-      errors.add('ID do evento é obrigatório');
+      errors.add('ID da Campanha é obrigatório');
     }
 
     if (actualHours != null && actualHours! < 0) {
@@ -218,17 +218,19 @@ class UserMicrotaskModel {
 
   /// Marca como iniciado
   UserMicrotaskModel markAsStarted() {
-    if (status == UserMicrotaskStatus.assigned || status == UserMicrotaskStatus.completed) {
+    if (status == UserMicrotaskStatus.assigned ||
+        status == UserMicrotaskStatus.completed) {
       final now = DateTime.now();
       return copyWith(
         status: UserMicrotaskStatus.inProgress,
-        startedAt: startedAt ?? now, // Mantém a data original de início se já existir
+        startedAt:
+            startedAt ?? now, // Mantém a data original de início se já existir
         updatedAt: now,
       );
     }
     return this;
   }
-  
+
   /// Marca como atribuído (regressão de Em Andamento para Atribuída)
   UserMicrotaskModel markAsAssigned() {
     if (status == UserMicrotaskStatus.inProgress) {
@@ -244,7 +246,8 @@ class UserMicrotaskModel {
 
   /// Marca como concluído
   UserMicrotaskModel markAsCompleted({double? actualHours}) {
-    if (status == UserMicrotaskStatus.inProgress || status == UserMicrotaskStatus.assigned) {
+    if (status == UserMicrotaskStatus.inProgress ||
+        status == UserMicrotaskStatus.assigned) {
       final now = DateTime.now();
       return copyWith(
         status: UserMicrotaskStatus.completed,

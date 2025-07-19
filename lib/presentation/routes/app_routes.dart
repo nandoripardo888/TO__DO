@@ -50,7 +50,7 @@ class AppRoutes {
       case home:
         return _createRoute(const HomeScreen());
       case createEvent:
-        // REQ-05: Aceita evento opcional para modo de edição
+        // REQ-05: Aceita campanha opcional para modo de edição
         final eventToEdit = settings.arguments as EventModel?;
         return _createRoute(CreateEventScreen(eventToEdit: eventToEdit));
       case joinEvent:
@@ -150,17 +150,17 @@ class AppRoutes {
     push(context, register);
   }
 
-  /// Navega para a tela de criar evento
+  /// Navega para a tela de criar campanha
   static void goToCreateEvent(BuildContext context) {
     push(context, createEvent);
   }
 
-  /// Navega para a tela de participar de evento
+  /// Navega para a tela de participar de campanha
   static void goToJoinEvent(BuildContext context) {
     push(context, joinEvent);
   }
 
-  /// Navega para os detalhes de um evento
+  /// Navega para os detalhes de uma campanha
   static void goToEventDetails(BuildContext context, String eventId) {
     push(context, eventDetails, arguments: eventId);
   }

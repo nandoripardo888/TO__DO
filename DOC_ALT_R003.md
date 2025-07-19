@@ -1,7 +1,7 @@
 # PRD: Funcionalidade - Aba Agenda do Voluntário
 
 **Documento de Requisitos do Produto (PRD)**
-**Projeto:** Task Manager para Eventos - ConTask
+**Projeto:** Task Manager para campanhas - ConTask
 **Funcionalidade:** Aba "AGENDA" para Voluntários
 
 ---
@@ -16,15 +16,15 @@
 | **Autor** | Equipe de Desenvolvimento |
 | **Data** | 16/07/2025 |
 | **Versão** | 1.1 |
-| **Projeto** | ConTask - Task Manager para Eventos |
+| **Projeto** | ConTask - Task Manager para campanhas |
 
 ### 1\. Resumo e Objetivo
 
-Este documento especifica os requisitos para a criação de uma nova aba "AGENDA" na tela de detalhes do evento. O objetivo principal é fornecer aos voluntários uma visão pessoal, clara e acionável de todas as microtarefas que lhes foram atribuídas dentro de um evento específico. A funcionalidade permitirá que os voluntários atualizem seu progresso individual, e o sistema usará essa informação para automatizar a atualização do status geral das microtarefas e tarefas.
+Este documento especifica os requisitos para a criação de uma nova aba "AGENDA" na tela de detalhes da Campanha. O objetivo principal é fornecer aos voluntários uma visão pessoal, clara e acionável de todas as microtarefas que lhes foram atribuídas dentro de uma campanha específico. A funcionalidade permitirá que os voluntários atualizem seu progresso individual, e o sistema usará essa informação para automatizar a atualização do status geral das microtarefas e tarefas.
 
 ### 2\. Justificativa
 
-Atualmente, o voluntário tem uma visão dispersa de suas atribuições, geralmente na tela "Acompanhar Tasks", que mostra todas as tarefas do evento. Não há um local centralizado para o voluntário ver apenas _suas_ responsabilidades e gerenciar seu progresso de forma simples.
+Atualmente, o voluntário tem uma visão dispersa de suas atribuições, geralmente na tela "Acompanhar Tasks", que mostra todas as tarefas da Campanha. Não há um local centralizado para o voluntário ver apenas _suas_ responsabilidades e gerenciar seu progresso de forma simples.
 
 Esta funcionalidade irá:
 
@@ -41,15 +41,15 @@ Esta funcionalidade irá:
 
 #### REQ-01: Nova Aba "AGENDA"
 
-*   **Descrição:** Uma nova aba chamada **"AGENDA"** deve ser adicionada à tela de detalhes do evento para fornecer aos voluntários uma visão personalizada de suas microtarefas.
+*   **Descrição:** Uma nova aba chamada **"AGENDA"** deve ser adicionada à tela de detalhes da Campanha para fornecer aos voluntários uma visão personalizada de suas microtarefas.
 
 *   **Regras de Negócio:**
 
-    *   **RN-01.1 - Posicionamento:** A aba "AGENDA" deve ser inserida na `TabBar` da tela `event_details_screen.dart`, seguindo a ordem: "Evento" → "AGENDA" → "Perfil" → "Acompanhar".
+    *   **RN-01.1 - Posicionamento:** A aba "AGENDA" deve ser inserida na `TabBar` da tela `event_details_screen.dart`, seguindo a ordem: "campanha" → "AGENDA" → "Perfil" → "Acompanhar".
 
-    *   **RN-01.2 - Visibilidade:** A aba deve ser visível **apenas** para usuários que estão na lista `volunteers` do evento, seguindo o padrão de tabs dinâmicas estabelecido (RN-02 da especificação geral).
+    *   **RN-01.2 - Visibilidade:** A aba deve ser visível **apenas** para usuários que estão na lista `volunteers` da Campanha, seguindo o padrão de tabs dinâmicas estabelecido (RN-02 da especificação geral).
 
-    *   **RN-01.3 - Conteúdo:** A aba deve listar verticalmente todas as microtarefas atribuídas ao usuário logado para aquele evento específico.
+    *   **RN-01.3 - Conteúdo:** A aba deve listar verticalmente todas as microtarefas atribuídas ao usuário logado para aquele campanha específico.
 
     *   **RN-01.4 - Fonte de Dados:** A lista deve ser obtida consultando a collection `user_microtasks` com filtros: `userId == currentUser.id AND eventId == currentEvent.id`.
 
@@ -93,15 +93,13 @@ Esta funcionalidade irá:
 
     *   **RN-03.2 - Estado Inicial:** O status `assigned` é o estado inicial (não interativo) e não pode ser selecionado pelo usuário.
 
-    *   **RN-03.3 - Progressão Permitida:** O usuário pode marcar `in_progress` a partir de `assigned`, e `completed` a partir de `in_progress`.
+    *   **RN-03.3 - Progressão Permitida:** O usuário pode marcar `in_progress` a partir de `assigned`, e `completed` a partir de `in_progress`. **Regressão de status não é permitida.**
 
-    *   **RN-03.4 - Regressão Permitida:** O usuário pode desmarcar `completed` (voltando para `in_progress`) ou desmarcar `in_progress` (voltando para `assigned`).
+    *   **RN-03.4 - Validação de Fluxo:** A lógica deve impedir qualquer tipo de regressão de status, permitindo apenas progressão para frente no fluxo: `assigned` → `in_progress` → `completed`.
 
-    *   **RN-03.5 - Validação de Fluxo:** A lógica deve impedir transição direta de `completed` para `assigned` (deve passar por `in_progress`).
+    *   **RN-03.5 - Feedback Visual:** Cada mudança de status deve fornecer feedback visual imediato (loading, sucesso, erro).
 
-    *   **RN-03.6 - Feedback Visual:** Cada mudança de status deve fornecer feedback visual imediato (loading, sucesso, erro).
-
-    *   **RN-03.7 - Timestamps:** Atualizar campos `startedAt` (ao marcar in_progress) e `completedAt` (ao marcar completed).
+    *   **RN-03.6 - Timestamps:** Atualizar campos `startedAt` (ao marcar in_progress) e `completedAt` (ao marcar completed).
         
 
 #### REQ-04: Lógica de Propagação de Status (Backend/Cloud Functions)
@@ -216,7 +214,7 @@ Esta funcionalidade interage com os seguintes modelos definidos na especificaç�
 - **Índices recomendados:** Criar índice composto em `user_microtasks` para `(userId, eventId, assignedAt)`
 
 **Estimativa de Performance:**
-- **Leitura:** ~10-50 documentos por usuário por evento (baixo impacto)
+- **Leitura:** ~10-50 documentos por usuário por campanha (baixo impacto)
 - **Escrita:** 1 documento por mudança de status + propagação em cascata
 - **Custo:** Baixo a médio, dependendo da frequência de atualizações
 
@@ -298,8 +296,8 @@ exports.onUserMicrotaskStatusChange = functions.firestore
 
 | ID | Critério | Verificação | Prioridade |
 | --- | --- | --- | --- |
-| **AC-01** | **Visibilidade da Aba** | A aba "AGENDA" está visível na tela de detalhes do evento apenas para usuários que estão na lista `volunteers` do evento. | Alta |
-| **AC-02** | **Conteúdo da Agenda** | A aba "AGENDA" lista todos (e somente) os cards das microtarefas atribuídas ao usuário logado para aquele evento específico. | Alta |
+| **AC-01** | **Visibilidade da Aba** | A aba "AGENDA" está visível na tela de detalhes da Campanha apenas para usuários que estão na lista `volunteers` da Campanha. | Alta |
+| **AC-02** | **Conteúdo da Agenda** | A aba "AGENDA" lista todos (e somente) os cards das microtarefas atribuídas ao usuário logado para aquele campanha específico. | Alta |
 | **AC-03** | **Estrutura do Card** | Cada card na agenda exibe: título da microtarefa, tarefa pai ("Pertence a: X"), data/hora (se disponível) e stepper de status horizontal. | Alta |
 | **AC-04** | **Ordenação** | As microtarefas são exibidas ordenadas por status (assigned → in_progress → completed) e depois por data de atribuição. | Média |
 | **AC-05** | **Interação - Em Andamento** | Ao clicar no check "Em Andamento", o status em `user_microtasks` é atualizado para `in_progress` e o visual do card reflete a mudança imediatamente. | Alta |

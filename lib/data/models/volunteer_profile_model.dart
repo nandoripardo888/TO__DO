@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Modelo de dados para representar o perfil de um voluntário em um evento
+/// Modelo de dados para representar o perfil de um voluntário em uma campanha
 /// Baseado na estrutura definida no SPEC_GERAL.md
 /// Inclui dados denormalizados do usuário para otimizar consultas
 class VolunteerProfileModel {
@@ -260,7 +260,7 @@ class VolunteerProfileModel {
     return translatedDays.join(', ');
   }
 
-  /// Retorna há quanto tempo o voluntário se juntou ao evento
+  /// Retorna há quanto tempo o voluntário se juntou aa Campanha
   String get joinedTimeAgo {
     final now = DateTime.now();
     final difference = now.difference(joinedAt);
@@ -403,7 +403,7 @@ class VolunteerProfileModel {
     }
 
     if (eventId.isEmpty) {
-      errors.add('ID do evento é obrigatório');
+      errors.add('ID da Campanha é obrigatório');
     }
 
     if (!isFullTimeAvailable) {

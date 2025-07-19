@@ -62,7 +62,7 @@ class TaskService {
   }
 
   /*
-  /// Busca todas as tasks de um evento
+  /// Busca todas as tasks de uma campanha
   Future<List<TaskModel>> getTasksByEventId(String eventId) async {
     try {
       final querySnapshot = await _tasksCollection
@@ -74,7 +74,7 @@ class TaskService {
           .toList();
     } catch (e) {
       throw DatabaseException(
-        'Erro ao buscar tasks do evento: ${e.toString()}',
+        'Erro ao buscar tasks da Campanha: ${e.toString()}',
       );
     }
   }
@@ -91,9 +91,9 @@ class TaskService {
           .map((doc) => TaskModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('Erro ao buscar tasks do evento: ${e.toString()}');
+      print('Erro ao buscar tasks da Campanha: ${e.toString()}');
       throw DatabaseException(
-        'Erro ao buscar tasks do evento: ${e.toString()}',
+        'Erro ao buscar tasks da Campanha: ${e.toString()}',
       );
     }
   }
@@ -318,7 +318,7 @@ class TaskService {
     }
   }
 
-  /// Deleta todas as tasks de um evento
+  /// Deleta todas as tasks de uma campanha
   Future<void> deleteTasksByEventId(String eventId) async {
     try {
       final querySnapshot = await _tasksCollection
@@ -333,7 +333,7 @@ class TaskService {
       await batch.commit();
     } catch (e) {
       throw DatabaseException(
-        'Erro ao deletar tasks do evento: ${e.toString()}',
+        'Erro ao deletar tasks da Campanha: ${e.toString()}',
       );
     }
   }
@@ -346,7 +346,7 @@ class TaskService {
     });
   }
 
-  /// Stream para escutar mudanças nas tasks de um evento
+  /// Stream para escutar mudanças nas tasks de uma campanha
   Stream<List<TaskModel>> watchTasksByEventId(String eventId) {
     return _tasksCollection
         .where('eventId', isEqualTo: eventId)

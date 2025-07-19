@@ -29,7 +29,7 @@ class AssignmentScreen extends StatefulWidget {
   State<AssignmentScreen> createState() => _AssignmentScreenState();
 }
 
-class _AssignmentScreenState extends State<AssignmentScreen> 
+class _AssignmentScreenState extends State<AssignmentScreen>
     with TickerProviderStateMixin {
   List<MicrotaskModel> _availableMicrotasks = [];
   List<TaskModel> _tasks = [];
@@ -65,7 +65,7 @@ class _AssignmentScreenState extends State<AssignmentScreen>
         listen: false,
       );
 
-      // Carrega tasks do evento
+      // Carrega tasks da Campanha
       await taskController.loadTasksByEventId(widget.eventId);
 
       // Coleta todas as microtasks disponíveis
@@ -215,14 +215,16 @@ class _AssignmentScreenState extends State<AssignmentScreen>
         if (index >= filteredMicrotasks.length) {
           return const SizedBox.shrink();
         }
-        
+
         final microtask = filteredMicrotasks[index];
         final task = _getTaskForMicrotask(microtask.taskId);
-        
+
         return SlideTransition(
           position: animation.drive(
-            Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)
-              .chain(CurveTween(curve: Curves.easeOut)),
+            Tween(
+              begin: const Offset(1.0, 0.0),
+              end: Offset.zero,
+            ).chain(CurveTween(curve: Curves.easeOut)),
           ),
           child: FadeTransition(
             opacity: animation,
@@ -296,12 +298,14 @@ class _AssignmentScreenState extends State<AssignmentScreen>
   Future<void> _assignMicrotaskWithAnimation(MicrotaskModel microtask) async {
     try {
       // Remove a microtask da lista local imediatamente para feedback visual
-      final currentIndex = _availableMicrotasks.indexWhere((m) => m.id == microtask.id);
+      final currentIndex = _availableMicrotasks.indexWhere(
+        (m) => m.id == microtask.id,
+      );
       if (currentIndex != -1) {
         setState(() {
           _availableMicrotasks.removeAt(currentIndex);
         });
-        
+
         // Pequeno delay para mostrar a animação de remoção
         await Future.delayed(const Duration(milliseconds: 300));
       }
@@ -343,11 +347,12 @@ class _AssignmentScreenState extends State<AssignmentScreen>
       // Se houve erro, restaura a microtask na lista
       if (mounted) {
         setState(() {
-          _availableMicrotasks = _sortMicrotasksByCompatibility(
-            [..._availableMicrotasks, microtask],
-          );
+          _availableMicrotasks = _sortMicrotasksByCompatibility([
+            ..._availableMicrotasks,
+            microtask,
+          ]);
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro ao atribuir microtask: $e'),

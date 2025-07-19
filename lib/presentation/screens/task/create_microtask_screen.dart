@@ -84,7 +84,7 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
     if (_isLoadingEvent) {
       return const Scaffold(
         backgroundColor: AppColors.background,
-        body: LoadingWidget(message: 'Carregando evento...'),
+        body: LoadingWidget(message: 'Carreganda Campanha...'),
       );
     }
 
@@ -92,7 +92,7 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
       return const Scaffold(
         backgroundColor: AppColors.background,
         appBar: CustomAppBar(title: 'Criar Microtask'),
-        body: Center(child: Text('Erro ao carregar evento')),
+        body: Center(child: Text('Erro ao carregar event')),
       );
     }
 
@@ -477,7 +477,7 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
               border: Border.all(color: AppColors.warning.withOpacity(0.3)),
             ),
             child: const Text(
-              'Nenhuma habilidade definida no evento.',
+              'Nenhuma habilidade definida na Campanha.',
               style: TextStyle(color: AppColors.warning),
             ),
           )
@@ -544,7 +544,7 @@ class _CreateMicrotaskScreenState extends State<CreateMicrotaskScreen> {
               border: Border.all(color: AppColors.warning.withOpacity(0.3)),
             ),
             child: const Text(
-              'Nenhum recurso definido no evento.',
+              'Nenhum recurso definido na Campanha.',
               style: TextStyle(color: AppColors.warning),
             ),
           )

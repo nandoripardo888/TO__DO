@@ -3,7 +3,7 @@
 class AppStrings {
   // App
   static const String appName = 'ConTask';
-  static const String appDescription = 'Gerenciador de Tarefas para Eventos';
+  static const String appDescription = 'Gerenciador de Tarefas para campanhas';
 
   // Autenticação
   static const String login = 'Entrar';
@@ -22,20 +22,20 @@ class AppStrings {
   static const String description = 'Descrição';
   static const String location = 'Localização';
 
-  // Eventos
-  static const String events = 'Eventos';
-  static const String createEvent = 'Criar Evento';
-  static const String joinEvent = 'Participar de Evento';
-  static const String eventName = 'Nome do evento';
-  static const String eventDescription = 'Descrição do evento';
-  static const String eventLocation = 'Localização do evento';
-  static const String eventCode = 'Código do evento';
-  static const String eventTag = 'Tag do evento';
+  // campanhas
+  static const String events = 'campanhas';
+  static const String createEvent = 'Criar campanha';
+  static const String joinEvent = 'Participar de campanha';
+  static const String eventName = 'Nome da Campanha';
+  static const String eventDescription = 'Descrição da Campanha';
+  static const String eventLocation = 'Localização da Campanha';
+  static const String eventCode = 'Código da Campanha';
+  static const String eventTag = 'Tag da Campanha';
   static const String requiredSkills = 'Habilidades necessárias';
   static const String requiredResources = 'Recursos necessários';
-  static const String eventDetails = 'Detalhes do Evento';
-  static const String eventCreated = 'Evento criado com sucesso!';
-  static const String joinedEvent = 'Você ingressou no evento!';
+  static const String eventDetails = 'Detalhes da Campanha';
+  static const String eventCreated = 'campanha criado com sucesso!';
+  static const String joinedEvent = 'Você ingressou na Campanha!';
 
   // Tarefas
   static const String tasks = 'Tarefas';
@@ -108,8 +108,8 @@ class AppStrings {
   static const String errorPasswordTooShort =
       'Senha deve ter pelo menos 6 caracteres';
   static const String errorPasswordsDontMatch = 'Senhas não coincidem';
-  static const String errorEventNotFound = 'Evento não encontrado';
-  static const String errorInvalidEventCode = 'Código de evento inválido';
+  static const String errorEventNotFound = 'campanha não encontrado';
+  static const String errorInvalidEventCode = 'Código de campanha inválido';
 
   // Mensagens de Sucesso
   static const String successGeneric = 'Operação realizada com sucesso';
@@ -130,7 +130,7 @@ class AppStrings {
   static const String volunteer = 'Voluntário';
 
   // Placeholders
-  static const String noEventsFound = 'Nenhum evento encontrado';
+  static const String noEventsFound = 'Nenhuma campanha encontrado';
   static const String noTasksFound = 'Nenhuma tarefa encontrada';
   static const String noVolunteersFound = 'Nenhum voluntário encontrado';
   static const String loading = 'Carregando...';

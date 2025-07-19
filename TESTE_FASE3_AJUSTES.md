@@ -6,7 +6,7 @@ Data: 14 de Julho de 2025
 
 ## **1\. Introdução e Visão Geral**
 
-Este documento descreve os requisitos para aprimorar a tela de "Gerenciar Voluntários" no aplicativo de gerenciamento de eventos. O objetivo é transformar a tela atual em um painel de controle mais robusto, que forneça aos gerentes de eventos informações claras sobre a disponibilidade, carga de trabalho e compatibilidade dos voluntários, otimizando o processo de atribuição de tarefas.
+Este documento descreve os requisitos para aprimorar a tela de "Gerenciar Voluntários" no aplicativo de gerenciamento de campanhas. O objetivo é transformar a tela atual em um painel de controle mais robusto, que forneça aos gerentes de campanhas informações claras sobre a disponibilidade, carga de trabalho e compatibilidade dos voluntários, otimizando o processo de atribuição de tarefas.
 
 As melhorias propostas incluem a adição de indicadores visuais, filtros avançados e um fluxo de atribuição de tarefas mais intuitivo, alinhado com a lógica de negócio de "Tasks" e "Microtasks" já especificada no projeto.
 
@@ -85,7 +85,7 @@ Aqui está a lista de tarefas para um agente de IA ou equipe de desenvolvimento,
    * Exiba o horário de disponibilidade (availableHours) do perfil do voluntário.  
 2. **Implementar Filtro por Habilidades:**  
    * Adicione um ElevatedButton "Filtrar por Habilidade" na tela.  
-   * Ao clicar, exiba um AlertDialog ou showModalBottomSheet que lista todas as requiredSkills do evento.  
+   * Ao clicar, exiba um AlertDialog ou showModalBottomSheet que lista todas as requiredSkills da Campanha.  
    * Permita a seleção de múltiplas habilidades (usando CheckboxListTile).  
    * Armazene as habilidades selecionadas em um StateProvider ou ChangeNotifier.  
    * Filtre a lista de voluntários com base nas habilidades selecionadas. O voluntário deve possuir **todas** as habilidades do filtro para ser exibido.  
@@ -99,7 +99,7 @@ Aqui está a lista de tarefas para um agente de IA ou equipe de desenvolvimento,
 1. **Estrutura da Tela:**  
    * Crie uma nova StatefulWidget chamada AssignmentScreen.  
    * Receba o volunteerId e o eventId como parâmetros.  
-   * Use um FutureBuilder ou um StreamBuilder para carregar as microtasks do evento que ainda não estão concluídas e que possuem vagas (assignedTo.length \< maxVolunteers).  
+   * Use um FutureBuilder ou um StreamBuilder para carregar as microtasks da Campanha que ainda não estão concluídas e que possuem vagas (assignedTo.length \< maxVolunteers).  
 2. **Lógica de Compatibilidade e Ordenação:**  
    * Busque o perfil do voluntário (volunteer\_profile\_model) para obter suas habilidades.  
    * Crie uma função que ordene a lista de microtasks:  
@@ -129,5 +129,5 @@ Aqui está a lista de tarefas para um agente de IA ou equipe de desenvolvimento,
    * O texto deve alertar sobre a concessão de permissões.  
    * A função onConfirm deve:  
      1. Chamar um método no EventService ou EventRepository.  
-     2. Este método deve adicionar o userId do voluntário ao array managers no documento do evento no Firestore.  
+     2. Este método deve adicionar o userId do voluntário ao array managers no documento da Campanha no Firestore.  
      3. Exibir um SnackBar de sucesso.

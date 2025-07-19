@@ -98,7 +98,7 @@ class MicrotaskService {
     }
   }
 
-  /// Busca todas as microtasks de um evento
+  /// Busca todas as microtasks de uma campanha
   Future<List<MicrotaskModel>> getMicrotasksByEventId(String eventId) async {
     try {
       final querySnapshot = await _microtasksCollection
@@ -111,7 +111,7 @@ class MicrotaskService {
           .toList();
     } catch (e) {
       throw DatabaseException(
-        'Erro ao buscar microtasks do evento: ${e.toString()}',
+        'Erro ao buscar microtasks da Campanha: ${e.toString()}',
       );
     }
   }
@@ -369,7 +369,7 @@ class MicrotaskService {
         );
   }
 
-  /// Stream para escutar mudanças nas microtasks de um evento
+  /// Stream para escutar mudanças nas microtasks de uma campanha
   Stream<List<MicrotaskModel>> watchMicrotasksByEventId(String eventId) {
     return _microtasksCollection
         .where('eventId', isEqualTo: eventId)

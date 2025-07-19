@@ -40,15 +40,15 @@ Implementar o sistema completo de tarefas hierárquicas (Tasks → Microtasks) c
 **Objetivo**: Validar criação de tasks organizadoras
 
 **Pré-requisitos**: 
-- Usuário logado como gerenciador de evento
-- Evento criado na Fase 2
+- Usuário logado como gerenciador de campanha
+- campanha criado na Fase 2
 
 **Passos**:
-1. Navegar para detalhes do evento
+1. Navegar para detalhes da Campanha
 2. Acessar tab "Criar Tasks"
 3. Preencher formulário de task:
    - Nome: "Organização do Local"
-   - Descrição: "Preparar e organizar o espaço do evento"
+   - Descrição: "Preparar e organizar o espaço da Campanha"
    - Prioridade: Alta
 4. Salvar task
 5. Verificar se task aparece na lista
@@ -93,7 +93,7 @@ Implementar o sistema completo de tarefas hierárquicas (Tasks → Microtasks) c
 
 **Pré-requisitos**:
 - Microtasks criadas no Teste 2
-- Pelo menos 5 voluntários no evento com habilidades compatíveis
+- Pelo menos 5 voluntários na Campanha com habilidades compatíveis
 
 **Passos**:
 1. Navegar para tab "Gerenciar Voluntários"
@@ -238,7 +238,7 @@ Implementar o sistema completo de tarefas hierárquicas (Tasks → Microtasks) c
 **Cenários**:
 
 #### 9.1 Cadastro com Disponibilidade Integral
-1. Na tela de participação em evento
+1. Na tela de participação em campanha
 2. Marcar opção "Disponibilidade integral"
 3. Verificar se campos específicos são ocultados
 4. Confirmar participação

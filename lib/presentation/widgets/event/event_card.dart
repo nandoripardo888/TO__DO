@@ -3,7 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../data/models/event_model.dart';
 
-/// Widget de card para exibir informações de um evento na lista
+/// Widget de card para exibir informações de uma campanha na lista
 class EventCard extends StatelessWidget {
   final EventModel event;
   final VoidCallback? onTap;
@@ -50,9 +50,9 @@ class EventCard extends StatelessWidget {
                   _buildStatusChip(),
                 ],
               ),
-              
+
               const SizedBox(height: AppDimensions.spacingSm),
-              
+
               // Descrição
               if (event.description.isNotEmpty) ...[
                 Text(
@@ -66,7 +66,7 @@ class EventCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
               ],
-              
+
               // Localização
               Row(
                 children: [
@@ -89,9 +89,9 @@ class EventCard extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: AppDimensions.spacingSm),
-              
+
               // Papel do usuário e participantes
               Row(
                 children: [
@@ -100,10 +100,10 @@ class EventCard extends StatelessWidget {
                   _buildParticipantsInfo(),
                 ],
               ),
-              
+
               const SizedBox(height: AppDimensions.spacingSm),
-              
-              // Tag do evento e data
+
+              // Tag da Campanha e data
               Row(
                 children: [
                   Container(
@@ -113,7 +113,9 @@ class EventCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusSm,
+                      ),
                     ),
                     child: Text(
                       event.tag,
@@ -230,11 +232,7 @@ class EventCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: textColor,
-          ),
+          Icon(icon, size: 14, color: textColor),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
@@ -253,11 +251,7 @@ class EventCard extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
-          Icons.people,
-          size: 16,
-          color: AppColors.textSecondary,
-        ),
+        const Icon(Icons.people, size: 16, color: AppColors.textSecondary),
         const SizedBox(width: AppDimensions.spacingXs),
         Text(
           '${event.totalParticipants}',

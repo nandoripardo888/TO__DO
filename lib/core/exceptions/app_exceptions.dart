@@ -50,7 +50,7 @@ class ValidationException extends AppException {
   String toString() => 'ValidationException: $message';
 }
 
-/// Exceções relacionadas a eventos
+/// Exceções relacionadas a campanhas
 class EventException extends AppException {
   const EventException(super.message, {super.code, super.originalException});
 

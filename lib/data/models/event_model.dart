@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Modelo de dados para representar um evento no sistema
+/// Modelo de dados para representar uma campanha no sistema
 /// Baseado na estrutura definida no SPEC_GERAL.md
 class EventModel {
   final String id;
@@ -123,12 +123,12 @@ class EventModel {
     return copyWith(updatedAt: DateTime.now());
   }
 
-  /// Verifica se o usuário é gerenciador do evento
+  /// Verifica se o usuário é gerenciador da Campanha
   bool isManager(String userId) {
     return managers.contains(userId);
   }
 
-  /// Verifica se o usuário é voluntário do evento
+  /// Verifica se o usuário é voluntário da Campanha
   bool isVolunteer(String userId) {
     return volunteers.contains(userId);
   }
@@ -138,12 +138,12 @@ class EventModel {
     return isManager(userId) || isVolunteer(userId);
   }
 
-  /// Verifica se o usuário é o criador do evento
+  /// Verifica se o usuário é o criador da Campanha
   bool isCreator(String userId) {
     return createdBy == userId;
   }
 
-  /// Adiciona um voluntário ao evento
+  /// Adiciona um voluntário aa Campanha
   EventModel addVolunteer(String userId) {
     if (volunteers.contains(userId)) return this;
 
@@ -151,7 +151,7 @@ class EventModel {
     return copyWith(volunteers: newVolunteers).withUpdatedTimestamp();
   }
 
-  /// Remove um voluntário do evento
+  /// Remove um voluntário da Campanha
   EventModel removeVolunteer(String userId) {
     if (!volunteers.contains(userId)) return this;
 
@@ -183,7 +183,7 @@ class EventModel {
   /// Retorna o número total de participantes
   int get totalParticipants => managers.length + volunteers.length;
 
-  /// Retorna o papel do usuário no evento
+  /// Retorna o papel do usuário na Campanha
   UserRole getUserRole(String userId) {
     if (createdBy == userId) return UserRole.creator;
     if (managers.contains(userId)) return UserRole.manager;
@@ -191,7 +191,7 @@ class EventModel {
     return UserRole.none;
   }
 
-  /// Valida se os dados do evento são válidos
+  /// Valida se os dados da Campanha são válidos
   bool isValid() {
     return id.isNotEmpty &&
         name.isNotEmpty &&
@@ -202,7 +202,7 @@ class EventModel {
         managers.contains(createdBy);
   }
 
-  /// Factory para criar um novo evento
+  /// Factory para criar um nova Campanha
   /// Note: ID, tag e timestamps devem ser definidos pelo service
   factory EventModel.create({
     required String id,
@@ -299,7 +299,7 @@ class EventModel {
     return errors;
   }
 
-  /// Retorna há quanto tempo o evento foi criado
+  /// Retorna há quanto tempo a Campanha foi criado
   String get createdTimeAgo {
     final now = DateTime.now();
     final difference = now.difference(createdAt);
@@ -315,7 +315,7 @@ class EventModel {
     }
   }
 
-  /// Retorna há quanto tempo o evento foi atualizado
+  /// Retorna há quanto tempo a Campanha foi atualizado
   String get updatedTimeAgo {
     final now = DateTime.now();
     final difference = now.difference(updatedAt);
@@ -331,7 +331,7 @@ class EventModel {
     }
   }
 
-  /// Verifica se o evento foi criado recentemente (últimas 24 horas)
+  /// Verifica se a Campanha foi criado recentemente (últimas 24 horas)
   bool get isNewEvent {
     final now = DateTime.now();
     final difference = now.difference(createdAt);
@@ -356,7 +356,7 @@ class EventModel {
     return requiredResources.join(', ');
   }
 
-  /// Atualiza o status do evento
+  /// Atualiza o status da Campanha
   EventModel updateStatus(EventStatus newStatus) {
     return copyWith(status: newStatus).withUpdatedTimestamp();
   }
@@ -394,7 +394,7 @@ class EventModel {
   }
 }
 
-/// Enum para representar o status do evento
+/// Enum para representar o status da Campanha
 enum EventStatus {
   active('active'),
   completed('completed'),
@@ -422,7 +422,7 @@ enum EventStatus {
   }
 }
 
-/// Enum para representar o papel do usuário no evento
+/// Enum para representar o papel do usuário na Campanha
 enum UserRole {
   creator('creator'),
   manager('manager'),

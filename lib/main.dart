@@ -7,6 +7,8 @@ import 'presentation/controllers/auth_controller.dart';
 import 'presentation/controllers/event_controller.dart';
 import 'presentation/controllers/task_controller.dart';
 import 'presentation/routes/app_routes.dart';
+import 'data/repositories/task_repository.dart';
+import 'data/repositories/microtask_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +30,12 @@ class ConTaskApp extends StatelessWidget {
           create: (context) => AuthController()..initialize(),
         ),
         ChangeNotifierProvider(create: (context) => EventController()),
-        ChangeNotifierProvider(create: (context) => TaskController()),
+        ChangeNotifierProvider(
+          create: (context) => TaskController(
+            taskRepository: TaskRepository(),
+            microtaskRepository: MicrotaskRepository(),
+          ),
+        ),
       ],
       child: Consumer<AuthController>(
         builder: (context, authController, child) {

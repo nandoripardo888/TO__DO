@@ -1,21 +1,21 @@
 ### 1\. Resumo e Objetivo
 
-Este documento detalha os requisitos para modificar a regra de negócio durante a criação de um evento e introduzir uma nova funcionalidade para o gerenciamento de dados de voluntário do próprio usuário.
+Este documento detalha os requisitos para modificar a regra de negócio durante a criação de uma campanha e introduzir uma nova funcionalidade para o gerenciamento de dados de voluntário do próprio usuário.
 
 O objetivo é duplo:
 
-1.  **Otimizar o fluxo do Gerenciador:** Ao criar um evento, o gerenciador, que frequentemente também atua como voluntário, será automaticamente inscrito como tal, eliminando a necessidade de um passo manual posterior.
+1.  **Otimizar o fluxo do Gerenciador:** Ao criar uma campanha, o gerenciador, que frequentemente também atua como voluntário, será automaticamente inscrito como tal, eliminando a necessidade de um passo manual posterior.
     
-2.  **Melhorar a Autonomia do Usuário:** Fornecer uma interface clara e acessível para que qualquer voluntário (incluindo o gerenciador) possa visualizar e atualizar suas informações de voluntariado (disponibilidade, habilidades, etc.) a qualquer momento dentro do contexto de um evento.
+2.  **Melhorar a Autonomia do Usuário:** Fornecer uma interface clara e acessível para que qualquer voluntário (incluindo o gerenciador) possa visualizar e atualizar suas informações de voluntariado (disponibilidade, habilidades, etc.) a qualquer momento dentro do contexto de uma campanha.
     
 
 ### 2\. Justificativa
 
-Atualmente, o fluxo exige que um gerenciador crie o evento e, em um segundo momento, use o código do evento para se inscrever como voluntário, um passo redundante. Além disso, não há uma maneira direta para um voluntário já inscrito editar suas informações, como mudar sua disponibilidade.
+Atualmente, o fluxo exige que um gerenciador crie a Campanha e, em um segundo momento, use o código da Campanha para se inscrever como voluntário, um passo redundante. Além disso, não há uma maneira direta para um voluntário já inscrito editar suas informações, como mudar sua disponibilidade.
 
 Essa modificação irá:
 
-*   **Aumentar a eficiência:** Reduz o número de etapas para o gerenciador participar ativamente do seu próprio evento.
+*   **Aumentar a eficiência:** Reduz o número de etapas para o gerenciador participar ativamente do seu própria Campanha.
     
 *   **Melhorar a experiência do usuário (UX):** Oferece um local centralizado e intuitivo para o usuário gerenciar seus próprios dados de voluntariado, dando-lhe mais controle e flexibilidade.
     
@@ -26,39 +26,39 @@ Essa modificação irá:
 
 #### REQ-01: Inscrição Automática do Gerenciador como Voluntário
 
-*   **Descrição:** Ao concluir a criação de um novo evento na `create_event_screen.dart`, o sistema deve executar duas ações simultaneamente.
+*   **Descrição:** Ao concluir a criação de um nova Campanha na `create_event_screen.dart`, o sistema deve executar duas ações simultaneamente.
     
 *   **Regra de Negócio:**
     
-    1.  O usuário que criou o evento (`createdBy`) é adicionado à lista `managers` da collection `events`. (Comportamento atual)
+    1.  O usuário que criou a Campanha (`createdBy`) é adicionado à lista `managers` da collection `events`. (Comportamento atual)
         
     2.  **\[NOVO\]** O mesmo usuário (`createdBy`) deve ser **automaticamente adicionado** à lista `volunteers` na mesma collection `events`.
         
     3.  **\[NOVO\]** Um documento correspondente deve ser criado na collection `volunteer_profiles`. Este perfil inicial pode ter valores padrão (ex: disponibilidade a ser preenchida), mas deve ligar `userId` e `eventId`. O ideal é que o usuário seja levado a preencher esses dados logo após a criação.
         
 
-#### REQ-02: Nova Aba "Meus Dados" na Tela de Detalhes do Evento
+#### REQ-02: Nova Aba "Perfil" na Tela de Detalhes da Campanha
 
 *   **Descrição:** A tela `event_details_screen.dart` deve ser modificada para incluir uma nova aba.
     
 *   **Regra de Negócio:**
     
-    1.  A estrutura de `Tabs` nesta tela, que atualmente contém "Evento", "Criar Tasks", "Gerenciar Voluntários" e "Acompanhar Tasks", deve ser atualizada.
+    1.  A estrutura de `Tabs` nesta tela, que atualmente contém "campanha", "Criar Tasks", "Gerenciar Voluntários" e "Acompanhar Tasks", deve ser atualizada.
         
-    2.  **\[NOVO\]** Uma nova aba chamada **"Meus Dados"** (ou "Meu Perfil de Voluntário") deve ser adicionada.
+    2.  **\[NOVO\]** Uma nova aba chamada **"Perfil"** (ou "Meu Perfil de Voluntário") deve ser adicionada.
         
-    3.  **Visibilidade:** Esta aba deve ser visível para **qualquer usuário que esteja na lista `volunteers` do evento**, incluindo o gerenciador (conforme REQ-01). Se o usuário não for voluntário, a aba não deve ser exibida.
+    3.  **Visibilidade:** Esta aba deve ser visível para **qualquer usuário que esteja na lista `volunteers` da Campanha**, incluindo o gerenciador (conforme REQ-01). Se o usuário não for voluntário, a aba não deve ser exibida.
         
 
 #### REQ-03: Tela de Visualização e Edição de Dados de Voluntário
 
-*   **Descrição:** A nova aba "Meus Dados" deve exibir uma tela dedicada para o gerenciamento do perfil de voluntário do usuário logado. A melhor abordagem de UX é criar uma tela de visualização que leva para uma tela de edição.
+*   **Descrição:** A nova aba "Perfil" deve exibir uma tela dedicada para o gerenciamento do perfil de voluntário do usuário logado. A melhor abordagem de UX é criar uma tela de visualização que leva para uma tela de edição.
     
 *   **Proposta de Fluxo:**
     
     1.  **Tela de Visualização (`view_volunteer_profile_screen.dart` - NOVA):**
         
-        *   Ao clicar na aba "Meus Dados", o usuário vê suas informações atuais de voluntário para aquele evento.
+        *   Ao clicar na aba "Perfil", o usuário vê suas informações atuais de voluntário para aquele campanha.
             
         *   **Conteúdo:** Exibição clara e apenas de leitura dos campos do `volunteer_profiles_model.dart`:
             
@@ -89,9 +89,9 @@ Essa modificação irá:
 
 *   **DENTRO DO ESCOPO:**
     
-    *   Modificação da lógica de criação de evento para registrar o gerenciador como voluntário.
+    *   Modificação da lógica de criação de campanha para registrar o gerenciador como voluntário.
         
-    *   Criação da nova aba "Meus Dados" na tela de detalhes do evento.
+    *   Criação da nova aba "Perfil" na tela de detalhes da Campanha.
         
     *   Criação de uma tela para visualizar o perfil de voluntário.
         
@@ -110,13 +110,13 @@ Essa modificação irá:
 
 *   **Estrutura de Dados (Firestore):**
     
-    *   `events`: O processo de criação de eventos precisa ser modificado para popular o array `volunteers` com o ID do criador.
+    *   `events`: O processo de criação de campanhas precisa ser modificado para popular o array `volunteers` com o ID do criador.
         
-    *   `volunteer_profiles`: O processo de criação de eventos precisa acionar a criação de um novo documento nesta collection. A nova funcionalidade de edição irá realizar operações de `UPDATE` neste documento.
+    *   `volunteer_profiles`: O processo de criação de campanhas precisa acionar a criação de um novo documento nesta collection. A nova funcionalidade de edição irá realizar operações de `UPDATE` neste documento.
         
 *   **Código da Aplicação (Arquivos a serem modificados):**
     
-    *   `lib/data/services/event_service.dart`: A lógica de criação de evento (`createEvent`) precisará ser estendida para incluir a inscrição como voluntário.
+    *   `lib/data/services/event_service.dart`: A lógica de criação de campanha (`createEvent`) precisará ser estendida para incluir a inscrição como voluntário.
         
     *   `lib/presentation/controllers/event_controller.dart`: Deverá chamar o método de serviço atualizado e gerenciar o estado da nova aba.
         
@@ -137,12 +137,12 @@ Essa modificação irá:
 
 | ID | Critério | Verificação |
 | --- | --- | --- |
-| AC-01 | Ao criar um novo evento, ouserIddo criador está presente tanto no arraymanagersquanto no arrayvolunteersdo documento do evento no Firestore. | ☐ |
-| AC-02 | Ao criar um novo evento, um documento correspondente é criado na collectionvolunteer_profilescom ouserIdeeventIdcorretos. | ☐ |
-| AC-03 | Na tela de Detalhes do Evento, a aba "Meus Dados" aparece para o gerenciador que acabou de criar o evento. | ☐ |
-| AC-04 | A aba "Meus Dados" aparece para qualquer outro usuário que tenha se juntado ao evento como voluntário. | ☐ |
-| AC-05 | A aba "Meus Dados"não aparece para usuários que não são voluntários no evento. | ☐ |
-| AC-06 | Clicar na aba "Meus Dados" exibe uma tela com as informações atuais de voluntariado do usuário (habilidades, disponibilidade, etc.) em modo de visualização. | ☐ |
+| AC-01 | Ao criar um nova Campanha, ouserIddo criador está presente tanto no arraymanagersquanto no arrayvolunteersdo documento da Campanha no Firestore. | ☐ |
+| AC-02 | Ao criar um nova Campanha, um documento correspondente é criado na collectionvolunteer_profilescom ouserIdeeventIdcorretos. | ☐ |
+| AC-03 | Na tela de Detalhes da Campanha, a aba "Perfil" aparece para o gerenciador que acabou de criar a Campanha. | ☐ |
+| AC-04 | A aba "Perfil" aparece para qualquer outro usuário que tenha se juntado aa Campanha como voluntário. | ☐ |
+| AC-05 | A aba "Perfil"não aparece para usuários que não são voluntários na Campanha. | ☐ |
+| AC-06 | Clicar na aba "Perfil" exibe uma tela com as informações atuais de voluntariado do usuário (habilidades, disponibilidade, etc.) em modo de visualização. | ☐ |
 | AC-07 | A tela de visualização possui um botão "Editar". | ☐ |
 | AC-08 | Clicar em "Editar" leva a um formulário com todos os campos pré-preenchidos com os dados atuais. | ☐ |
 | AC-09 | Após modificar os dados e salvar, o documento na collectionvolunteer_profilesdo Firestore é atualizado com sucesso. | ☐ |
@@ -151,22 +151,22 @@ Essa modificação irá:
 
 -------------------------------------------------------------------------
 Resumo da Implementação
-✅ REQ-04: FAB de Edição na Tela de Detalhes do Evento
+✅ REQ-04: FAB de Edição na Tela de Detalhes da Campanha
 Implementado com sucesso:
 
 ✅ AC-11: FAB de edição (ícone lápis) posicionado acima do FAB de "+"
-✅ AC-12: FAB de edição visível apenas na aba "Evento"
+✅ AC-12: FAB de edição visível apenas na aba "campanha"
 ✅ AC-13: FAB de edição visível apenas para gerenciadores
 Código implementado:
 
-Modificado _buildFloatingActionButton() para retornar Column com dois FABs na aba "Evento"
+Modificado _buildFloatingActionButton() para retornar Column com dois FABs na aba "campanha"
 Adicionado método _isEventTabActive() para verificar aba ativa
 Adicionado método _navigateToEditEvent() para navegação
-✅ REQ-05: Tela de Edição de Evento
+✅ REQ-05: Tela de Edição de campanha
 Implementado com sucesso:
 
 ✅ AC-14: Navegação para tela de edição com campos pré-preenchidos
-✅ AC-15: Botões "Cancelar" e "Salvar Alterações" no lugar de "Criar Evento"
+✅ AC-15: Botões "Cancelar" e "Salvar Alterações" no lugar de "Criar campanha"
 Código implementado:
 
 Modificado CreateEventScreen para aceitar EventModel? eventToEdit
@@ -174,7 +174,7 @@ Adicionado _isEditMode getter para controlar modo
 Implementado _populateFieldsForEdit() para pré-preenchimento
 Modificado AppBar para mostrar título correto
 Implementado _buildActionButtons() para botões diferentes por modo
-Atualizado app_routes.dart para aceitar evento como argumento
+Atualizado app_routes.dart para aceitar campanha como argumento
 ✅ REQ-06: Lógica de Salvamento e Cancelamento
 Implementado com sucesso:
 
@@ -191,8 +191,8 @@ Implementado recarregamento de dados após edição
 Arquivos Modificados
 Update Task List
 2 updated
-✅ Implementação Completa da Funcionalidade de Edição de Eventos
-A funcionalidade de edição de eventos foi implementada com sucesso conforme especificado no DOC_ALT_R002.md. Todos os requisitos funcionais (REQ-04, REQ-05, REQ-06) e critérios de aceite (AC-11 a AC-18) foram atendidos.
+✅ Implementação Completa da Funcionalidade de Edição de campanhas
+A funcionalidade de edição de campanhas foi implementada com sucesso conforme especificado no DOC_ALT_R002.md. Todos os requisitos funcionais (REQ-04, REQ-05, REQ-06) e critérios de aceite (AC-11 a AC-18) foram atendidos.
 
 📋 Arquivos Modificados:
  lib/presentation/screens/event/event_details_screen.dart
@@ -200,17 +200,17 @@ Adicionado FAB de edição posicionado acima do FAB existente
 Implementado controle de visibilidade baseado na aba ativa e permissões
 Adicionado navegação para modo de edição
  lib/presentation/screens/event/create_event_screen.dart
-Refatorado para aceitar evento opcional para edição
+Refatorado para aceitar campanha opcional para edição
 Implementado pré-preenchimento de campos
 Adicionado botões diferentes para modo de criação vs edição
-Implementado lógica de atualização de evento
+Implementado lógica de atualização de campanha
  lib/presentation/controllers/event_controller.dart
 Implementado método updateEvent() com validações
 Adicionado tratamento de erros e atualização de estado
  lib/presentation/routes/app_routes.dart
 Modificado para aceitar EventModel opcional como argumento
 🎯 Funcionalidades Implementadas:
-✅ FAB de Edição: Botão flutuante com ícone de lápis, visível apenas na aba "Evento" para gerenciadores
+✅ FAB de Edição: Botão flutuante com ícone de lápis, visível apenas na aba "campanha" para gerenciadores
 ✅ Modo de Edição: Tela reutilizada com campos pré-preenchidos e botões apropriados
 ✅ Validações: Mesmas validações da criação aplicadas na edição
 ✅ Persistência: Dados atualizados salvos no Firestore

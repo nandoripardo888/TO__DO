@@ -18,7 +18,7 @@ class MigrationUtils {
     }
   }
 
-  /// Recalcula os contadores para um evento específico
+  /// Recalcula os contadores para uma campanha específico
   static Future<bool> recalculateEventCounts(String eventId) async {
     try {
       await _eventRepository.recalculateEventVolunteerCounts(eventId);
@@ -30,9 +30,15 @@ class MigrationUtils {
   }
 
   /// Recalcula o contador para um voluntário específico
-  static Future<bool> recalculateVolunteerCount(String eventId, String userId) async {
+  static Future<bool> recalculateVolunteerCount(
+    String eventId,
+    String userId,
+  ) async {
     try {
-      await _eventRepository.recalculateVolunteerMicrotaskCount(eventId, userId);
+      await _eventRepository.recalculateVolunteerMicrotaskCount(
+        eventId,
+        userId,
+      );
       return true;
     } catch (e) {
       print('Erro ao recalcular contador do voluntário: $e');
@@ -89,15 +95,15 @@ class MigrationUtils {
 
     runVolunteerProfilesMigration().then((success) {
       Navigator.of(context).pop(); // Fecha o diálogo de progresso
-      
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text(success ? 'Sucesso' : 'Erro'),
           content: Text(
-            success 
-              ? 'Migração executada com sucesso!'
-              : 'Erro ao executar a migração. Verifique os logs.',
+            success
+                ? 'Migração executada com sucesso!'
+                : 'Erro ao executar a migração. Verifique os logs.',
           ),
           actions: [
             TextButton(
@@ -110,7 +116,7 @@ class MigrationUtils {
     });
   }
 
-  /// Mostra um diálogo para recalcular contadores de um evento
+  /// Mostra um diálogo para recalcular contadores de uma campanha
   static void showRecalculateEventDialog(BuildContext context, String eventId) {
     showDialog(
       context: context,
@@ -118,7 +124,7 @@ class MigrationUtils {
         title: const Text('Recalcular Contadores'),
         content: const Text(
           'Esta operação irá recalcular os contadores de microtasks '
-          'para todos os voluntários deste evento baseado nas '
+          'para todos os voluntários desta campanha baseado nas '
           'atribuições reais no banco de dados.\n\n'
           'Deseja continuar?',
         ),
@@ -130,16 +136,16 @@ class MigrationUtils {
           ElevatedButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              
+
               final success = await recalculateEventCounts(eventId);
-              
+
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      success 
-                        ? 'Contadores recalculados com sucesso!'
-                        : 'Erro ao recalcular contadores.',
+                      success
+                          ? 'Contadores recalculados com sucesso!'
+                          : 'Erro ao recalcular contadores.',
                     ),
                     backgroundColor: success ? Colors.green : Colors.red,
                   ),

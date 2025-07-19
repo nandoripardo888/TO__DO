@@ -9,10 +9,10 @@ import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/event/skill_chip.dart';
 
-/// Tela para criação e edição de eventos
-/// REQ-05: Refatorada para aceitar evento opcional para modo de edição
+/// Tela para criação e edição de campanhas
+/// REQ-05: Refatorada para aceitar campanha opcional para modo de edição
 class CreateEventScreen extends StatefulWidget {
-  /// Evento opcional para modo de edição
+  /// campanha opcional para modo de edição
   final EventModel? eventToEdit;
 
   const CreateEventScreen({super.key, this.eventToEdit});
@@ -82,7 +82,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
   }
 
-  /// REQ-05: Pré-preenche os campos com os dados do evento para edição
+  /// REQ-05: Pré-preenche os campos com os dados da Campanha para edição
   void _populateFieldsForEdit() {
     final event = widget.eventToEdit!;
     _nameController.text = event.name;
@@ -107,7 +107,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(_isEditMode ? 'Editar Evento' : 'Criar Evento'),
+        title: Text(_isEditMode ? 'Editar campanha' : 'Criar campanha'),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
       ),
@@ -198,14 +198,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         ),
         const SizedBox(height: AppDimensions.spacingMd),
 
-        // Nome do evento
+        // Nome da Campanha
         CustomTextField(
           controller: _nameController,
-          label: 'Nome do Evento',
-          hint: 'Digite o nome do evento',
+          label: 'Nome da Campanha',
+          hint: 'Digite o nome da Campanha',
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return 'Nome do evento é obrigatório';
+              return 'Nome da Campanha é obrigatório';
             }
             if (value.trim().length < 3) {
               return 'Nome deve ter pelo menos 3 caracteres';
@@ -223,7 +223,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         CustomTextField(
           controller: _descriptionController,
           label: 'Descrição',
-          hint: 'Descreva o evento (opcional)',
+          hint: 'Descreva a Campanha (opcional)',
           maxLines: 3,
           validator: (value) {
             if (value != null && value.length > 500) {
@@ -239,7 +239,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         CustomTextField(
           controller: _locationController,
           label: 'Localização',
-          hint: 'Onde será realizado o evento',
+          hint: 'Onde será realizado a Campanha',
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return 'Localização é obrigatória';
@@ -533,11 +533,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         ],
       );
     } else {
-      // Modo de criação: botão Criar Evento
+      // Modo de criação: botão Criar campanha
       return SizedBox(
         width: double.infinity,
         child: CustomButton(
-          text: 'Criar Evento',
+          text: 'Criar campanha',
           onPressed: () => _handleCreateEvent(authController, eventController),
           isLoading: eventController.isCreatingEvent,
         ),
@@ -577,12 +577,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
 
     if (event != null && mounted) {
-      // Mostra dialog de sucesso com o código do evento
+      // Mostra dialog de sucesso com o código da Campanha
       _showSuccessDialog(event.tag);
     }
   }
 
-  /// REQ-06: Manipula a atualização do evento
+  /// REQ-06: Manipula a atualização da Campanha
   Future<void> _handleUpdateEvent(
     AuthController authController,
     EventController eventController,
@@ -605,7 +605,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     // Limpa erros anteriores
     eventController.clearError();
 
-    // Cria o evento atualizado
+    // Cria a Campanha atualizado
     final updatedEvent = widget.eventToEdit!.copyWith(
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
@@ -620,7 +620,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     if (mounted && success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Evento atualizado com sucesso!'),
+          content: Text('campanha atualizado com sucesso!'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -641,7 +641,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           children: [
             Icon(Icons.check_circle, color: AppColors.success, size: 28),
             SizedBox(width: AppDimensions.spacingSm),
-            Text('Evento Criado!'),
+            Text('campanha Criado!'),
           ],
         ),
         content: Column(
@@ -649,12 +649,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Seu evento foi criado com sucesso!',
+              'Sua campanha foi criado com sucesso!',
               style: TextStyle(fontSize: AppDimensions.fontSizeMd),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             const Text(
-              'Código do evento:',
+              'Código da Campanha:',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeMd,
                 fontWeight: FontWeight.w600,
@@ -684,7 +684,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             const Text(
-              'Compartilhe este código com os voluntários para que eles possam participar do evento.',
+              'Compartilhe este código com os voluntários para que eles possam participar da Campanha.',
               style: TextStyle(
                 fontSize: AppDimensions.fontSizeSm,
                 color: AppColors.textSecondary,

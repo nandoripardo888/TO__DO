@@ -1,4 +1,4 @@
-# 📋 Checklist de Desenvolvimento - Task Manager para Eventos
+# 📋 Checklist de Desenvolvimento - Task Manager para campanhas
 
 ## 🎯 Status Geral do Projeto
 - **Plataforma:** Flutter
@@ -75,30 +75,30 @@
 
 ---
 
-## ✅ FASE 2: Tela Home e Gerenciamento de Eventos
+## ✅ FASE 2: Tela Home e Gerenciamento de campanhas
 
 ### Tela Home
 - [x] **Layout Principal**
   - [x] AppBar com nome e foto do usuário
-  - [x] Lista de cards dos eventos
-  - [x] FAB com opções "Criar Evento" e "Participar"
+  - [x] Lista de cards das campanhas
+  - [x] FAB com opções "Criar campanha" e "Participar"
 - [x] **Event Card**
-  - [x] Nome do evento
+  - [x] Nome da Campanha
   - [x] Papel do usuário (Gerenciador/Voluntário)
   - [x] Número de tarefas pendentes
-  - [x] Status do evento
+  - [x] Status da Campanha
 
-### Modelos de Eventos
-- [x] `event_model.dart` - Modelo completo do evento
+### Modelos de campanhas
+- [x] `event_model.dart` - Modelo completo da Campanha
 - [x] `volunteer_profile_model.dart` - Perfil do voluntário
 
-### Serviços de Eventos
-- [x] `event_service.dart` - CRUD de eventos
+### Serviços de campanhas
+- [x] `event_service.dart` - CRUD de campanhas
 - [x] `event_repository.dart` - Camada de dados
 - [x] `event_controller.dart` - Gerenciamento de estado
 
-### Criação de Eventos
-- [x] **Tela Criar Evento**
+### Criação de campanhas
+- [x] **Tela Criar campanha**
   - [x] Formulário completo (nome, descrição, localização)
   - [x] Seleção de habilidades necessárias (chips + adicionar nova)
   - [x] Seleção de recursos necessários (chips + adicionar novo)
@@ -106,10 +106,10 @@
 - [x] Sistema de códigos únicos (validação)
 - [x] Validações de formulário
 
-### Participação em Eventos
-- [x] **Tela Participar de Evento**
+### Participação em campanhas
+- [x] **Tela Participar de campanha**
   - [x] Campo para inserir código/tag
-  - [x] Busca e exibição do evento
+  - [x] Busca e exibição da Campanha
   - [x] Formulário de perfil do voluntário
   - [x] Seleção de disponibilidade (dias/horários)
   - [x] Seleção de habilidades e recursos
@@ -117,7 +117,7 @@
 ### Melhorias de UX Implementadas
 - [x] **Alinhamento de botões**: Botões "Buscar" e "Adicionar" alinhados à esquerda
 - [x] **Verificação de participação**: Sistema impede participação dupla
-- [x] **Filtros inteligentes**: Habilidades/recursos do evento como opções prioritárias
+- [x] **Filtros inteligentes**: Habilidades/recursos da Campanha como opções prioritárias
 - [x] **Feedback visual**: Indicadores claros de status de participação
 
 ---
@@ -139,9 +139,9 @@
 - [x] `microtask_repository.dart` - CRUD de microtasks
 - [x] `task_controller.dart` - Gerenciamento de estado
 
-### Tela Detalhes do Evento
+### Tela Detalhes da Campanha
 - [x] **Sistema de Tabs**
-  - [x] Tab "Evento" - Informações gerais + código/tag
+  - [x] Tab "campanha" - Informações gerais + código/tag
   - [x] Tab "Criar Tasks" (apenas gerenciadores)
   - [x] Tab "Gerenciar Voluntários" (apenas gerenciadores) - placeholder
   - [x] Tab "Acompanhar Tasks" - implementação básica
@@ -188,7 +188,7 @@
 - [ ] `confirmation_dialog.dart` - Dialog de confirmação
 
 ### Widgets Específicos
-- [ ] `event_card.dart` - Card do evento
+- [ ] `event_card.dart` - Card da Campanha
 - [ ] `task_card.dart` - Card da task
 - [ ] `volunteer_card.dart` - Card do voluntário
 - [ ] `skill_chip.dart` - Chip de habilidade
@@ -207,7 +207,7 @@
 - [ ] Validações de atribuição múltipla
 
 ### Gerenciamento de Status
-- [ ] Sistema de status para eventos
+- [ ] Sistema de status para campanhas
 - [ ] Sistema de status para tasks (baseado nas microtasks)
 - [ ] Sistema de status para microtasks
 - [ ] **Cálculo automático de progresso** (Tasks herdam das microtasks)
@@ -219,14 +219,14 @@
 
 ### Testes Funcionais
 - [ ] Teste de autenticação
-- [ ] Teste de criação de eventos
+- [ ] Teste de criação de campanhas
 - [ ] **Teste de atribuição múltipla de voluntários**
 - [ ] **Teste de controle de capacidade máxima**
 - [ ] **Teste de conclusão colaborativa**
 - [ ] Teste de fluxo completo
 
 ### Validações de Negócio
-- [ ] Códigos de evento únicos
+- [ ] Códigos de campanha únicos
 - [ ] Verificação de permissões por role
 - [ ] **Validação de compatibilidade antes da atribuição**
 - [ ] **Controle de status das microtasks**
@@ -258,7 +258,7 @@
 
 - **Configuração:** ✅ 4/4 (100%)
 - **Fase 1 - Autenticação:** ✅ 12/12 (100%)
-- **Fase 2 - Eventos:** ✅ 19/19 (100%) **(CONCLUÍDA)**
+- **Fase 2 - campanhas:** ✅ 19/19 (100%) **(CONCLUÍDA)**
 - **Fase 3 - Tarefas:** 🚧 14/21 (66.7%) **(EM DESENVOLVIMENTO)**
 - **Componentes:** ⏳ 2/11 (18%) **(+1 componente)**
 - **Funcionalidades Avançadas:** ⏳ 0/11 (0%) **(+3 itens para múltiplos voluntários)**
@@ -293,7 +293,7 @@
 *Design System configurado ✅*
 *Erros corrigidos e código validado ✅*
 *FASE 1 - Autenticação CONCLUÍDA ✅*
-*FASE 2 - Gerenciamento de Eventos CONCLUÍDA ✅*
+*FASE 2 - Gerenciamento de campanhas CONCLUÍDA ✅*
 *CHECKLIST ATUALIZADO para múltiplos voluntários ✅*
 *TESTE_FASE3.md criado - Iniciando Fase 3 ✅*
 *FASE 3 - Modelos, Serviços, Repositórios e Controllers CONCLUÍDOS ✅*

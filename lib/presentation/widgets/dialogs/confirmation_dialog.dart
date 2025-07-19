@@ -39,10 +39,11 @@ class ConfirmationDialog extends StatelessWidget {
   }) {
     return ConfirmationDialog(
       title: 'Promover Voluntário',
-      content: 'Tem certeza de que deseja promover "$volunteerName" a gerente?\n\n'
-          'Esta ação concederá permissões de gerenciamento do evento ao usuário. '
+      content:
+          'Tem certeza de que deseja promover "$volunteerName" a gerente?\n\n'
+          'Esta ação concederá permissões de gerenciamento da Campanha ao usuário. '
           'O voluntário poderá criar tasks, gerenciar outros voluntários e '
-          'modificar configurações do evento.\n\n'
+          'modificar configurações da Campanha.\n\n'
           'Esta ação não pode ser desfeita facilmente.',
       confirmText: 'Confirmar Promoção',
       cancelText: 'Cancelar',
@@ -65,7 +66,8 @@ class ConfirmationDialog extends StatelessWidget {
   }) {
     return ConfirmationDialog(
       title: title,
-      content: 'Tem certeza de que deseja excluir "$itemName"?\n\n'
+      content:
+          'Tem certeza de que deseja excluir "$itemName"?\n\n'
           'Esta ação não pode ser desfeita.',
       confirmText: 'Excluir',
       cancelText: 'Cancelar',
@@ -102,35 +104,23 @@ class ConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       title: Row(
         children: [
           if (icon != null) ...[
-            Icon(
-              icon,
-              color: iconColor ?? AppColors.primary,
-              size: 24,
-            ),
+            Icon(icon, color: iconColor ?? AppColors.primary, size: 24),
             const SizedBox(width: AppDimensions.spacingMd),
           ],
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
         ],
       ),
       content: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 400,
-          maxHeight: 300,
-        ),
+        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 300),
         child: SingleChildScrollView(
           child: Text(
             content,
@@ -147,9 +137,7 @@ class ConfirmationDialog extends StatelessWidget {
           onPressed: onCancel ?? () => Navigator.of(context).pop(false),
           child: Text(
             cancelText,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-            ),
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
         ),
         ElevatedButton(
@@ -236,9 +224,7 @@ class ConfirmationDialog extends StatelessWidget {
   }
 
   /// Método estático para mostrar dialog de logout
-  static Future<bool?> showLogout({
-    required BuildContext context,
-  }) {
+  static Future<bool?> showLogout({required BuildContext context}) {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,

@@ -183,7 +183,7 @@ class TaskModel {
     final errors = <String>[];
 
     if (eventId.isEmpty) {
-      errors.add('ID do evento é obrigatório');
+      errors.add('ID da Campanha é obrigatório');
     }
 
     if (title.isEmpty) {
