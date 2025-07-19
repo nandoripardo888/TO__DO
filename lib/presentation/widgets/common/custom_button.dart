@@ -294,19 +294,11 @@ class CustomButton extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Ícone do Google (pode ser substituído por um asset)
-        Container(
+        // Logo do Google
+        Image.asset(
+          'assets/Google__G__logo.svg.png',
           width: AppDimensions.iconSm,
           height: AppDimensions.iconSm,
-          decoration: const BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.g_mobiledata,
-            color: Colors.white,
-            size: AppDimensions.iconSm,
-          ),
         ),
         const SizedBox(width: AppDimensions.spacingMd),
         Text(
