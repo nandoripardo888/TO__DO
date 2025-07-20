@@ -5,6 +5,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../data/models/task_model.dart';
 import '../../../data/models/volunteer_profile_model.dart';
+import '../../../data/services/event_service.dart';
+import '../../../data/services/assignment_service.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/event_controller.dart';
@@ -498,59 +500,82 @@ class _TrackTasksScreenState extends State<TrackTasksScreen>
   }
 
   Widget _buildMicrotaskItem(microtask) {
-    return ListTile(
-      dense: true,
-      leading: Icon(
-        microtask.status == MicrotaskStatus.completed
-            ? Icons.check_box
-            : Icons.check_box_outline_blank,
-        size: 16,
-        color: microtask.status == MicrotaskStatus.completed
-            ? AppColors.success
-            : AppColors.textSecondary,
-      ),
-      title: Text(
-        microtask.title,
-        style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
-      ),
-      subtitle: Text(
-        'Voluntários:  ${microtask.assignedTo.length}/${microtask.maxVolunteers}',
-        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (microtask.assignedTo.isNotEmpty)
-            GestureDetector(
-              onTap: () => _showAssignedVolunteers(microtask),
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.primary.withOpacity(0.3),
-                    width: 1,
+    return Consumer2<AuthController, EventController>(
+      builder: (context, authController, eventController, child) {
+        final currentUser = authController.currentUser;
+        final isManager =
+            eventController.currentEvent?.isManager(currentUser?.id ?? '') ??
+            false;
+
+        return ListTile(
+          dense: true,
+          leading: Icon(
+            microtask.status == MicrotaskStatus.completed
+                ? Icons.check_box
+                : Icons.check_box_outline_blank,
+            size: 16,
+            color: microtask.status == MicrotaskStatus.completed
+                ? AppColors.success
+                : AppColors.textSecondary,
+          ),
+          title: Text(
+            microtask.title,
+            style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+          ),
+          subtitle: Text(
+            'Voluntários:  ${microtask.assignedTo.length}/${microtask.maxVolunteers}',
+            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Só mostra o botão de voluntários se for gerenciador OU se há voluntários atribuídos
+              if (isManager || microtask.assignedTo.isNotEmpty)
+                GestureDetector(
+                  onTap: () {
+                    if (microtask.assignedTo.isNotEmpty) {
+                      _showAssignedVolunteers(microtask);
+                    } else if (isManager) {
+                      _showAssignVolunteersModal(microtask);
+                    }
+                  },
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: microtask.assignedTo.isNotEmpty 
+                          ? AppColors.primary.withOpacity(0.1)
+                          : AppColors.error.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: microtask.assignedTo.isNotEmpty 
+                            ? AppColors.primary.withOpacity(0.3)
+                            : AppColors.error.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.people,
+                      size: 16,
+                      color: microtask.assignedTo.isNotEmpty 
+                          ? AppColors.primary
+                          : AppColors.error,
+                    ),
                   ),
                 ),
-                child: const Icon(
-                  Icons.people,
-                  size: 16,
-                  color: AppColors.primary,
+              if (isManager || microtask.assignedTo.isNotEmpty)
+                const SizedBox(width: 8),
+              Text(
+                microtask.status.toString().split('.').last,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
                 ),
               ),
-            ),
-          const SizedBox(width: 8),
-          Text(
-            microtask.status.toString().split('.').last,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -959,6 +984,25 @@ class _TrackTasksScreenState extends State<TrackTasksScreen>
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Fechar'),
           ),
+          // Só mostra o botão "Atribuir Voluntários" para gerenciadores
+          Consumer2<AuthController, EventController>(
+            builder: (context, authController, eventController, child) {
+              final currentUser = authController.currentUser;
+              final isManager =
+                  eventController.currentEvent?.isManager(currentUser?.id ?? '') ??
+                  false;
+
+              if (!isManager) return const SizedBox.shrink();
+
+              return ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _showAssignVolunteersModal(microtask);
+                },
+                child: const Text('Atribuir Voluntários'),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -966,8 +1010,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen>
 
   /// Busca informações dos voluntários pelos IDs
   Future<List<Map<String, String>>> _getVolunteersInfo(
-    List<String> userIds,
-  ) async {
+    List<String> userIds,  ) async {
     try {
       final eventController = Provider.of<EventController>(
         context,
@@ -1020,6 +1063,403 @@ class _TrackTasksScreenState extends State<TrackTasksScreen>
       context: context,
       userId: userId,
       eventId: widget.eventId,
+    );
+  }
+
+  /// Mostra modal para atribuir voluntários à microtask (apenas para gerenciadores)
+  void _showAssignVolunteersModal(microtask) {
+    if (!mounted || _disposed) return;
+
+    // Verifica se o usuário é gerenciador antes de mostrar o modal
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final eventController = Provider.of<EventController>(context, listen: false);
+    final currentUser = authController.currentUser;
+    final isManager = eventController.currentEvent?.isManager(currentUser?.id ?? '') ?? false;
+
+    if (!isManager) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Apenas gerenciadores podem atribuir voluntários'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => _AssignVolunteersModal(
+        microtask: microtask,
+        eventId: widget.eventId,
+        onVolunteerAssigned: () async {
+          // Recarrega a lista de microtasks após atribuição
+          final taskController = Provider.of<TaskController>(context, listen: false);
+          await taskController.loadTasksWithFilters(eventId: widget.eventId);
+        },
+      ),
+    );
+  }
+}
+
+/// Modal para atribuir voluntários disponíveis à microtask
+class _AssignVolunteersModal extends StatefulWidget {
+  final dynamic microtask;
+  final String eventId;
+  final VoidCallback onVolunteerAssigned;
+
+  const _AssignVolunteersModal({
+    required this.microtask,
+    required this.eventId,
+    required this.onVolunteerAssigned,
+  });
+
+  @override
+  State<_AssignVolunteersModal> createState() => _AssignVolunteersModalState();
+}
+
+class _AssignVolunteersModalState extends State<_AssignVolunteersModal> {
+  final EventService _eventService = EventService();
+  final AssignmentService _assignmentService = AssignmentService();
+  
+  List<VolunteerProfileModel> _availableVolunteers = [];
+  Set<String> _selectedVolunteers = {};
+  bool _isLoading = true;
+  bool _isAssigning = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAvailableVolunteers();
+  }
+
+  Future<void> _loadAvailableVolunteers() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      // Busca todos os voluntários do evento
+      final allVolunteers = await _eventService.getEventVolunteerProfiles(widget.eventId);
+      
+      // Filtra voluntários que ainda não estão atribuídos à microtask
+      final availableVolunteers = allVolunteers
+          .where((volunteer) => !widget.microtask.assignedTo.contains(volunteer.userId))
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          _availableVolunteers = availableVolunteers;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _assignSelectedVolunteers() async {
+    if (_selectedVolunteers.isEmpty) return;
+
+    try {
+      setState(() {
+        _isAssigning = true;
+      });
+
+      // Atribui cada voluntário selecionado
+      for (final userId in _selectedVolunteers) {
+        await _assignmentService.assignVolunteerToMicrotask(
+          microtaskId: widget.microtask.id,
+          userId: userId,
+          eventId: widget.eventId,
+        );
+      }
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        widget.onVolunteerAssigned();
+        
+        // Mostra mensagem de sucesso
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${_selectedVolunteers.length} voluntário(s) atribuído(s) com sucesso!',
+            ),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isAssigning = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao atribuir voluntários: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showVolunteerProfile(String userId) {
+    VolunteerProfileDialog.show(
+      context: context,
+      userId: userId,
+      eventId: widget.eventId,
+    );
+  }
+
+  int get _maxSelectableVolunteers {
+    final currentAssigned = widget.microtask.assignedTo.length;
+    final maxVolunteers = widget.microtask.maxVolunteers;
+    return maxVolunteers - currentAssigned;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Row(
+        children: [
+          const Icon(Icons.person_add, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Atribuir Voluntários - ${widget.microtask.title}',
+              style: const TextStyle(fontSize: 16),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 400,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Informações da microtask
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Voluntários: ${widget.microtask.assignedTo.length}/${widget.microtask.maxVolunteers}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  if (_maxSelectableVolunteers > 0)
+                    Text(
+                      'Você pode selecionar até $_maxSelectableVolunteers voluntário(s)',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  if (_maxSelectableVolunteers <= 0)
+                    const Text(
+                      'Esta microtask já atingiu o limite máximo de voluntários',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.error,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Lista de voluntários disponíveis
+            Expanded(
+              child: _buildVolunteersList(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isAssigning ? null : () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: _isAssigning || _selectedVolunteers.isEmpty || _maxSelectableVolunteers <= 0
+              ? null
+              : _assignSelectedVolunteers,
+          child: _isAssigning
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text('Atribuir (${_selectedVolunteers.length})'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVolunteersList() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: AppColors.error,
+              size: 48,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Erro ao carregar voluntários',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadAvailableVolunteers,
+              child: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_availableVolunteers.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.people_outline,
+              color: AppColors.textSecondary,
+              size: 48,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Nenhum voluntário disponível',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Todos os voluntários já estão atribuídos a esta microtask',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      itemCount: _availableVolunteers.length,
+      separatorBuilder: (context, index) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final volunteer = _availableVolunteers[index];
+        final isSelected = _selectedVolunteers.contains(volunteer.userId);
+        final canSelect = _selectedVolunteers.length < _maxSelectableVolunteers;
+
+        return ListTile(
+          leading: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Checkbox(
+                value: isSelected,
+                onChanged: (canSelect || isSelected) ? (value) {
+                  setState(() {
+                    if (value == true) {
+                      _selectedVolunteers.add(volunteer.userId);
+                    } else {
+                      _selectedVolunteers.remove(volunteer.userId);
+                    }
+                  });
+                } : null,
+              ),
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: AppColors.primary.withOpacity(0.1),
+                child: Text(
+                  volunteer.userName.isNotEmpty
+                      ? volunteer.userName[0].toUpperCase()
+                      : '?',
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          title: Text(
+            volunteer.userName.isNotEmpty
+                ? volunteer.userName
+                : 'Nome não disponível',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                volunteer.userEmail.isNotEmpty
+                    ? volunteer.userEmail
+                    : 'Email não disponível',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              if (volunteer.skills.isNotEmpty)
+                Text(
+                  'Habilidades: ${volunteer.skills.join(', ')}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.primary,
+                  ),
+                ),
+            ],
+          ),
+          onTap: () => _showVolunteerProfile(volunteer.userId),
+          enabled: canSelect || isSelected,
+        );
+      },
     );
   }
 }

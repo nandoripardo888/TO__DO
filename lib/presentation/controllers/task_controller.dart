@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import '../../data/models/task_model.dart';
 import '../../data/models/microtask_model.dart';
 import '../../data/models/user_microtask_model.dart';
@@ -495,13 +496,21 @@ class TaskController extends ChangeNotifier {
   /// Define o estado de loading
   void _setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
+    
+    // Adia a notificação para após o build se estivermos em um contexto de build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   /// Define o estado
   void _setState(TaskControllerState state) {
     _state = state;
-    notifyListeners();
+    
+    // Adia a notificação para após o build se estivermos em um contexto de build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   /// Define uma mensagem de erro

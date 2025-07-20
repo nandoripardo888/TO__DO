@@ -59,6 +59,9 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> with Au
 
       // Carrega tasks e microtasks
       await taskController.loadTasksByEventId(widget.eventId);
+      
+      // Aguarda um pouco para garantir que as microtasks sejam carregadas
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // Carrega voluntários e perfis (OTIMIZADO - dados denormalizados)
       final profiles = await eventController.getEventVolunteersOptimized(
@@ -76,16 +79,19 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> with Au
       // Carrega microtasks disponíveis
       final availableMicrotasks = <MicrotaskModel>[];
       final allSkills = <String>{};
-
+      
       for (final task in taskController.tasks) {
         final microtasks = taskController.getMicrotasksByTaskId(task.id);
-        availableMicrotasks.addAll(
-          microtasks.where(
-            (m) =>
-                m.status != MicrotaskStatus.completed &&
-                m.status != MicrotaskStatus.cancelled,
-          ),
-        );
+        
+        // Filtra microtasks que podem receber novos voluntários
+        final filteredMicrotasks = microtasks.where(
+          (m) =>
+              m.status != MicrotaskStatus.completed &&
+              m.status != MicrotaskStatus.cancelled &&
+              m.assignedTo.length < m.maxVolunteers,
+        ).toList();
+        
+        availableMicrotasks.addAll(filteredMicrotasks);
 
         // Coleta todas as habilidades necessárias das microtasks
         for (final microtask in microtasks) {
@@ -396,12 +402,15 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> with Au
     UserModel volunteer,
     VolunteerProfileModel? profile,
   ) {
+    // Atualiza as microtasks disponíveis antes de exibir o diálogo
+    _updateAvailableMicrotasks();
+    
     final assignedCount = _getAssignedMicrotasksCount(volunteer.id);
+    
+    // Conta microtasks disponíveis para este voluntário específico
     final availableMicrotasksCount = _availableMicrotasks
         .where(
-          (m) =>
-              m.assignedTo.length < m.maxVolunteers &&
-              !m.assignedTo.contains(volunteer.id),
+          (m) => !m.assignedTo.contains(volunteer.id),
         )
         .length;
 
@@ -801,6 +810,34 @@ class _ManageVolunteersScreenState extends State<ManageVolunteersScreen> with Au
             _loadData();
           }
         });
+  }
+
+  /// Atualiza as microtasks disponíveis em tempo real
+  void _updateAvailableMicrotasks() {
+    final taskController = Provider.of<TaskController>(
+      context,
+      listen: false,
+    );
+    
+    final availableMicrotasks = <MicrotaskModel>[];
+    
+    for (final task in taskController.tasks) {
+      final microtasks = taskController.getMicrotasksByTaskId(task.id);
+      
+      // Filtra microtasks que podem receber novos voluntários
+      final filteredMicrotasks = microtasks.where(
+        (m) =>
+            m.status != MicrotaskStatus.completed &&
+            m.status != MicrotaskStatus.cancelled &&
+            m.assignedTo.length < m.maxVolunteers,
+      ).toList();
+      
+      availableMicrotasks.addAll(filteredMicrotasks);
+    }
+    
+    setState(() {
+      _availableMicrotasks = availableMicrotasks;
+    });
   }
 
   Future<void> _promoteToManager(UserModel volunteer) async {

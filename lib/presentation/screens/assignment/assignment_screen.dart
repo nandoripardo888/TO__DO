@@ -51,7 +51,11 @@ class _AssignmentScreenState extends State<AssignmentScreen>
       parent: _listAnimationController,
       curve: Curves.easeInOut,
     );
-    _loadMicrotasks();
+    
+    // Adia o carregamento para após o build inicial
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadMicrotasks();
+    });
   }
 
   @override
