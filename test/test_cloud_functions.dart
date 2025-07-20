@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'lib/data/services/cloud_functions_service.dart';
-import 'lib/firebase_options.dart';
+import 'package:contask/data/services/cloud_functions_service.dart';
+import 'package:contask/firebase_options.dart';
 
 /// Arquivo de teste para as Firebase Cloud Functions
 /// Execute com: flutter run test_cloud_functions.dart
@@ -9,9 +9,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Inicializa o Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   print('🚀 Iniciando testes das Cloud Functions...');
 

@@ -290,7 +290,6 @@ class EventService {
     String eventId,
   ) async {
     try {
-      print('ABACAXI_B1:$userId $eventId');
       final query = await _volunteerProfilesCollection
           .where('userId', isEqualTo: userId)
           .where('eventId', isEqualTo: eventId)
@@ -301,7 +300,6 @@ class EventService {
 
       return VolunteerProfileModel.fromFirestore(query.docs.first);
     } catch (e) {
-      print('Erro ao buscar perfil de voluntário: ${e.toString()}');
       throw DatabaseException(
         'Erro ao buscar perfil de voluntário: ${e.toString()}',
       );
@@ -350,7 +348,6 @@ class EventService {
 
       return profiles;
     } catch (e) {
-      print('Erro ao buscar perfil de voluntário: ${e.toString()}');
       throw DatabaseException(
         'Erro ao buscar perfis de voluntários: ${e.toString()}',
       );
@@ -376,7 +373,6 @@ class EventService {
 
       return profile;
     } catch (e) {
-      print('Erro ao buscar perfil de voluntário: ${e.toString()}');
       if (e is ValidationException) rethrow;
       throw DatabaseException(
         'Erro ao atualizar perfil de voluntário: ${e.toString()}',
@@ -541,7 +537,7 @@ class EventService {
       return microtasksQuery.docs.length;
     } catch (e) {
       // Em caso de erro, retorna 0 para não quebrar o fluxo
-      print('Erro ao calcular contagem real de microtasks: $e');
+
       return 0;
     }
   }
@@ -587,8 +583,6 @@ class EventService {
       if (batchCount > 0) {
         await batch.commit();
       }
-
-      print('Migração de perfis de voluntários concluída com sucesso');
     } catch (e) {
       throw DatabaseException(
         'Erro ao migrar perfis de voluntários: ${e.toString()}',
@@ -675,7 +669,7 @@ class EventService {
       return null;
     } catch (e) {
       // Em caso de erro, retorna null para não quebrar o fluxo
-      print('Erro ao buscar dados do usuário: $e');
+
       return null;
     }
   }

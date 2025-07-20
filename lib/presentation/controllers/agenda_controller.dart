@@ -85,7 +85,6 @@ class AgendaController extends ChangeNotifier {
               _setState(AgendaControllerState.loaded);
             },
             onError: (error) {
-              print('Erro no stream de agenda: ${error.toString()}');
               _setError('Erro ao carregar agenda: ${error.toString()}');
             },
           );
@@ -113,11 +112,6 @@ class AgendaController extends ChangeNotifier {
       _clearError();
 
       // Log detalhado do início da operação
-      print('🔄 [AGENDA] Iniciando atualização de status:');
-      print('   - userId: $userId');
-      print('   - microtaskId: $microtaskId');
-      print('   - status: ${status.name}');
-      print('   - timestamp: ${DateTime.now().toIso8601String()}');
 
       // Usa Cloud Functions para operações críticas de atualização de status
       final success = await _userMicrotaskRepository
@@ -128,36 +122,21 @@ class AgendaController extends ChangeNotifier {
           );
 
       if (!success) {
-        print(
-          '❌ [AGENDA] Falha na atualização - Cloud Function retornou false',
-        );
         _setError('Falha ao atualizar status da microtask');
         return false;
       }
 
-      print('✅ [AGENDA] Status atualizado com sucesso via Cloud Functions');
       // O stream automaticamente atualizará a lista
       return true;
     } on AppException catch (e) {
-      print('❌ [AGENDA] AppException capturada:');
-      print('   - Tipo: ${e.runtimeType}');
-      print('   - Mensagem: ${e.message}');
-      if (e is NetworkException) {
-        print('   - Código: ${e.code}');
-        print('   - Exceção original: ${e.originalException}');
-      }
+      if (e is NetworkException) {}
       _setError(e.message);
       return false;
     } catch (e, stackTrace) {
-      print('❌ [AGENDA] Erro inesperado capturado:');
-      print('   - Tipo: ${e.runtimeType}');
-      print('   - Mensagem: $e');
-      print('   - Stack trace: $stackTrace');
       _setError('Erro inesperado ao atualizar status: $e');
       return false;
     } finally {
       _setLoading(false);
-      print('🏁 [AGENDA] Finalizando operação de atualização de status');
     }
   }
 
@@ -200,23 +179,21 @@ class AgendaController extends ChangeNotifier {
       filtered = filtered.where((um) {
         final microtask = _microtasksCache[um.microtaskId];
         final task = microtask != null ? _tasksCache[microtask.taskId] : null;
-        
+
         final query = _searchQuery.toLowerCase();
         final microtaskTitle = microtask?.title.toLowerCase() ?? '';
         final microtaskDescription = microtask?.description.toLowerCase() ?? '';
         final taskTitle = task?.title.toLowerCase() ?? '';
-        
-        return microtaskTitle.contains(query) || 
-               microtaskDescription.contains(query) ||
-               taskTitle.contains(query);
+
+        return microtaskTitle.contains(query) ||
+            microtaskDescription.contains(query) ||
+            taskTitle.contains(query);
       }).toList();
     }
 
     // Aplicar filtro de status
     if (_statusFilter != null) {
-      filtered = filtered
-          .where((um) => um.status == _statusFilter)
-          .toList();
+      filtered = filtered.where((um) => um.status == _statusFilter).toList();
     }
 
     // Ordena por status (assigned → in_progress → completed) e depois por data de atribuição
@@ -267,9 +244,6 @@ class AgendaController extends ChangeNotifier {
       final previousStatus = previousMap[newMicrotask.microtaskId];
       if (previousStatus != null && previousStatus != newMicrotask.status) {
         // Status mudou - a lista será reordenada automaticamente pelo getter filteredUserMicrotasks
-        print(
-          'Status da microtask ${newMicrotask.microtaskId} mudou de $previousStatus para ${newMicrotask.status}',
-        );
         break;
       }
     }
@@ -338,13 +312,11 @@ class AgendaController extends ChangeNotifier {
   /// Pausa as streams para economizar recursos quando a tela não está visível
   void pauseStreams() {
     _userMicrotasksSubscription?.pause();
-    print('AgendaController: streams pausadas');
   }
 
   /// Retoma as streams quando a tela fica visível novamente
   void resumeStreams() {
     _userMicrotasksSubscription?.resume();
-    print('AgendaController: streams retomadas');
   }
 
   @override

@@ -196,14 +196,12 @@ class MicrotaskRepository {
         );
       }
 
-      print("ABACAXI4: assinando microtask");
       return await _assignmentService.assignVolunteerToMicrotask(
         microtaskId: microtaskId,
         userId: userId,
         eventId: eventId,
       );
     } catch (e) {
-      print("ABACAX_A3: assinando microtask$e");
       if (e is AppException) rethrow;
       throw RepositoryException('Erro ao atribuir voluntário: ${e.toString()}');
     }
@@ -367,25 +365,12 @@ class MicrotaskRepository {
     required UserMicrotaskStatus status,
   }) async {
     try {
-      print('📦 [REPOSITORY] Validando parâmetros:');
-      print('   - userId: "$userId" (isEmpty: ${userId.isEmpty})');
-      print(
-        '   - microtaskId: "$microtaskId" (isEmpty: ${microtaskId.isEmpty})',
-      );
-      print('   - status: ${status.name}');
-
       if (userId.isEmpty) {
-        print('❌ [REPOSITORY] Validação falhou: ID do usuário é obrigatório');
         throw ValidationException('ID do usuário é obrigatório');
       }
       if (microtaskId.isEmpty) {
-        print('❌ [REPOSITORY] Validação falhou: ID da microtask é obrigatório');
         throw ValidationException('ID da microtask é obrigatório');
       }
-
-      print(
-        '✅ [REPOSITORY] Validação passou, chamando CloudFunctionsService...',
-      );
 
       final result = await _cloudFunctionsService.updateMicrotaskStatus(
         userId: userId,
@@ -393,20 +378,12 @@ class MicrotaskRepository {
         newStatus: status.name,
       );
 
-      print('📡 [REPOSITORY] Resposta do CloudFunctionsService: $result');
       return result;
     } catch (e, stackTrace) {
-      print('❌ [REPOSITORY] Erro capturado:');
-      print('   - Tipo: ${e.runtimeType}');
-      print('   - Mensagem: $e');
-      print('   - Stack trace: $stackTrace');
-
       if (e is AppException) {
-        print('🔄 [REPOSITORY] Repassando AppException...');
         rethrow;
       }
 
-      print('🔄 [REPOSITORY] Convertendo para RepositoryException...');
       throw RepositoryException(
         'Erro ao atualizar status do usuário via Cloud Functions: ${e.toString()}',
       );

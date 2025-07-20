@@ -264,14 +264,7 @@ class _StatusStepperState extends State<StatusStepper>
   /// Manipula o toque em um status
   /// Modificado para permitir apenas progressão para frente
   Future<void> _handleStatusTap(UserMicrotaskStatus tappedStatus) async {
-    print('👆 [STATUS_STEPPER] Toque detectado:');
-    print('   - status atual: ${widget.currentStatus.name}');
-    print('   - status clicado: ${tappedStatus.name}');
-    print('   - _isLoading: $_isLoading');
-    print('   - timestamp: ${DateTime.now().toIso8601String()}');
-    
     if (_isLoading) {
-      print('⏳ [STATUS_STEPPER] Operação já em andamento, ignorando toque');
       return;
     }
 
@@ -280,7 +273,6 @@ class _StatusStepperState extends State<StatusStepper>
     // Determina o novo status baseado no status atual e no que foi clicado
     if (tappedStatus == UserMicrotaskStatus.inProgress) {
       if (widget.currentStatus == UserMicrotaskStatus.assigned) {
-        print('🔄 [STATUS_STEPPER] Transição válida: assigned -> inProgress');
         // Progressão para in_progress
         // Solicitar confirmação do usuário
         final bool? confirmed = await ConfirmationDialog.show(
@@ -295,20 +287,16 @@ class _StatusStepperState extends State<StatusStepper>
           confirmButtonColor: AppColors.success,
         );
 
-        print('💬 [STATUS_STEPPER] Resposta do diálogo de confirmação: $confirmed');
         if (confirmed != true) {
-          print('❌ [STATUS_STEPPER] Usuário cancelou a operação');
           return; // Usuário cancelou a operação
         }
 
         newStatus = UserMicrotaskStatus.inProgress;
       } else {
-        print('🚫 [STATUS_STEPPER] Transição inválida: ${widget.currentStatus.name} -> inProgress');
         return; // Não permite outras transições
       }
     } else if (tappedStatus == UserMicrotaskStatus.completed) {
       if (widget.currentStatus == UserMicrotaskStatus.inProgress) {
-        print('🔄 [STATUS_STEPPER] Transição válida: inProgress -> completed');
         // Progressão para completed
         // Solicitar confirmação do usuário
         final bool? confirmed = await ConfirmationDialog.show(
@@ -323,24 +311,18 @@ class _StatusStepperState extends State<StatusStepper>
           confirmButtonColor: AppColors.success,
         );
 
-        print('💬 [STATUS_STEPPER] Resposta do diálogo de confirmação: $confirmed');
         if (confirmed != true) {
-          print('❌ [STATUS_STEPPER] Usuário cancelou a operação');
           return; // Usuário cancelou a operação
         }
 
         newStatus = UserMicrotaskStatus.completed;
       } else {
-        print('🚫 [STATUS_STEPPER] Transição inválida: ${widget.currentStatus.name} -> completed');
         return; // Não permite pular etapas ou regredir
       }
     } else {
-      print('🚫 [STATUS_STEPPER] Status não permitido para transição: ${tappedStatus.name}');
       return; // Não permite outras transições
     }
 
-    print('✅ [STATUS_STEPPER] Iniciando mudança de status para: ${newStatus!.name}');
-    
     // Feedback visual durante a mudança
     setState(() {
       _isLoading = true;
@@ -349,24 +331,15 @@ class _StatusStepperState extends State<StatusStepper>
     _animationController.reset();
 
     try {
-      print('📞 [STATUS_STEPPER] Chamando callback onStatusChanged...');
       await widget.onStatusChanged(newStatus);
-      print('✅ [STATUS_STEPPER] Callback onStatusChanged executado com sucesso');
     } catch (e, stackTrace) {
-      print('❌ [STATUS_STEPPER] Erro no callback onStatusChanged:');
-      print('   - Tipo: ${e.runtimeType}');
-      print('   - Mensagem: $e');
-      print('   - Stack trace: $stackTrace');
       rethrow;
     } finally {
       if (mounted) {
-        print('🏁 [STATUS_STEPPER] Finalizando operação, _isLoading = false');
         setState(() {
           _isLoading = false;
         });
-      } else {
-        print('⚠️ [STATUS_STEPPER] Widget não está mais montado');
-      }
+      } else {}
     }
   }
 }

@@ -156,9 +156,7 @@ class _AgendaScreenState extends State<AgendaScreen>
         decoration: InputDecoration(
           hintText: 'Buscar microtask...',
           prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingMd,
             vertical: AppDimensions.paddingSm,
@@ -411,13 +409,6 @@ class _AgendaScreenState extends State<AgendaScreen>
     UserMicrotaskModel userMicrotask,
     UserMicrotaskStatus newStatus,
   ) async {
-    print('🎯 [AGENDA_SCREEN] Iniciando mudança de status:');
-    print('   - userMicrotask.userId: ${userMicrotask.userId}');
-    print('   - userMicrotask.microtaskId: ${userMicrotask.microtaskId}');
-    print('   - status atual: ${userMicrotask.status.name}');
-    print('   - novo status: ${newStatus.name}');
-    print('   - timestamp: ${DateTime.now().toIso8601String()}');
-    
     // Atualiza o status no backend
     final success = await controller.updateUserMicrotaskStatus(
       userId: userMicrotask.userId,
@@ -426,12 +417,11 @@ class _AgendaScreenState extends State<AgendaScreen>
     );
 
     if (!success && mounted) {
-      print('❌ [AGENDA_SCREEN] Falha na atualização - exibindo SnackBar de erro');
-      print('   - controller.errorMessage: ${controller.errorMessage}');
-      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Falha ao atualizar status: ${controller.errorMessage ?? "Erro desconhecido"}'),
+          content: Text(
+            'Falha ao atualizar status: ${controller.errorMessage ?? "Erro desconhecido"}',
+          ),
           backgroundColor: AppColors.error,
           duration: const Duration(seconds: 5),
           action: SnackBarAction(
@@ -462,7 +452,6 @@ class _AgendaScreenState extends State<AgendaScreen>
         ),
       );
     } else if (success) {
-      print('✅ [AGENDA_SCREEN] Status atualizado com sucesso');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

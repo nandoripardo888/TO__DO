@@ -5,12 +5,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Importando os models reais do projeto
-import 'lib/data/models/user_model.dart';
-import 'lib/data/models/event_model.dart';
-import 'lib/data/models/volunteer_profile_model.dart';
-import 'lib/data/services/user_service.dart';
-import 'lib/data/services/event_service.dart';
-import 'lib/core/constants/app_constants.dart';
+import 'package:contask/data/models/user_model.dart';
+import 'package:contask/data/models/event_model.dart';
+import 'package:contask/data/models/volunteer_profile_model.dart';
+import 'package:contask/data/services/user_service.dart';
+import 'package:contask/data/services/event_service.dart';
+import 'package:contask/core/constants/app_constants.dart';
 
 /// Gerador de cenários de teste para o sistema ConTask
 /// Cria usuários fictícios e os inscreve em eventos com habilidades aleatórias

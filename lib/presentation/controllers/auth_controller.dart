@@ -30,11 +30,18 @@ class AuthController extends ChangeNotifier {
   void initialize() {
     _authRepository.authStateChanges.listen(
       (user) {
+        final wasAuthenticated = _currentUser != null;
         _currentUser = user;
         if (user != null) {
           _setState(AuthState.authenticated);
+          // Se não estava autenticado antes, notifica para recarregar dados
+          if (!wasAuthenticated) {
+            _notifyControllersToReload();
+          }
         } else {
           _setState(AuthState.unauthenticated);
+          // Limpa dados quando usuário sai
+          _notifyControllersToClean();
         }
       },
       onError: (error) {
@@ -133,6 +140,9 @@ class AuthController extends ChangeNotifier {
 
       _currentUser = null;
       _setState(AuthState.unauthenticated);
+      
+      // Notifica outros controllers para limpar seus dados
+      _notifyControllersToClean();
     } on AuthException catch (e) {
       _setError(e.message);
     } catch (e) {
@@ -140,6 +150,30 @@ class AuthController extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+  
+  /// Callbacks para notificar outros controllers sobre mudanças de autenticação
+  Function()? _onAuthStateChanged;
+  Function()? _onUserAuthenticated;
+  
+  /// Define callback para ser chamado quando o usuário faz logout
+  void setAuthStateChangeCallback(Function() callback) {
+    _onAuthStateChanged = callback;
+  }
+  
+  /// Define callback para ser chamado quando o usuário é autenticado
+  void setUserAuthenticatedCallback(Function() callback) {
+    _onUserAuthenticated = callback;
+  }
+  
+  /// Notifica outros controllers para limpar dados
+  void _notifyControllersToClean() {
+    _onAuthStateChanged?.call();
+  }
+  
+  /// Notifica outros controllers para recarregar dados
+  void _notifyControllersToReload() {
+    _onUserAuthenticated?.call();
   }
 
   /// Envia email de redefinição de senha

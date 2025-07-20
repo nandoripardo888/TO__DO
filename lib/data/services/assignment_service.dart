@@ -58,7 +58,6 @@ class AssignmentService {
 
       // Validações de atribuição
       await _validateAssignment(microtask, userId, volunteerProfile);
-      print("ABACAXI5: assinando microtask");
 
       // Atribui o voluntário
       final updatedMicrotask = await _microtaskService.assignVolunteer(
@@ -558,7 +557,6 @@ class AssignmentService {
       }
     } catch (e) {
       // Log do erro, mas não propaga para não quebrar o fluxo principal
-      print('Erro ao atualizar status da microtask: $e');
     }
   }
 
@@ -606,7 +604,6 @@ class AssignmentService {
       }
     } catch (e) {
       // Log do erro, mas não propaga para não quebrar o fluxo principal
-      print('Erro ao atualizar status da task: $e');
     }
   }
 }

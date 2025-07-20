@@ -91,7 +91,6 @@ class MicrotaskService {
           .map((doc) => MicrotaskModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('Erro ao buscar microtasks da task: ${e.toString()}');
       throw DatabaseException(
         'Erro ao buscar microtasks da task: ${e.toString()}',
       );
@@ -222,8 +221,6 @@ class MicrotaskService {
         microtask.eventId,
       );
 
-      print('Voluntário atribuído com sucesso!');
-
       return savedMicrotask;
     } catch (e) {
       if (e is DatabaseException || e is ValidationException) rethrow;
@@ -329,7 +326,6 @@ class MicrotaskService {
             await _decrementVolunteerMicrotaskCount(microtask.eventId, userId);
           } catch (e) {
             // Log do erro, mas não interrompe o processo de deleção
-            print('Erro ao decrementar contador para usuário $userId: $e');
           }
         }
 
@@ -405,9 +401,7 @@ class MicrotaskService {
       await _userMicrotasksCollection
           .doc(relationId)
           .set(userMicrotask.toFirestore());
-      print('Relação usuário-microtask criada com sucesso!');
     } catch (e) {
-      print('Erro ao criar relação usuário-microtask: ${e.toString()}');
       throw DatabaseException(
         'Erro ao criar relação usuário-microtask: ${e.toString()}',
       );
@@ -511,7 +505,7 @@ class MicrotaskService {
       return microtasksQuery.docs.length;
     } catch (e) {
       // Em caso de erro, retorna 0 para não quebrar o fluxo
-      print('Erro ao calcular contagem real de microtasks: $e');
+
       return 0;
     }
   }

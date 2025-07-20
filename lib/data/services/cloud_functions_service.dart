@@ -19,49 +19,27 @@ class CloudFunctionsService {
     required String userId,
   }) async {
     try {
-      print('☁️ [CLOUD_FUNCTIONS] Preparando chamada updateMicrotaskStatus:');
-      print('   - userId: "$userId"');
-      print('   - microtaskId: "$microtaskId"');
-      print('   - newStatus: "$newStatus"');
-      
       final callable = _functions.httpsCallable('updateMicrotaskStatus');
-      print('📞 [CLOUD_FUNCTIONS] Callable criado, fazendo chamada...');
-      
+
       final payload = {
         'microtaskId': microtaskId,
         'newStatus': newStatus,
         'userId': userId,
       };
-      print('📤 [CLOUD_FUNCTIONS] Payload: $payload');
 
       final result = await callable.call(payload);
-      
-      print('📥 [CLOUD_FUNCTIONS] Resposta recebida:');
-      print('   - result.data: ${result.data}');
-      print('   - result.data type: ${result.data.runtimeType}');
 
       final data = result.data as Map<String, dynamic>;
       final success = data['success'] == true;
-      print('✅ [CLOUD_FUNCTIONS] Success extraído: $success');
-      
+
       return success;
     } on FirebaseFunctionsException catch (e) {
-      print('❌ [CLOUD_FUNCTIONS] FirebaseFunctionsException:');
-      print('   - code: ${e.code}');
-      print('   - message: ${e.message}');
-      print('   - details: ${e.details}');
-      
       throw NetworkException(
         e.message ?? 'Erro ao atualizar status da microtask',
         code: e.code,
         originalException: e,
       );
     } catch (e, stackTrace) {
-      print('❌ [CLOUD_FUNCTIONS] Erro inesperado:');
-      print('   - Tipo: ${e.runtimeType}');
-      print('   - Mensagem: $e');
-      print('   - Stack trace: $stackTrace');
-      
       throw NetworkException(
         'Erro inesperado ao atualizar status da microtask: $e',
         originalException: e,

@@ -36,6 +36,25 @@ class ConTaskApp extends StatelessWidget {
             microtaskRepository: MicrotaskRepository(),
           ),
         ),
+        // Provider para configurar comunicação entre controllers
+        ProxyProvider3<AuthController, EventController, TaskController, void>(
+          update: (context, authController, eventController, taskController, _) {
+            // Configura callback para limpar dados quando usuário faz logout
+            authController.setAuthStateChangeCallback(() {
+              eventController.clear();
+              taskController.clear();
+            });
+            
+            // Configura callback para recarregar dados quando usuário é autenticado
+            authController.setUserAuthenticatedCallback(() {
+              if (authController.currentUser != null) {
+                eventController.loadUserEvents(authController.currentUser!.id);
+              }
+            });
+            
+            return;
+          },
+        ),
       ],
       child: Consumer<AuthController>(
         builder: (context, authController, child) {

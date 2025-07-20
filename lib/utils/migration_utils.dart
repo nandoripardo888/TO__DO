@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../data/repositories/event_repository.dart';
-import '../presentation/controllers/event_controller.dart';
 
 /// Utilitários para migração de dados do banco
 class MigrationUtils {
@@ -13,7 +12,6 @@ class MigrationUtils {
       await _eventRepository.migrateVolunteerProfilesTaskCounts();
       return true;
     } catch (e) {
-      print('Erro na migração: $e');
       return false;
     }
   }
@@ -24,7 +22,6 @@ class MigrationUtils {
       await _eventRepository.recalculateEventVolunteerCounts(eventId);
       return true;
     } catch (e) {
-      print('Erro ao recalcular contadores: $e');
       return false;
     }
   }
@@ -41,7 +38,6 @@ class MigrationUtils {
       );
       return true;
     } catch (e) {
-      print('Erro ao recalcular contador do voluntário: $e');
       return false;
     }
   }

@@ -19,6 +19,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _hasLoadedInitialData = false;
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +38,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (authController.currentUser != null) {
       eventController.loadUserEvents(authController.currentUser!.id);
+      _hasLoadedInitialData = true;
+    }
+  }
+
+  /// Força o recarregamento dos dados quando necessário
+  void _forceReloadUserEvents() {
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final eventController = Provider.of<EventController>(
+      context,
+      listen: false,
+    );
+
+    if (authController.currentUser != null) {
+      // Limpa dados antigos e recarrega
+      eventController.clearError();
+      eventController.loadUserEvents(authController.currentUser!.id);
+      _hasLoadedInitialData = true; // Marca como carregado para evitar loops
     }
   }
 
@@ -52,8 +71,18 @@ class _HomeScreenState extends State<HomeScreen> {
             return const Center(child: Text('Usuário não encontrado'));
           }
 
+          // Verifica se precisa recarregar dados após mudança de usuário ou estado vazio
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              // Se não carregou dados iniciais, carrega uma vez
+              if (!_hasLoadedInitialData) {
+                _forceReloadUserEvents();
+              }
+            }
+          });
+
           return RefreshIndicator(
-            onRefresh: () async => _loadUserEvents(),
+            onRefresh: () async => _forceReloadUserEvents(),
             child: Column(
               children: [
                 // Seção de boas-vindas
@@ -157,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
-            'Gerencie suas campanhas e tarefas',
+            'Gerencie suas campanhas e tarefas aqui',
             style: TextStyle(
               fontSize: AppDimensions.fontSizeMd,
               color: AppColors.textOnPrimary.withValues(alpha: 0.9),
@@ -228,7 +257,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingXl,
+              ),
               child: CustomButton(
                 text: 'Criar campanha',
                 onPressed: () => _navigateToCreateEvent(),
@@ -236,7 +267,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingXl,
+              ),
               child: CustomButton.outline(
                 text: 'Participar de campanha',
                 onPressed: () => _navigateToJoinEvent(),
@@ -256,7 +289,10 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
           child: EventCard(
             event: event,
-            currentUserId: Provider.of<AuthController>(context, listen: false).currentUser?.id,
+            currentUserId: Provider.of<AuthController>(
+              context,
+              listen: false,
+            ).currentUser?.id,
             onTap: () => _navigateToEventDetails(event.id),
           ),
         );

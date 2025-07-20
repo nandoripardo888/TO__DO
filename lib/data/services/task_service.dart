@@ -91,7 +91,6 @@ class TaskService {
           .map((doc) => TaskModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('Erro ao buscar tasks da campanha: ${e.toString()}');
       throw DatabaseException(
         'Erro ao buscar tasks da campanha: ${e.toString()}',
       );

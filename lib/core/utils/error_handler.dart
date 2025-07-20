@@ -217,11 +217,9 @@ class ErrorHandler {
   /// Cria uma mensagem de erro formatada para exibição
   static String formatErrorMessage(dynamic error, {String? context}) {
     final message = handleError(error);
-
     if (context != null) {
       return '$context: $message';
     }
-
     return message;
   }
 
