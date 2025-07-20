@@ -73,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
   PreferredSizeWidget _buildAppBar() {
     return CustomAppBar(
       title: 'ConTask',
+      automaticallyImplyLeading: false,
       actions: [
         Consumer<AuthController>(
           builder: (context, authController, child) {

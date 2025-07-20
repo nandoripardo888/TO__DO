@@ -4,12 +4,14 @@ import 'package:cloud_functions/cloud_functions.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../data/models/task_model.dart';
+import '../../../data/models/volunteer_profile_model.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/event_controller.dart';
 import '../../controllers/task_controller.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/custom_app_bar.dart';
+import '../../widgets/volunteer/volunteer_profile_dialog.dart';
 
 import '../../widgets/task/task_card.dart';
 import '../../widgets/task/microtask_card.dart';
@@ -26,7 +28,8 @@ class TrackTasksScreen extends StatefulWidget {
   State<TrackTasksScreen> createState() => _TrackTasksScreenState();
 }
 
-class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepAliveClientMixin {
+class _TrackTasksScreenState extends State<TrackTasksScreen>
+    with AutomaticKeepAliveClientMixin {
   final Set<String> _expandedTasks = {};
   String _searchQuery = '';
   bool _isAutoAssigning = false;
@@ -136,7 +139,9 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
         if (isStatus) {
           controller.setStatusFilter(selected ? value as TaskStatus? : null);
         } else {
-          controller.setPriorityFilter(selected ? value as TaskPriority? : null);
+          controller.setPriorityFilter(
+            selected ? value as TaskPriority? : null,
+          );
         }
       },
       selectedColor: AppColors.primary.withOpacity(0.2),
@@ -147,7 +152,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
+
     return Consumer<TaskController>(
       builder: (context, taskController, child) {
         if (taskController.isLoading) {
@@ -361,7 +366,9 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
 
   Widget _buildTaskCard(TaskModel task, TaskController taskController) {
     final microtasks = taskController.getMicrotasksByTaskId(task.id);
-    final pendingMicrotasks = microtasks.where((m) => m.status == MicrotaskStatus.pending).length;
+    final pendingMicrotasks = microtasks
+        .where((m) => m.status == MicrotaskStatus.pending)
+        .length;
 
     return Card(
       elevation: 1,
@@ -537,14 +544,20 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
           const SizedBox(width: 8),
           Text(
             microtask.status.toString().split('.').last,
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),
     );
   }
 
-  List<TaskModel> _getFilteredTasks(List<TaskModel> tasks, TaskController controller) {
+  List<TaskModel> _getFilteredTasks(
+    List<TaskModel> tasks,
+    TaskController controller,
+  ) {
     // Primeiro aplica os filtros do controller
     List<TaskModel> filtered = controller.getFilteredTasks();
 
@@ -605,29 +618,31 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
     return Consumer2<AuthController, EventController>(
       builder: (context, authController, eventController, child) {
         final currentUser = authController.currentUser;
-        final isManager = eventController.currentEvent?.isManager(currentUser?.id ?? '') ?? false;
-        
+        final isManager =
+            eventController.currentEvent?.isManager(currentUser?.id ?? '') ??
+            false;
+
         // Só mostra o botão para gerentes
         if (!isManager) return const SizedBox.shrink();
-        
+
         final isLoading = _isAutoAssigning && _autoAssigningTaskId == task.id;
-        
+
         return Container(
           padding: const EdgeInsets.all(AppDimensions.paddingMd),
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: isLoading ? null : () => _handleAutoAssign(task),
-              icon: isLoading 
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Icon(Icons.auto_awesome, size: 18),
+              icon: isLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Icon(Icons.auto_awesome, size: 18),
               label: Text(
                 isLoading ? 'Atribuindo...' : 'Atribuição Automática',
                 style: const TextStyle(fontSize: 14),
@@ -661,7 +676,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
       // Chamar a Cloud Function
       final functions = FirebaseFunctions.instance;
       final callable = functions.httpsCallable('autoAssignVolunteers');
-      
+
       final result = await callable.call({
         'eventId': widget.eventId,
         'taskId': task.id,
@@ -676,23 +691,28 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
       // Mostrar resultado
       if (assignedCount > 0) {
         _showSuccessDialog(assignedCount, assignments);
-        
+
         // Recarregar dados
-        final taskController = Provider.of<TaskController>(context, listen: false);
+        final taskController = Provider.of<TaskController>(
+          context,
+          listen: false,
+        );
         await taskController.loadTasksWithFilters(eventId: widget.eventId);
       } else {
-        _showInfoDialog('Nenhuma microtask foi atribuída. Verifique se há voluntários disponíveis e microtasks pendentes.');
+        _showInfoDialog(
+          'Nenhuma microtask foi atribuída. Verifique se há voluntários disponíveis e microtasks pendentes.',
+        );
       }
     } catch (e) {
       if (!mounted || _disposed) return;
-      
+
       String errorMessage = 'Erro ao executar atribuição automática';
       if (e.toString().contains('Apenas gerentes')) {
         errorMessage = 'Apenas gerentes podem executar a atribuição automática';
       } else if (e.toString().contains('Nenhum voluntário')) {
         errorMessage = 'Nenhum voluntário encontrado na campanha';
       }
-      
+
       _showErrorDialog(errorMessage);
     } finally {
       if (mounted && !_disposed) {
@@ -707,7 +727,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
   /// Mostra dialog de sucesso
   void _showSuccessDialog(int assignedCount, List<dynamic> assignments) {
     if (!mounted || _disposed) return;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -722,17 +742,20 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('$assignedCount microtask(s) foram atribuídas automaticamente.'),
+            Text(
+              '$assignedCount microtask(s) foram atribuídas automaticamente.',
+            ),
             const SizedBox(height: 16),
-            if (assignments.isNotEmpty) ...[  
-               const Text(
-                 'Resumo das atribuições:',
-                 style: TextStyle(fontWeight: FontWeight.bold),
-               ),
+            if (assignments.isNotEmpty) ...[
+              const Text(
+                'Resumo das atribuições:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               ...assignments.take(3).map((assignment) {
                 final microtaskTitle = assignment['microtaskTitle'] as String;
-                final volunteers = assignment['assignedVolunteers'] as List<dynamic>;
+                final volunteers =
+                    assignment['assignedVolunteers'] as List<dynamic>;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
@@ -744,7 +767,10 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
               if (assignments.length > 3)
                 Text(
                   '... e mais ${assignments.length - 3} microtask(s)',
-                  style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
             ],
           ],
@@ -762,7 +788,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
   /// Mostra dialog de informação
   void _showInfoDialog(String message) {
     if (!mounted || _disposed) return;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -787,7 +813,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
   /// Mostra dialog de erro
   void _showErrorDialog(String message) {
     if (!mounted || _disposed) return;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -812,7 +838,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
   /// Mostra modal com voluntários atribuídos à microtask
   void _showAssignedVolunteers(microtask) {
     if (!mounted || _disposed) return;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -839,12 +865,10 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const SizedBox(
                       height: 100,
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
+                      child: Center(child: CircularProgressIndicator()),
                     );
                   }
-                  
+
                   if (snapshot.hasError) {
                     return const SizedBox(
                       height: 100,
@@ -856,9 +880,9 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
                       ),
                     );
                   }
-                  
+
                   final volunteers = snapshot.data ?? [];
-                  
+
                   if (volunteers.isEmpty) {
                     return const SizedBox(
                       height: 100,
@@ -870,7 +894,7 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
                       ),
                     );
                   }
-                  
+
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -879,18 +903,21 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
                         child: ListView.separated(
                           shrinkWrap: true,
                           itemCount: volunteers.length,
-                          separatorBuilder: (context, index) => const Divider(height: 1),
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
                           itemBuilder: (context, index) {
                             final volunteer = volunteers[index];
                             return ListTile(
                               dense: true,
                               leading: CircleAvatar(
                                 radius: 16,
-                                backgroundColor: AppColors.primary.withOpacity(0.1),
+                                backgroundColor: AppColors.primary.withOpacity(
+                                  0.1,
+                                ),
                                 child: Text(
-                                  volunteer['name']?.isNotEmpty == true 
-                                    ? volunteer['name']![0].toUpperCase()
-                                    : '?',
+                                  volunteer['name']?.isNotEmpty == true
+                                      ? volunteer['name']![0].toUpperCase()
+                                      : '?',
                                   style: const TextStyle(
                                     color: AppColors.primary,
                                     fontSize: 12,
@@ -912,6 +939,10 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
                                   color: AppColors.textSecondary,
                                 ),
                               ),
+                              onTap: () {
+                                final userId = microtask.assignedTo[index];
+                                _showVolunteerProfile(userId);
+                              },
                             );
                           },
                         ),
@@ -934,11 +965,16 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
   }
 
   /// Busca informações dos voluntários pelos IDs
-  Future<List<Map<String, String>>> _getVolunteersInfo(List<String> userIds) async {
+  Future<List<Map<String, String>>> _getVolunteersInfo(
+    List<String> userIds,
+  ) async {
     try {
-      final eventController = Provider.of<EventController>(context, listen: false);
+      final eventController = Provider.of<EventController>(
+        context,
+        listen: false,
+      );
       final volunteers = <Map<String, String>>[];
-      
+
       for (final userId in userIds) {
         try {
           // Busca o perfil do voluntário no evento atual
@@ -946,15 +982,15 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
             userId,
             widget.eventId,
           );
-          
+
           if (volunteerProfile != null) {
             volunteers.add({
-              'name': volunteerProfile.userName.isNotEmpty 
-                ? volunteerProfile.userName 
-                : 'Nome não disponível',
-              'email': volunteerProfile.userEmail.isNotEmpty 
-                ? volunteerProfile.userEmail 
-                : 'Email não disponível',
+              'name': volunteerProfile.userName.isNotEmpty
+                  ? volunteerProfile.userName
+                  : 'Nome não disponível',
+              'email': volunteerProfile.userEmail.isNotEmpty
+                  ? volunteerProfile.userEmail
+                  : 'Email não disponível',
             });
           } else {
             volunteers.add({
@@ -969,10 +1005,21 @@ class _TrackTasksScreenState extends State<TrackTasksScreen> with AutomaticKeepA
           });
         }
       }
-      
+
       return volunteers;
     } catch (e) {
       return [];
     }
+  }
+
+  /// Mostra o modal com o perfil completo do voluntário
+  void _showVolunteerProfile(String userId) {
+    if (!mounted || _disposed) return;
+
+    VolunteerProfileDialog.show(
+      context: context,
+      userId: userId,
+      eventId: widget.eventId,
+    );
   }
 }

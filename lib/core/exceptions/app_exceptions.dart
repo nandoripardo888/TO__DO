@@ -103,7 +103,10 @@ class DatabaseException extends AppException {
   const DatabaseException(super.message, {super.code, super.originalException});
 
   @override
-  String toString() => 'DatabaseException: $message';
+  String toString() {
+    print('DatabaseException occurred: $message');
+    return 'DatabaseException: $message';
+  }
 }
 
 /// Exceções relacionadas ao repositório
